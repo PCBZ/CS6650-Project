@@ -1,5 +1,38 @@
 # What's Shared vs What You Add
 
+## 🔐 Security Configuration (IMPORTANT - Read First!)
+
+**Before deploying any infrastructure, you MUST configure the RDS password:**
+
+### Setting Up terraform.tfvars Files
+
+The RDS password is NOT hardcoded for security reasons. You need to create `terraform.tfvars` files:
+
+1. **Root Infrastructure** (`terraform/terraform.tfvars`):
+```hcl
+# terraform.tfvars - ADD THIS FILE
+rds_master_password = "YourSecurePassword123!"  # Change to strong password
+# ... other variables
+```
+
+2. **Service Infrastructure** (`services/{service}/terraform/terraform.tfvars`):
+```hcl
+# terraform.tfvars - ADD THIS FILE  
+rds_master_password = "YourSecurePassword123!"  # MUST match root password
+# ... other variables
+```
+
+### ⚠️ Security Rules:
+- **NEVER** commit `.tfvars` files (they're already in `.gitignore`)
+- **USE THE SAME PASSWORD** in both root and service tfvars files
+- **CHOOSE A STRONG PASSWORD** (minimum 12 characters, mixed case, numbers, symbols)
+- **COORDINATE WITH TEAM** to ensure everyone uses the same password for shared RDS
+
+### Password Requirements:
+- At least 8 characters (recommend 16+)
+- Include uppercase, lowercase, numbers, and symbols
+- No dictionary words or common patterns
+
 ## 🌐 Already Created (Shared Infrastructure)
 
 **You DON'T need to create these - they already exist:**

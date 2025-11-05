@@ -51,7 +51,7 @@ variable "rds_master_password" {
   description = "Master password for RDS PostgreSQL instance"
   type        = string
   sensitive   = true
-  default     = "changeme123!"
+  # No default value - must be provided via environment variable or tfvars file
 }
 
 variable "rds_instance_class" {

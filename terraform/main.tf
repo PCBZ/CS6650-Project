@@ -22,7 +22,7 @@ module "alb" {
   security_group_id = module.network.alb_security_group_id
 }
 
-# Shared RDS Aurora Cluster
+# Shared RDS PostgreSQL Instance
 module "rds" {
   source = "./modules/rds"
   

@@ -7,7 +7,6 @@ Generates realistic usernames and creates users via API calls
 import asyncio
 import aiohttp
 import argparse
-import json
 import random
 import sys
 import time

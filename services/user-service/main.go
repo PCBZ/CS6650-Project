@@ -7,10 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -109,6 +111,12 @@ func main() {
 
 // initializeServiceDatabase creates the service database and user if they don't exist
 func initializeServiceDatabase(host, port, masterUser, masterPassword, sslMode, dbName string) error {
+	// Validate database name to prevent SQL injection (alphanumeric and underscores only)
+	dbNamePattern := regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+	if !dbNamePattern.MatchString(dbName) {
+		return fmt.Errorf("invalid database name: must contain only alphanumeric characters and underscores, and start with a letter or underscore")
+	}
+
 	// Connect to the default postgres database as master user
 	masterDSN := fmt.Sprintf("host=%s port=%s dbname=postgres user=%s password=%s sslmode=%s",
 		host, port, masterUser, masterPassword, sslMode)
@@ -134,7 +142,7 @@ func initializeServiceDatabase(host, port, masterUser, masterPassword, sslMode, 
 	}
 
 	if !exists {
-		createDBQuery := fmt.Sprintf("CREATE DATABASE %s", dbName)
+		createDBQuery := fmt.Sprintf("CREATE DATABASE %s", pq.QuoteIdentifier(dbName))
 		_, err = masterDB.Exec(createDBQuery)
 		if err != nil {
 			return fmt.Errorf("failed to create database %s: %w", dbName, err)
@@ -146,6 +154,11 @@ func initializeServiceDatabase(host, port, masterUser, masterPassword, sslMode, 
 
 	// Create service user if it doesn't exist (optional - for future use)
 	serviceUser := fmt.Sprintf("%s_user", dbName)
+	// Validate service user name
+	if !dbNamePattern.MatchString(serviceUser) {
+		return fmt.Errorf("invalid service user name: must contain only alphanumeric characters and underscores")
+	}
+
 	var userExists bool
 	checkUserQuery := "SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname = $1)"
 	err = masterDB.QueryRow(checkUserQuery, serviceUser).Scan(&userExists)
@@ -154,14 +167,23 @@ func initializeServiceDatabase(host, port, masterUser, masterPassword, sslMode, 
 	}
 
 	if !userExists {
-		createUserQuery := fmt.Sprintf("CREATE USER %s WITH PASSWORD '%s'", serviceUser, masterPassword)
+		// Use a more secure approach: create user with a placeholder password, then alter it
+		// This prevents password exposure in query logs
+		createUserQuery := fmt.Sprintf("CREATE USER %s", pq.QuoteIdentifier(serviceUser))
 		_, err = masterDB.Exec(createUserQuery)
 		if err != nil {
 			return fmt.Errorf("failed to create user %s: %w", serviceUser, err)
 		}
 
+		// Set password in a separate statement to minimize exposure
+		setPasswordQuery := fmt.Sprintf("ALTER USER %s WITH PASSWORD $1", pq.QuoteIdentifier(serviceUser))
+		_, err = masterDB.Exec(setPasswordQuery, masterPassword)
+		if err != nil {
+			return fmt.Errorf("failed to set password for user %s: %w", serviceUser, err)
+		}
+
 		// Grant privileges to the service user
-		grantQuery := fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", dbName, serviceUser)
+		grantQuery := fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(serviceUser))
 		_, err = masterDB.Exec(grantQuery)
 		if err != nil {
 			return fmt.Errorf("failed to grant privileges to user %s: %w", serviceUser, err)
@@ -193,7 +215,7 @@ func initializeSchema(db *sql.DB) error {
 	}
 
 	log.Printf("Database schema initialized successfully")
-	return err
+	return nil
 }
 
 func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -321,13 +343,13 @@ func (s *Server) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Placeholder functions for RPC calls - replace with actual service calls
-func (s *Server) getFollowerCount(userID int) int {
+func (s *Server) getFollowerCount(_ int) int {
 	// TODO: Make RPC call to follower service
 	// Return mock data for now
 	return 0
 }
 
-func (s *Server) getFollowingCount(userID int) int {
+func (s *Server) getFollowingCount(_ int) int {
 	// TODO: Make RPC call to follower service
 	// Return mock data for now
 	return 0
