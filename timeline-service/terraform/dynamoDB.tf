@@ -19,11 +19,16 @@ resource "aws_dynamodb_table" "posts" {
   }
 
   attribute {
-    name = "created_at"
+    name = "author_id"
     type = "N"
   }
 
-  # GSI for querying user's posts
+  attribute {
+    name = "created_at"
+    type = "S"
+  }
+
+  # GSI for querying user's timeline (for push strategy)
   global_secondary_index {
     name            = "UserPostsIndex"
     hash_key        = "user_id"
