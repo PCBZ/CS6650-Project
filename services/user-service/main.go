@@ -1,19 +1,23 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"time"
 
+	pb "github.com/cs6650/proto"
+
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
+	"google.golang.org/grpc"
 )
 
 // User represents a user in the system
@@ -21,15 +25,6 @@ type User struct {
 	UserID    int       `json:"user_id"`
 	Username  string    `json:"username"`
 	CreatedAt time.Time `json:"created_at"`
-}
-
-// UserWithCounts represents a user with follower/following counts from RPC
-type UserWithCounts struct {
-	UserID         int       `json:"user_id"`
-	Username       string    `json:"username"`
-	FollowerCount  int       `json:"follower_count"`
-	FollowingCount int       `json:"following_count"`
-	CreatedAt      time.Time `json:"created_at"`
 }
 
 // CreateUserRequest represents the request body for creating a user
@@ -46,8 +41,8 @@ type CreateUserResponse struct {
 
 // GetUsersResponse represents the response for getting all users
 type GetUsersResponse struct {
-	Users      []UserWithCounts `json:"users"`
-	TotalCount int              `json:"total_count"`
+	Users      []User `json:"users"`
+	TotalCount int    `json:"total_count"`
 }
 
 // ErrorResponse represents an error response
@@ -57,6 +52,7 @@ type ErrorResponse struct {
 
 type Server struct {
 	db *sql.DB
+	pb.UnimplementedUserServiceServer
 }
 
 func main() {
@@ -95,7 +91,7 @@ func main() {
 
 	server := &Server{db: db}
 
-	// Setup routes
+	// Setup HTTP routes
 	router := mux.NewRouter()
 	router.HandleFunc("/health", healthHandler).Methods("GET")
 	router.HandleFunc("/api/users", server.createUserHandler).Methods("POST")
@@ -104,9 +100,27 @@ func main() {
 	// Enable CORS
 	router.Use(corsMiddleware)
 
-	port := getEnv("PORT", "8080")
-	log.Printf("Server starting on port %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	// Start HTTP server
+	go func() {
+		port := getEnv("PORT", "8081")
+		log.Printf("User Service HTTP server starting on port %s", port)
+		log.Fatal(http.ListenAndServe(":"+port, router))
+	}()
+
+	// Start gRPC server
+	grpcPort := getEnv("GRPC_PORT", "50051")
+	lis, err := net.Listen("tcp", ":"+grpcPort)
+	if err != nil {
+		log.Fatalf("Failed to listen on port %s: %v", grpcPort, err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterUserServiceServer(grpcServer, server)
+
+	log.Printf("User Service gRPC server starting on port %s", grpcPort)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("Failed to serve gRPC server: %v", err)
+	}
 }
 
 // initializeServiceDatabase creates the service database and user if they don't exist
@@ -316,25 +330,8 @@ func (s *Server) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convert to UserWithCounts and fetch follower/following counts via RPC
-	var usersWithCounts []UserWithCounts
-	for _, user := range users {
-		userWithCounts := UserWithCounts{
-			UserID:    user.UserID,
-			Username:  user.Username,
-			CreatedAt: user.CreatedAt,
-		}
-
-		// TODO: Replace with actual RPC calls to follower service
-		// For now, using placeholder values
-		userWithCounts.FollowerCount = s.getFollowerCount(user.UserID)
-		userWithCounts.FollowingCount = s.getFollowingCount(user.UserID)
-
-		usersWithCounts = append(usersWithCounts, userWithCounts)
-	}
-
 	response := GetUsersResponse{
-		Users:      usersWithCounts,
+		Users:      users,
 		TotalCount: totalCount,
 	}
 
@@ -342,17 +339,74 @@ func (s *Server) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// Placeholder functions for RPC calls - replace with actual service calls
-func (s *Server) getFollowerCount(_ int) int {
-	// TODO: Make RPC call to follower service
-	// Return mock data for now
-	return 0
-}
+func (s *Server) BatchGetUserInfo(ctx context.Context, req *pb.BatchGetUserInfoRequest) (*pb.BatchGetUserInfoResponse, error) {
+	if len(req.UserIds) == 0 {
+		return &pb.BatchGetUserInfoResponse{
+			ErrorCode:    "INVALID_ARGUMENT",
+			ErrorMessage: "UserIds cannot be empty",
+		}, nil
+	}
 
-func (s *Server) getFollowingCount(_ int) int {
-	// TODO: Make RPC call to follower service
-	// Return mock data for now
-	return 0
+	// Convert int64 slice to interface slice for pq.Array
+	userIDs := make([]interface{}, len(req.UserIds))
+	for i, id := range req.UserIds {
+		userIDs[i] = id
+	}
+
+	query := `
+		SELECT user_id, username 
+		FROM users 
+		WHERE user_id = ANY($1)
+	`
+
+	rows, err := s.db.Query(query, pq.Array(userIDs))
+	if err != nil {
+		log.Printf("Database error: %v", err)
+		return &pb.BatchGetUserInfoResponse{
+			ErrorCode:    "INTERNAL",
+			ErrorMessage: "Internal server error",
+		}, nil
+	}
+	defer rows.Close()
+
+	users := make(map[int64]*pb.UserInfo)
+	notFound := []int64{}
+
+	for rows.Next() {
+		var userID int64
+		var username string
+		if err := rows.Scan(&userID, &username); err != nil {
+			log.Printf("Row scan error: %v", err)
+			return &pb.BatchGetUserInfoResponse{
+				ErrorCode:    "INTERNAL",
+				ErrorMessage: "Internal server error",
+			}, nil
+		}
+		users[userID] = &pb.UserInfo{
+			UserId:   userID,
+			Username: username,
+		}
+	}
+
+	// Check for not found user IDs
+	for _, id := range req.UserIds {
+		if _, found := users[id]; !found {
+			notFound = append(notFound, id)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Rows iteration error: %v", err)
+		return &pb.BatchGetUserInfoResponse{
+			ErrorCode:    "INTERNAL",
+			ErrorMessage: "Internal server error",
+		}, nil
+	}
+
+	return &pb.BatchGetUserInfoResponse{
+		Users:    users,
+		NotFound: notFound,
+	}, nil
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {

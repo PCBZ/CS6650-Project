@@ -1,4 +1,4 @@
-# Specify where to find the AWS & Docker providers
+# Specify required providers (but don't configure them - inherit from parent)
 terraform {
   required_providers {
     aws = {
@@ -7,24 +7,23 @@ terraform {
     }
     docker = {
       source  = "kreuzwerker/docker"
-      version = "~> 2.0"
+      version = "~> 3.0"
     }
   }
 }
 
-# Configure AWS credentials & region
-provider "aws" {
-  region     = var.aws_region
-}
+# ECR authorization token requires permissions not available in AWS learner lab
+# You'll need to authenticate to ECR manually using AWS CLI:
+# aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account_id>.dkr.ecr.<region>.amazonaws.com
 
-# Fetch an ECR auth token so Terraform's Docker provider can log in
-data "aws_ecr_authorization_token" "registry" {}
+# Get ECR authorization token
+# data "aws_ecr_authorization_token" "token" {}
 
-# Configure Docker provider to authenticate against ECR automatically
-provider "docker" {
-  registry_auth {
-    address  = data.aws_ecr_authorization_token.registry.proxy_endpoint
-    username = data.aws_ecr_authorization_token.registry.user_name
-    password = data.aws_ecr_authorization_token.registry.password
-  }
-}
+# Configure Docker provider to authenticate with ECR
+# provider "docker" {
+#   registry_auth {
+#     address  = data.aws_ecr_authorization_token.token.proxy_endpoint
+#     username = data.aws_ecr_authorization_token.token.user_name
+#     password = data.aws_ecr_authorization_token.token.password
+#   }
+# }

@@ -1,5 +1,5 @@
 # Build stage
-FROM --platform=linux/amd64 golang:1.21-alpine AS builder
+FROM --platform=linux/amd64 golang:1.25.1-alpine AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ COPY go.mod go.sum ./
 # Download dependencies
 RUN go mod download
 
-# Copy source code
+# Copy source code (including proto directory)
 COPY . .
 
 # Build the application for AMD64
@@ -26,8 +26,8 @@ WORKDIR /root/
 # Copy the binary from builder stage
 COPY --from=builder /app/main .
 
-# Expose port
-EXPOSE 8080
+# Expose both HTTP and gRPC ports
+EXPOSE 8081 50051
 
 # Command to run
 CMD ["./main"]

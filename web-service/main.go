@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/cs6650/web-service/proto"
+	pb "github.com/cs6650/proto"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

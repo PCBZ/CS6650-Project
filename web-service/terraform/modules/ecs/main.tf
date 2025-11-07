@@ -1,6 +1,10 @@
-# ECS Cluster
+# ECS Cluster with Service Connect enabled
 resource "aws_ecs_cluster" "main" {
   name = var.service_name
+
+  service_connect_defaults {
+    namespace = var.service_connect_namespace_arn
+  }
 
   tags = {
     Name    = "${var.service_name} Cluster"
@@ -31,9 +35,11 @@ resource "aws_ecs_task_definition" "app" {
       
       portMappings = [
         {
+          name          = "http"
           containerPort = var.container_port
           hostPort      = var.container_port
           protocol      = "tcp"
+          appProtocol   = "http"
         }
       ]
 
@@ -71,7 +77,7 @@ resource "aws_ecs_task_definition" "app" {
   }
 }
 
-# ECS Service
+# ECS Service with Service Connect (client mode only)
 resource "aws_ecs_service" "app" {
   name            = var.service_name
   cluster         = aws_ecs_cluster.main.id
@@ -89,6 +95,13 @@ resource "aws_ecs_service" "app" {
     target_group_arn = var.target_group_arn
     container_name   = var.service_name
     container_port   = var.container_port
+  }
+
+  # ECS Service Connect configuration - client mode only
+  # This service doesn't expose ports, it only consumes other services
+  service_connect_configuration {
+    enabled   = true
+    namespace = var.service_connect_namespace_arn
   }
 
   depends_on = [var.target_group_arn]

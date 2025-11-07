@@ -4,6 +4,52 @@ variable "aws_region" {
   default = "us-west-2"
 }
 
+# Shared infrastructure values (passed from root terraform)
+variable "vpc_id" {
+  description = "VPC ID from shared infrastructure"
+  type        = string
+}
+
+variable "vpc_cidr" {
+  description = "VPC CIDR block from shared infrastructure"
+  type        = string
+}
+
+variable "public_subnet_ids" {
+  description = "Public subnet IDs from shared infrastructure"
+  type        = list(string)
+}
+
+variable "private_subnet_ids" {
+  description = "Private subnet IDs from shared infrastructure"
+  type        = list(string)
+}
+
+variable "alb_listener_arn" {
+  description = "ALB listener ARN from shared infrastructure"
+  type        = string
+}
+
+variable "alb_arn_suffix" {
+  description = "ALB ARN suffix from shared infrastructure"
+  type        = string
+}
+
+variable "rds_address" {
+  description = "RDS instance address from shared infrastructure"
+  type        = string
+}
+
+variable "rds_port" {
+  description = "RDS instance port from shared infrastructure"
+  type        = number
+}
+
+variable "rds_security_group_id" {
+  description = "RDS security group ID from shared infrastructure"
+  type        = string
+}
+
 # ECR & ECS settings
 variable "ecr_repository_name" {
   type    = string
@@ -93,4 +139,9 @@ variable "request_count_target_value" {
   description = "Target requests per minute per task for scaling"
   type        = number
   default     = 1000
+}
+
+variable "service_connect_namespace_arn" {
+  description = "ARN of the ECS Service Connect namespace for service discovery"
+  type        = string
 }

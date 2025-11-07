@@ -125,3 +125,8 @@ variable "request_count_target_value" {
   type        = number
   default     = 1000
 }
+
+variable "service_connect_namespace_arn" {
+  description = "ARN of the ECS Service Connect namespace for service discovery"
+  type        = string
+}

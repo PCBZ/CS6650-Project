@@ -1,12 +1,10 @@
-module github.com/cs6650/web-service
+module github.com/cs6650/grpc-test-client
 
 go 1.25.1
 
 require (
-	github.com/cs6650/proto v0.0.0-00010101000000-000000000000
-	github.com/gorilla/mux v1.8.1
+	github.com/cs6650/proto v0.0.0
 	google.golang.org/grpc v1.76.0
-	google.golang.org/protobuf v1.36.10
 )
 
 require (
@@ -14,6 +12,7 @@ require (
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
+	google.golang.org/protobuf v1.36.10 // indirect
 )
 
 replace github.com/cs6650/proto => ../proto

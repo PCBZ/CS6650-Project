@@ -11,9 +11,14 @@ module "logging" {
   retention_in_days = var.log_retention_days
 }
 
-# Reuse an existing IAM role for ECS tasks
-data "aws_iam_role" "lab_role" {
-  name = "LabRole"
+# Use IAM role ARN directly instead of data source (AWS learner lab permission issue)
+# data "aws_iam_role" "lab_role" {
+#   name = "LabRole"
+# }
+
+locals {
+  # Directly specify LabRole ARN for AWS learner lab environment
+  lab_role_arn = "arn:aws:iam::851725652643:role/LabRole"
 }
 
 # Service-specific security group for ECS tasks
@@ -121,12 +126,13 @@ module "ecs" {
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
-  execution_role_arn = data.aws_iam_role.lab_role.arn
-  task_role_arn      = data.aws_iam_role.lab_role.arn
+  execution_role_arn = local.lab_role_arn
+  task_role_arn      = local.lab_role_arn
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
   region             = var.aws_region
+  service_connect_namespace_arn = var.service_connect_namespace_arn
   
   # Web service needs to know where user-service is
   user_service_url       = var.user_service_url

@@ -14,7 +14,7 @@ output "public_subnet_ids" {
 }
 
 output "private_subnet_ids" {
-  description = "IDs of the private subnets"
+  description = "IDs of the private subnets (for RDS only)"
   value       = aws_subnet.private[*].id
 }
 
@@ -28,7 +28,23 @@ output "internet_gateway_id" {
   value       = aws_internet_gateway.main.id
 }
 
-output "nat_gateway_ids" {
-  description = "IDs of the NAT Gateways"
-  value       = aws_nat_gateway.main[*].id
+output "service_connect_namespace_arn" {
+  description = "ARN of the ECS Service Connect namespace"
+  value       = aws_service_discovery_http_namespace.main.arn
 }
+
+output "service_connect_namespace_name" {
+  description = "Name of the ECS Service Connect namespace"
+  value       = aws_service_discovery_http_namespace.main.name
+}
+
+# COMMENTED OUT: Service discovery namespace disabled due to AWS learner lab permissions
+# output "service_discovery_namespace_id" {
+#   description = "Service discovery namespace ID"
+#   value       = aws_service_discovery_private_dns_namespace.main.id
+# }
+
+# output "service_discovery_namespace_name" {
+#   description = "Service discovery namespace name"
+#   value       = aws_service_discovery_private_dns_namespace.main.name
+# }

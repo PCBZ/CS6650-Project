@@ -32,3 +32,13 @@ output "high_memory_alarm_arn" {
   description = "High memory CloudWatch alarm ARN"
   value       = aws_cloudwatch_metric_alarm.high_memory.arn
 }
+
+output "service_connect_http_endpoint" {
+  description = "Service Connect HTTP endpoint (DNS name)"
+  value       = var.service_name
+}
+
+output "service_connect_grpc_endpoint" {
+  description = "Service Connect gRPC endpoint (DNS name)"
+  value       = "${var.service_name}-grpc"
+}

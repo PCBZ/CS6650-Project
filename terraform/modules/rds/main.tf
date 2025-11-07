@@ -16,11 +16,26 @@ resource "aws_security_group" "rds" {
   vpc_id      = var.vpc_id
 
   # Allow PostgreSQL access from application security groups
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = var.app_security_group_ids
+  dynamic "ingress" {
+    for_each = length(var.app_security_group_ids) > 0 ? [1] : []
+    content {
+      from_port       = 5432
+      to_port         = 5432
+      protocol        = "tcp"
+      security_groups = var.app_security_group_ids
+    }
+  }
+
+  # Fallback: Allow PostgreSQL access from VPC CIDR if no security groups specified
+  dynamic "ingress" {
+    for_each = length(var.app_security_group_ids) == 0 ? [1] : []
+    content {
+      from_port   = 5432
+      to_port     = 5432
+      protocol    = "tcp"
+      cidr_blocks = [var.vpc_cidr]
+      description = "Allow PostgreSQL from VPC (fallback)"
+    }
   }
 
   egress {

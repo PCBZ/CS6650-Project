@@ -139,3 +139,8 @@ variable "alarm_actions" {
   default     = []
   description = "List of ARNs to notify when alarm triggers (e.g., SNS topics)"
 }
+
+variable "service_connect_namespace_arn" {
+  description = "ARN of the ECS Service Connect namespace for service discovery"
+  type        = string
+}

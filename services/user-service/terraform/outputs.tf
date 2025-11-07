@@ -10,12 +10,12 @@ output "ecs_service_name" {
 
 output "database_endpoint" {
   description = "Database endpoint"
-  value       = data.terraform_remote_state.shared.outputs.rds_address
+  value       = var.rds_address
 }
 
 output "database_port" {
   description = "Database port"
-  value       = data.terraform_remote_state.shared.outputs.rds_port
+  value       = var.rds_port
 }
 
 output "database_name" {
@@ -31,4 +31,19 @@ output "ecr_repository_url" {
 output "target_group_arn" {
   description = "ALB target group ARN for this service"
   value       = aws_lb_target_group.service.arn
+}
+
+output "security_group_id" {
+  description = "Security group ID for this service"
+  value       = aws_security_group.app.id
+}
+
+output "service_connect_http_endpoint" {
+  description = "Service Connect HTTP endpoint for internal communication"
+  value       = module.ecs.service_connect_http_endpoint
+}
+
+output "service_connect_grpc_endpoint" {
+  description = "Service Connect gRPC endpoint for internal communication"
+  value       = module.ecs.service_connect_grpc_endpoint
 }

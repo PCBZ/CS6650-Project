@@ -8,6 +8,10 @@
 *.so
 *.dylib
 
+# Go compiled binaries (no extension) - be specific to avoid ignoring folders
+/services/user-service/user-service
+/web-service/web-service
+
 # Test binary, built with `go test -c`
 *.test
 
@@ -58,6 +62,9 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
+tfplan
+*.tfplan
+plan_output.txt
 
 # Docker
 .dockerignore

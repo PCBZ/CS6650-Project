@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user_service;
 
-option go_package = "user-service/proto";
+option go_package = "github.com/cs6650/proto";
 
 // User Service provides RPC methods for user information
 service UserService {

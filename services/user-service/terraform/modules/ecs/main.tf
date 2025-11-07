@@ -1,6 +1,10 @@
-# ECS Cluster
+# ECS Cluster with Service Connect enabled
 resource "aws_ecs_cluster" "main" {
   name = var.service_name
+
+  service_connect_defaults {
+    namespace = var.service_connect_namespace_arn
+  }
 
   tags = {
     Name    = "${var.service_name} Cluster"
@@ -31,9 +35,18 @@ resource "aws_ecs_task_definition" "app" {
       
       portMappings = [
         {
+          name          = "http"
           containerPort = var.container_port
           hostPort      = var.container_port
           protocol      = "tcp"
+          appProtocol   = "http"
+        },
+        {
+          name          = "grpc"
+          containerPort = 50051
+          hostPort      = 50051
+          protocol      = "tcp"
+          appProtocol   = "grpc"
         }
       ]
 
@@ -65,6 +78,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "PORT"
           value = tostring(var.container_port)
+        },
+        {
+          name  = "GRPC_PORT"
+          value = "50051"
         }
       ]
 
@@ -87,7 +104,7 @@ resource "aws_ecs_task_definition" "app" {
   }
 }
 
-# ECS Service
+# ECS Service with Service Connect
 resource "aws_ecs_service" "app" {
   name            = var.service_name
   cluster         = aws_ecs_cluster.main.id
@@ -95,16 +112,46 @@ resource "aws_ecs_service" "app" {
   desired_count   = var.ecs_count
   launch_type     = "FARGATE"
 
+  # CRITICAL: Ensure clean shutdown during destroy
+  enable_execute_command = false
+  wait_for_steady_state  = false
+
   network_configuration {
     subnets          = var.subnet_ids
     security_groups  = var.security_group_ids
-    assign_public_ip = false
+    assign_public_ip = true  # Changed from false - allows direct internet access via IGW
   }
 
   load_balancer {
     target_group_arn = var.target_group_arn
     container_name   = var.service_name
     container_port   = var.container_port
+  }
+
+  # ECS Service Connect configuration
+  service_connect_configuration {
+    enabled   = true
+    namespace = var.service_connect_namespace_arn
+
+    service {
+      port_name      = "http"
+      discovery_name = var.service_name
+      
+      client_alias {
+        port     = var.container_port
+        dns_name = var.service_name
+      }
+    }
+
+    service {
+      port_name      = "grpc"
+      discovery_name = "${var.service_name}-grpc"
+      
+      client_alias {
+        port     = 50051
+        dns_name = "${var.service_name}-grpc"
+      }
+    }
   }
 
   depends_on = [var.target_group_arn]
