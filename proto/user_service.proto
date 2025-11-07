@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package user_service;
+
+option go_package = "github.com/cs6650/proto";
+
+// User Service provides RPC methods for user information
+service UserService {
+  // BatchGetUserInfo retrieves user information for multiple user IDs
+  rpc BatchGetUserInfo(BatchGetUserInfoRequest) returns (BatchGetUserInfoResponse);
+}
+
+// Request message for BatchGetUserInfo
+message BatchGetUserInfoRequest {
+  repeated int64 user_ids = 1;  // Required: List of user IDs to retrieve (Max: 100)
+}
+
+// Response message for BatchGetUserInfo
+message BatchGetUserInfoResponse {
+  map<int64, UserInfo> users = 1;     // Map of user_id to user information
+  repeated int64 not_found = 2;       // List of user IDs that were not found
+  string error_code = 3;              // Error code if request failed
+  string error_message = 4;           // Error message if request failed
+}
+
+// Basic user information
+message UserInfo {
+  int64 user_id = 1;                  // User ID
+  string username = 2;                // Username
+}
