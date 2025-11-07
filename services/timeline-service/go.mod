@@ -1,4 +1,4 @@
-module github.com/PCBZ/CS6650-Project/timeline-service
+module github.com/PCBZ/CS6650-Project/services/timeline-service
 
 go 1.24.0
 

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/PCBZ/CS6650-Project/timeline-service/proto/post";
+option go_package = "github.com/PCBZ/CS6650-Project/services/timeline-service/proto/post";
 
 package post;
 

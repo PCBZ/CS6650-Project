@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/fanout"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/grpc"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/models"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/fanout"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/grpc"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 )

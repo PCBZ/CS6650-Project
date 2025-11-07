@@ -138,7 +138,7 @@ const file_proto_socialgraph_socialgraph_proto_rawDesc = "" +
 	"error_code\x18\x02 \x01(\tR\terrorCode\x12#\n" +
 	"\rerror_message\x18\x03 \x01(\tR\ferrorMessage2u\n" +
 	"\x12SocialGraphService\x12_\n" +
-	"\x10GetFollowingList\x12$.socialgraph.GetFollowingListRequest\x1a%.socialgraph.GetFollowingListResponseBCZAgithub.com/PCBZ/CS6650-Project/timeline-service/proto/socialgraphb\x06proto3"
+	"\x10GetFollowingList\x12$.socialgraph.GetFollowingListRequest\x1a%.socialgraph.GetFollowingListResponseBLZJgithub.com/PCBZ/CS6650-Project/services/timeline-service/proto/socialgraphb\x06proto3"
 
 var (
 	file_proto_socialgraph_socialgraph_proto_rawDescOnce sync.Once

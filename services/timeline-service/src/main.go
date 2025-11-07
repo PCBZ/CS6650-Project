@@ -10,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/config"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/db"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/fanout"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/grpc"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/handlers"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/processor"
-	sqsClient "github.com/PCBZ/CS6650-Project/timeline-service/src/sqs"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/config"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/db"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/fanout"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/grpc"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/handlers"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/processor"
+	sqsClient "github.com/PCBZ/CS6650-Project/services/timeline-service/src/sqs"
 	"github.com/gin-gonic/gin"
 )
 
