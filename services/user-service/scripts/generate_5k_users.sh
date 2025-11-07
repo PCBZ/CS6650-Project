@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Generating 5,000 test users..."
+python3 generate_test_data.py 5000 --url ${1:-http://localhost:8080} --concurrency 20
