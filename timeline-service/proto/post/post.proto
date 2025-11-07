@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "github.com/PCBZ/CS6650-Project/timeline-service/proto/post";
+
+package post;
+
+service PostService {
+  rpc BatchGetPosts(BatchGetPostsRequest) returns (BatchGetPostsResponse);
+}
+
+message BatchGetPostsRequest {
+  repeated int64 user_ids = 1;        // Required: List of user IDs whose posts to retrieve
+  int32 limit = 2;                    // Optional: Maximum posts per user (default: 50)
+}
+
+message BatchGetPostsResponse {
+  map<int64, UserPosts> user_posts = 1;  // Map of user_id to their posts
+  string error_message = 2;              // Error message if request failed
+}
+
+message UserPosts {
+  repeated Post posts = 1;            // List of posts for this user
+}
+
+message Post {
+  int64 post_id = 1;                  // Post ID
+  int64 user_id = 2;                  // ID of the user who created the post
+  string content = 3;                 // Post content
+  int64 timestamp = 4;                // Unix timestamp of when the post was created
+}
