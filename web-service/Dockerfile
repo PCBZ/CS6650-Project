@@ -2,10 +2,14 @@ FROM --platform=linux/amd64 golang:1.25.1-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+# Copy proto directory (build context is project root)
+COPY proto/ proto/
+
+# Copy web-service files
+COPY web-service/go.mod web-service/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY web-service/ .
 RUN CGO_ENABLED=0 GOOS=linux go build -o web-service .
 
 FROM alpine:latest

@@ -5,15 +5,17 @@ WORKDIR /app
 # Install dependencies
 RUN apk add --no-cache git
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Copy timeline-service proto directory
+COPY services/timeline-service/proto/ ./proto/
+
+# Copy timeline-service files
+COPY services/timeline-service/go.mod services/timeline-service/go.sum ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy proto and src directories
-COPY proto/ ./proto/
-COPY src/ ./src/
+# Copy source code
+COPY services/timeline-service/src/ ./src/
 
 # Build the main application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o timeline-service ./src

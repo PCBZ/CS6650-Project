@@ -19,11 +19,6 @@ resource "aws_dynamodb_table" "posts" {
   }
 
   attribute {
-    name = "author_id"
-    type = "N"
-  }
-
-  attribute {
     name = "created_at"
     type = "S"
   }

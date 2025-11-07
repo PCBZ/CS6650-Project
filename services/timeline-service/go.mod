@@ -60,3 +60,9 @@ require (
 	golang.org/x/tools v0.34.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
 )
+
+replace github.com/PCBZ/CS6650-Project/services/timeline-service/proto/post => ./proto/post
+
+replace github.com/PCBZ/CS6650-Project/services/timeline-service/proto/socialgraph => ./proto/socialgraph
+
+replace github.com/PCBZ/CS6650-Project/services/timeline-service/proto/user => ./proto/user

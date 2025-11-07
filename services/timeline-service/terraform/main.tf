@@ -14,7 +14,7 @@ module "logging" {
 # Use IAM role ARN directly instead of data source (AWS learner lab permission issue)
 locals {
   # Directly specify LabRole ARN for AWS learner lab environment
-  lab_role_arn = "arn:aws:iam::851725652643:role/LabRole"
+  lab_role_arn = "arn:aws:iam::964932215897:role/LabRole"
 }
 
 # Service-specific security group for ECS tasks
@@ -152,8 +152,8 @@ resource "docker_image" "app" {
   name = "${module.ecr.repository_url}:latest"
 
   build {
-    context    = "../services/timeline-service"  # Path relative to terraform/ directory
-    dockerfile = "Dockerfile"
+    context    = "../../.."  # Project root to include proto directory
+    dockerfile = "services/timeline-service/Dockerfile"
   }
 }
 
