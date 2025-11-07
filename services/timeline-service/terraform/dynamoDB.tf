@@ -1,10 +1,10 @@
 # ===================================
 # DynamoDB Table for Timeline Service
-# Stores Post Content
+# Stores Post Content for Push strategy
 # ===================================
 
 resource "aws_dynamodb_table" "posts" {
-  name           = "posts-${var.environment}"
+  name           = "posts-${var.service_name}"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "post_id"
 
@@ -46,27 +46,7 @@ resource "aws_dynamodb_table" "posts" {
   stream_view_type = "NEW_AND_OLD_IMAGES"
 
   tags = {
-    Name        = "Posts-${var.environment}"
-    Environment = var.environment
-    Service     = "timeline-service"
+    Name    = "Posts-${var.service_name}"
+    Service = var.service_name
   }
-}
-
-# ===================================
-# Outputs
-# ===================================
-
-output "posts_table_name" {
-  value       = aws_dynamodb_table.posts.name
-  description = "Posts table name"
-}
-
-output "posts_table_arn" {
-  value       = aws_dynamodb_table.posts.arn
-  description = "Posts table ARN"
-}
-
-output "posts_stream_arn" {
-  value       = aws_dynamodb_table.posts.stream_arn
-  description = "Posts table stream ARN"
 }
