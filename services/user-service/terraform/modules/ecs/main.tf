@@ -19,8 +19,8 @@ resource "aws_ecs_task_definition" "app" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
   memory                   = var.memory
-  execution_role_arn       = var.execution_role_arn
-  task_role_arn            = var.task_role_arn
+  # execution_role_arn       = var.execution_role_arn  # Commented out for AWS Innovation Sandbox
+  # task_role_arn            = var.task_role_arn       # Commented out for AWS Innovation Sandbox
 
   # Specify CPU architecture for Fargate
   runtime_platform {

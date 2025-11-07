@@ -230,3 +230,21 @@ variable "timeline_service_request_count_target_value" {
   type        = number
   default     = 1000
 }
+
+variable "timeline_service_ecs_desired_count" {
+  description = "Desired number of ECS tasks for timeline service"
+  type        = number
+  default     = 1
+}
+
+variable "timeline_service_hybrid_follower_threshold" {
+  description = "Follower count threshold for hybrid fanout strategy"
+  type        = number
+  default     = 50000
+}
+
+variable "timeline_service_cache_ttl_seconds" {
+  description = "Cache TTL in seconds for timeline data"
+  type        = number
+  default     = 300
+}
