@@ -83,6 +83,13 @@ variable "user_service_grpc_host" {
   default     = "user-service:50051"
 }
 
+# Timeline Service URL (internal communication)
+variable "timeline_service_url" {
+  description = "Internal URL for timeline-service communication"
+  type        = string
+  default     = "http://timeline-service:8084"
+}
+
 # User Service Security Group ID (for gRPC access)
 variable "user_service_security_group_id" {
   description = "Security group ID of user-service to allow gRPC traffic"

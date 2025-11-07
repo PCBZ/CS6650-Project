@@ -79,6 +79,12 @@ variable "user_service_grpc_host" {
   default     = ""
 }
 
+# Web service specific: URL to communicate with timeline-service
+variable "timeline_service_url" {
+  type        = string
+  description = "Internal URL for timeline-service communication"
+}
+
 # Auto Scaling Variables
 variable "min_capacity" {
   type        = number

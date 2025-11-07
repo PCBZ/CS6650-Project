@@ -53,6 +53,10 @@ resource "aws_ecs_task_definition" "app" {
           value = var.user_service_grpc_host
         },
         {
+          name  = "TIMELINE_SERVICE_URL"
+          value = var.timeline_service_url
+        },
+        {
           name  = "PORT"
           value = tostring(var.container_port)
         }

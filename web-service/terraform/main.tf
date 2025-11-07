@@ -137,6 +137,9 @@ module "ecs" {
   # Web service needs to know where user-service is
   user_service_url       = var.user_service_url
   user_service_grpc_host = var.user_service_grpc_host
+  
+  # Web service needs to know where timeline-service is
+  timeline_service_url   = var.timeline_service_url
 
   # Auto-scaling configuration
   min_capacity                 = var.min_capacity
