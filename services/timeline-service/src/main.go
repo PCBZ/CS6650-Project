@@ -20,6 +20,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// corsMiddleware handles CORS for requests from API Gateway
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func main() {
 	// Load configuration
 	cfg := config.Load()
@@ -73,7 +90,10 @@ func main() {
 	// Setup Gin router
 	router := gin.Default()
 
-	// Routes
+	// Enable CORS for gateway requests
+	router.Use(corsMiddleware())
+
+	// Routes - support both /api/timeline and /timeline paths for gateway compatibility
 	api := router.Group("/api")
 	{
 		// Timeline endpoints
@@ -82,6 +102,10 @@ func main() {
 		// Health check
 		api.GET("/health", timelineHandler.Health)
 	}
+
+	// Alternative routes without /api prefix (for direct access or different gateway routing)
+	router.GET("/timeline/:user_id", timelineHandler.GetTimeline)
+	router.GET("/health", timelineHandler.Health)
 
 	// Server configuration
 	server := &http.Server{
