@@ -92,6 +92,19 @@ variable "user_service_url" {
   description = "User Service URL for gRPC communication"
 }
 
+# Timeline Strategy Configuration
+variable "fanout_strategy" {
+  type        = string
+  description = "Timeline fanout strategy: push, pull, or hybrid"
+  default     = "hybrid"
+}
+
+variable "celebrity_threshold" {
+  type        = number
+  description = "Follower count threshold for hybrid strategy"
+  default     = 50000
+}
+
 # Auto Scaling Variables
 variable "min_capacity" {
   type        = number

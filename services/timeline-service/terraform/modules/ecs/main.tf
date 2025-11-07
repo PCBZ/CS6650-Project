@@ -71,6 +71,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "USER_SERVICE_URL"
           value = var.user_service_url
+        },
+        {
+          name  = "FANOUT_STRATEGY"
+          value = var.fanout_strategy
+        },
+        {
+          name  = "CELEBRITY_THRESHOLD"
+          value = tostring(var.celebrity_threshold)
         }
       ]
 

@@ -102,6 +102,23 @@ variable "user_service_url" {
   default     = "user-service-grpc:50051"
 }
 
+# Timeline Strategy Configuration
+variable "fanout_strategy" {
+  description = "Timeline fanout strategy: push, pull, or hybrid"
+  type        = string
+  default     = "hybrid"
+  validation {
+    condition     = contains(["push", "pull", "hybrid"], var.fanout_strategy)
+    error_message = "Fanout strategy must be one of: push, pull, hybrid"
+  }
+}
+
+variable "celebrity_threshold" {
+  description = "Follower count threshold to determine celebrity status for hybrid strategy"
+  type        = number
+  default     = 50000
+}
+
 # Auto-scaling configuration
 variable "min_capacity" {
   description = "Minimum number of ECS tasks"

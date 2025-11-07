@@ -134,6 +134,8 @@ module "ecs" {
   post_service_url          = var.post_service_url
   social_graph_service_url  = var.social_graph_service_url
   user_service_url          = var.user_service_url
+  fanout_strategy           = var.fanout_strategy
+  celebrity_threshold       = var.celebrity_threshold
 
   # Auto-scaling configuration
   min_capacity                 = var.min_capacity
