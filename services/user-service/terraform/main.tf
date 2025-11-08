@@ -176,6 +176,7 @@ resource "null_resource" "docker_build_push" {
   provisioner "local-exec" {
     command     = <<-EOT
       export DOCKER_CONFIG=$(mktemp -d) && \
+      echo '{"credsStore":""}' > $DOCKER_CONFIG/config.json && \
       aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]} && \
       docker build -f services/user-service/Dockerfile -t ${module.ecr.repository_url}:latest . && \
       docker push ${module.ecr.repository_url}:latest && \
