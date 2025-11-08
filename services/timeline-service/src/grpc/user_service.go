@@ -3,17 +3,18 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
+
+	pb "github.com/cs6650/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // UserInfo represents basic user information
 type UserInfo struct {
 	UserID   int64  `json:"user_id"`
 	Username string `json:"username"`
-}
-
-// BatchGetUserInfoRequest represents the request for batch user info retrieval
-type BatchGetUserInfoRequest struct {
-	UserIDs []int64 `json:"user_ids"`
 }
 
 // BatchGetUserInfoResponse represents the response for batch user info retrieval
@@ -29,30 +30,67 @@ type UserServiceClient interface {
 	BatchGetUserInfo(ctx context.Context, userIDs []int64) (*BatchGetUserInfoResponse, error)
 }
 
-// MockUserServiceClient is a temporary implementation for development
-type MockUserServiceClient struct{}
+// userServiceClient implements UserServiceClient with actual gRPC calls
+type userServiceClient struct {
+	client pb.UserServiceClient
+	conn   *grpc.ClientConn
+}
 
-// BatchGetUserInfo implements a mock version that returns placeholder usernames
-func (m *MockUserServiceClient) BatchGetUserInfo(ctx context.Context, userIDs []int64) (*BatchGetUserInfoResponse, error) {
+// BatchGetUserInfo calls the real User Service via gRPC
+func (c *userServiceClient) BatchGetUserInfo(ctx context.Context, userIDs []int64) (*BatchGetUserInfoResponse, error) {
+	// Create gRPC request
+	req := &pb.BatchGetUserInfoRequest{
+		UserIds: userIDs,
+	}
+
+	// Call gRPC service with timeout
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := c.client.BatchGetUserInfo(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call BatchGetUserInfo: %w", err)
+	}
+
+	// Check for error in response
+	if resp.ErrorCode != "" {
+		return nil, fmt.Errorf("user service error: %s - %s", resp.ErrorCode, resp.ErrorMessage)
+	}
+
+	// Convert protobuf response to internal format
 	users := make(map[int64]UserInfo)
-	
-	// Generate mock usernames for all requested user IDs
-	for _, userID := range userIDs {
+	for userID, userInfo := range resp.Users {
 		users[userID] = UserInfo{
-			UserID:   userID,
-			Username: fmt.Sprintf("user_%d", userID),
+			UserID:   userInfo.UserId,
+			Username: userInfo.Username,
 		}
 	}
 
 	return &BatchGetUserInfoResponse{
-		Users:    users,
-		NotFound: []int64{}, // No users not found in mock
+		Users:        users,
+		NotFound:     resp.NotFound,
+		ErrorCode:    resp.ErrorCode,
+		ErrorMessage: resp.ErrorMessage,
 	}, nil
 }
 
-// NewUserServiceClient creates a new User Service client
-// In real implementation, this would establish gRPC connection
-func NewUserServiceClient(endpoint string) UserServiceClient {
-	// TODO: Replace with actual gRPC client implementation
-	return &MockUserServiceClient{}
+// NewUserServiceClient creates a new User Service client with real gRPC connection
+func NewUserServiceClient(endpoint string) (UserServiceClient, error) {
+	log.Printf("Connecting to User Service at %s...", endpoint)
+
+	// Establish gRPC connection (NewClient doesn't support WithBlock)
+	conn, err := grpc.NewClient(
+		endpoint,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create User Service client for %s: %w", endpoint, err)
+	}
+
+	log.Printf("User Service client created for %s", endpoint)
+
+	return &userServiceClient{
+		client: pb.NewUserServiceClient(conn),
+		conn:   conn,
+	}, nil
 }

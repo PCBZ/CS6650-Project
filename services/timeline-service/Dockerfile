@@ -5,6 +5,9 @@ WORKDIR /app
 # Install dependencies
 RUN apk add --no-cache git
 
+# Copy root proto directory (for shared proto files)
+COPY proto/ ../proto/
+
 # Copy timeline-service proto directory
 COPY services/timeline-service/proto/ ./proto/
 
