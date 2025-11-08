@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package post;
+
+option go_package = "post-service/pkg/generated/post";
+
+service PostService {
+    rpc BatchGetPosts(BatchGetPostsRequest) returns (BatchGetPostsResponse);
+}
+
+message BatchGetPostsRequest {
+  repeated int64 user_ids = 1;  
+  int32 limit = 2;
+}
+
+message BatchGetPostsResponse {
+  map<int64, PostList> user_posts = 1;
+  string error_message = 2;
+}
+
+message PostList {
+  repeated Post posts = 1;
+}
+
+message Post {
+  int64 post_id = 1;
+  int64 user_id = 2;
+  string content = 3;
+  int64 timestamp = 4;
+}
