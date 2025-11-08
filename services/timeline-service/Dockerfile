@@ -1,24 +1,21 @@
 FROM --platform=linux/amd64 golang:1.24-alpine AS builder
 
-WORKDIR /app
+WORKDIR /build
 
 # Install dependencies
 RUN apk add --no-cache git
 
-# Copy root proto directory (for shared proto files)
-COPY proto/ ../proto/
+# Copy root proto directory FIRST (for shared proto files)
+COPY proto/ ./proto/
 
-# Copy timeline-service proto directory
-COPY services/timeline-service/proto/ ./proto/
+# Copy timeline-service directory structure
+COPY services/timeline-service/ ./services/timeline-service/
 
-# Copy timeline-service files
-COPY services/timeline-service/go.mod services/timeline-service/go.sum ./
+# Set working directory to timeline-service
+WORKDIR /build/services/timeline-service
 
-# Download dependencies
+# Download dependencies (now relative paths work correctly)
 RUN go mod download
-
-# Copy source code
-COPY services/timeline-service/src/ ./src/
 
 # Build the main application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o timeline-service ./src
@@ -31,7 +28,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 # Copy binary from builder
-COPY --from=builder /app/timeline-service .
+COPY --from=builder /build/services/timeline-service/timeline-service .
 
 # Environment variables (will be overridden by ECS environment)
 ENV PORT=8084
