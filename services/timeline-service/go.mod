@@ -1,6 +1,6 @@
 module github.com/PCBZ/CS6650-Project/services/timeline-service
 
-go 1.24.0
+go 1.23
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.39.6
@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.21
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.52.4
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.13
+	github.com/cs6650/proto v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.11.0
 	github.com/google/uuid v1.6.0
 	google.golang.org/grpc v1.76.0
@@ -65,4 +66,4 @@ replace github.com/PCBZ/CS6650-Project/services/timeline-service/proto/post => .
 
 replace github.com/PCBZ/CS6650-Project/services/timeline-service/proto/socialgraph => ./proto/socialgraph
 
-replace github.com/PCBZ/CS6650-Project/services/timeline-service/proto/user => ./proto/user
+replace github.com/cs6650/proto => ../../proto

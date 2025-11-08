@@ -64,7 +64,11 @@ func main() {
 	log.Println("Connected to SQS")
 
 	// Initialize service clients
-	userServiceClient := grpc.NewUserServiceClient(cfg.UserServiceEndpoint)
+	userServiceClient, err := grpc.NewUserServiceClient(cfg.UserServiceEndpoint)
+	if err != nil {
+		log.Fatalf("Failed to create User Service client: %v", err)
+	}
+
 	postServiceClient := grpc.NewPostServiceClient(cfg.PostServiceEndpoint)
 	socialGraphServiceClient := grpc.NewSocialGraphServiceClient(cfg.SocialGraphServiceEndpoint)
 
