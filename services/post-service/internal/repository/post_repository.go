@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
-	pb "post-service/pkg/generated/post"
+	pb "github.com/cs6650/proto/post"
 )
 
 type PostRepository struct{

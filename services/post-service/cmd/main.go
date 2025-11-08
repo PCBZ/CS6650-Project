@@ -4,13 +4,15 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"post-service/internal/client"
 	"post-service/internal/handler"
 	"post-service/internal/repository"
 	"post-service/internal/service"
-	pb "post-service/pkg/generated/post"
 	"sync"
+
+	pb "github.com/cs6650/proto/post"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -19,6 +21,24 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
+
+// corsMiddleware handles CORS for requests from API Gateway
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 
 func main() {
 	// Load configuration
@@ -57,11 +77,17 @@ func main() {
 
 	// Setup HTTP router
 	router := gin.Default()
+
+	router.Use(corsMiddleware())
+
 	api := router.Group("/api")
 	{
 		api.POST("/posts", postHandler.ExecuteStrategy)
-		api.POST("/posts/batch", postHandler.BatchGetPosts)
+		api.GET("/health", postHandler.Health)
 	}
+
+	router.POST("/posts", postHandler.ExecuteStrategy)
+	router.GET("/health", postHandler.Health)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -89,8 +115,8 @@ func main() {
 	// Start HTTP server in goroutine
 	go func() {
 		defer wg.Done()
-		log.Println("Starting Post Service HTTP server on :8082")
-		if err := router.Run(":8082"); err != nil {
+		log.Println("Starting Post Service HTTP server on :8083")
+		if err := router.Run(":8083"); err != nil {
 			log.Fatalf("Failed to start HTTP server: %v", err)
 		}
 	}()

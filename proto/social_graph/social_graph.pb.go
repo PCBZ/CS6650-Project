@@ -165,7 +165,7 @@ const file_proto_social_graph_proto_rawDesc = "" +
 	"\bhas_more\x18\x03 \x01(\bR\ahasMore\x12#\n" +
 	"\rerror_message\x18\x04 \x01(\tR\ferrorMessage2i\n" +
 	"\x12SocialGraphService\x12S\n" +
-	"\fGetFollowers\x12 .socialgraph.GetFollowersRequest\x1a!.socialgraph.GetFollowersResponseB(Z&post-service/pkg/generated/socialgraphb\x06proto3"
+	"\fGetFollowers\x12 .socialgraph.GetFollowersRequest\x1a!.socialgraph.GetFollowersResponseB%Z#github.com/cs6650/proto/socialgraphb\x06proto3"
 
 var (
 	file_proto_social_graph_proto_rawDescOnce sync.Once

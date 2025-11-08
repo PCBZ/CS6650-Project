@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package post;
 
-option go_package = "post-service/pkg/generated/post";
+option go_package = "github.com/cs6650/proto/post";
 
 service PostService {
     rpc BatchGetPosts(BatchGetPostsRequest) returns (BatchGetPostsResponse);
@@ -28,3 +28,4 @@ message Post {
   string content = 3;
   int64 timestamp = 4;
 }
+

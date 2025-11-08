@@ -261,7 +261,7 @@ const file_proto_post_proto_rawDesc = "" +
 	"\acontent\x18\x03 \x01(\tR\acontent\x12\x1c\n" +
 	"\ttimestamp\x18\x04 \x01(\x03R\ttimestamp2W\n" +
 	"\vPostService\x12H\n" +
-	"\rBatchGetPosts\x12\x1a.post.BatchGetPostsRequest\x1a\x1b.post.BatchGetPostsResponseB!Z\x1fpost-service/pkg/generated/postb\x06proto3"
+	"\rBatchGetPosts\x12\x1a.post.BatchGetPostsRequest\x1a\x1b.post.BatchGetPostsResponseB\x1eZ\x1cgithub.com/cs6650/proto/postb\x06proto3"
 
 var (
 	file_proto_post_proto_rawDescOnce sync.Once

@@ -6,8 +6,9 @@ import (
 	"log"
 	"post-service/internal/model"
 	"post-service/internal/repository"
-	pb "post-service/pkg/generated/post"
 	"time"
+
+	pb "github.com/cs6650/proto/post"
 )
 
 const (

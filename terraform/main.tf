@@ -131,6 +131,44 @@ module "web_service" {
 
 # Timeline Service
 module "timeline_service" {
+  source = "../services/post-service/terraform"
+  
+  # Shared infrastructure values
+  vpc_id                = module.network.vpc_id
+  vpc_cidr              = module.network.vpc_cidr
+  public_subnet_ids     = module.network.public_subnet_ids
+  private_subnet_ids    = module.network.private_subnet_ids
+  alb_listener_arn      = module.alb.listener_arn
+  alb_arn_suffix        = module.alb.alb_arn_suffix
+  service_connect_namespace_arn = module.network.service_connect_namespace_arn
+  
+  # IAM role for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+  
+  # Pass through necessary variables
+  aws_region           = var.aws_region
+  service_name         = "post-service"
+  ecr_repository_name  = "post-service"
+  container_port       = 8083
+  ecs_count           = var.post_service_ecs_count
+  alb_priority        = 300  # Post service priority
+  
+  # Post Service specific configuration
+  sns_topic_arn             = module.sns.topic_arn
+  social_graph_service_url  = "social-graph-service-grpc:50052"
+  post_strategy           = var.post_service_post_strategy
+  
+  # Auto-scaling settings
+  min_capacity                = var.post_service_min_capacity
+  max_capacity                = var.post_service_max_capacity
+  cpu_target_value            = var.post_service_cpu_target_value
+  memory_target_value         = var.post_service_memory_target_value
+  enable_request_based_scaling = var.post_service_enable_request_based_scaling
+  request_count_target_value  = var.post_service_request_count_target_value
+}
+
+# Timeline Service
+module "timeline_service" {
   source = "../services/timeline-service/terraform"
   
   # Shared infrastructure values
@@ -156,8 +194,8 @@ module "timeline_service" {
   # Timeline Service specific configuration
   sqs_queue_url             = var.timeline_service_sqs_queue_url
   post_service_url          = "post-service-grpc:50051"
-  social_graph_service_url  = "social-graph-service-grpc:50051"
-  user_service_url          = "user-service-grpc:50051"
+  social_graph_service_url  = "social-graph-service-grpc:50052"
+  user_service_url          = "user-service-grpc:50053"
   fanout_strategy           = var.timeline_service_fanout_strategy
   celebrity_threshold       = var.timeline_service_celebrity_threshold
   enable_pitr               = var.timeline_service_enable_pitr

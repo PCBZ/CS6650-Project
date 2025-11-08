@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package socialgraph;
 
-option go_package = "post-service/pkg/generated/socialgraph";
+option go_package = "github.com/cs6650/proto/socialgraph";
 
 service SocialGraphService {
     rpc GetFollowers(GetFollowersRequest) returns (GetFollowersResponse);
@@ -20,3 +20,4 @@ message GetFollowersResponse {
     bool has_more = 3;
     string error_message = 4;
 }
+

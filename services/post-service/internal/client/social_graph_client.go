@@ -2,9 +2,11 @@ package client
 
 import (
 	"context"
-	pb "post-service/pkg/generated/social_graph"
+
+	pb "github.com/cs6650/proto/social_graph"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 type SocialGraphClient struct {
     client pb.SocialGraphServiceClient
@@ -12,7 +14,7 @@ type SocialGraphClient struct {
 }
 
 func NewSocialGraphClient(address string)(*SocialGraphClient, error){
-    conn, err := grpc.Dial(address, grpc.WithInsecure())
+    conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
     if err != nil {
         return nil, err
     }

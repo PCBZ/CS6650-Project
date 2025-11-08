@@ -31,7 +31,7 @@ WORKDIR /
 
 COPY --from=build-stage /post-service /post-service
 
-EXPOSE 8082 50053
+EXPOSE 8083 50053
 
 USER nonroot:nonroot
 

@@ -20,6 +20,8 @@ import (
 type Gateway struct {
 	userServiceURL      string
 	userServiceGRPCHost string
+	postServiceURL      string
+	postServiceGRPCHost string
 	timelineServiceURL  string
 	grpcClient          pb.UserServiceClient
 	grpcConn            *grpc.ClientConn
@@ -28,11 +30,15 @@ type Gateway struct {
 func main() {
 	userServiceURL := getEnv("USER_SERVICE_URL", "http://localhost:8081")
 	userServiceGRPCHost := getEnv("USER_SERVICE_GRPC_HOST", "localhost:50051")
+	postServiceURL := getEnv("POST_SERVICE_URL", "http://localhost:8083")
+	postServiceGRPCHost := getEnv("POST_SERVICE_GRPC_HOST", "localhost:50053")
 	timelineServiceURL := getEnv("TIMELINE_SERVICE_URL", "http://localhost:8084")
 
 	gateway := &Gateway{
 		userServiceURL:      userServiceURL,
 		userServiceGRPCHost: userServiceGRPCHost,
+		postServiceURL:      postServiceURL,
+		postServiceGRPCHost: postServiceGRPCHost,
 		timelineServiceURL:  timelineServiceURL,
 	}
 
@@ -56,6 +62,11 @@ func main() {
 	router.HandleFunc("/users", gateway.getUsersHandler).Methods("GET")
 	router.HandleFunc("/api/users", gateway.createUserHandler).Methods("POST")
 	router.HandleFunc("/api/users", gateway.getUsersHandler).Methods("GET")
+
+	// Post service routes - support both /posts and /api/posts paths
+	router.HandleFunc("/posts", gateway.createPostHandler).Methods("POST")
+	router.HandleFunc("/api/posts", gateway.createPostHandler).Methods("POST")
+
 
 	// Timeline service routes - support both /timeline and /api/timeline paths
 	router.PathPrefix("/api/timeline").HandlerFunc(gateway.forwardToTimelineService)
@@ -148,6 +159,43 @@ func (g *Gateway) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Failed to forward request to user-service: %v", err)
 		writeErrorResponse(w, "Failed to communicate with user service", http.StatusServiceUnavailable)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response back to client
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body)
+}
+
+// createPostHandler proxies POST /posts requests to the post-service
+func (g *Gateway) createPostHandler(w http.ResponseWriter, r *http.Request) {
+	// Read the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeErrorResponse(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	// Create endpoint URL
+	postServiceEndpoint := fmt.Sprintf("%s/api/posts", g.postServiceURL)
+
+	// Make the request to post-service
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("POST", postServiceEndpoint, bytes.NewReader(body))
+	if err != nil {
+		log.Printf("Failed to create request to post-service: %v", err)
+		writeErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Failed to forward request to post-service: %v", err)
+		writeErrorResponse(w, "Failed to communicate with post service", http.StatusServiceUnavailable)
 		return
 	}
 	defer resp.Body.Close()
