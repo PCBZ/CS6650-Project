@@ -1,3 +1,13 @@
+# IAM Roles for ECS Tasks (Innovation Sandbox requires ISBStudent=true tag)
+module "iam" {
+  source = "./modules/iam"
+  
+  project_name   = var.project_name
+  environment    = var.environment
+  aws_region     = var.aws_region
+  aws_account_id = var.aws_account_id
+}
+
 # Shared VPC and Networking
 module "network" {
   source = "./modules/network"
@@ -55,6 +65,9 @@ module "user_service" {
   rds_security_group_id = module.rds.security_group_id
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
   
+  # IAM role for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+  
   # Pass through necessary variables
   aws_region           = var.aws_region
   service_name         = "user-service"
@@ -86,6 +99,9 @@ module "web_service" {
   alb_arn_suffix    = module.alb.alb_arn_suffix
   alb_dns_name      = module.alb.alb_dns_name
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
+  
+  # IAM role for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
   
   # Pass through necessary variables
   aws_region          = var.aws_region
@@ -125,6 +141,9 @@ module "timeline_service" {
   alb_listener_arn      = module.alb.listener_arn
   alb_arn_suffix        = module.alb.alb_arn_suffix
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
+  
+  # IAM role for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
   
   # Pass through necessary variables
   aws_region           = var.aws_region

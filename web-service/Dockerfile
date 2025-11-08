@@ -12,7 +12,7 @@ RUN go mod download
 COPY web-service/ .
 RUN CGO_ENABLED=0 GOOS=linux go build -o web-service .
 
-FROM alpine:latest
+FROM --platform=linux/amd64 alpine:latest
 
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/

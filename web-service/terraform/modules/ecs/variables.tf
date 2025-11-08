@@ -23,15 +23,10 @@ variable "security_group_ids" {
   description = "SGs for FARGATE tasks"
 }
 
-# variable "execution_role_arn" {
-#   type        = string
-#   description = "ECS Task Execution Role ARN"
-# }
-
-# variable "task_role_arn" {
-#   type        = string
-#   description = "IAM Role ARN for app permissions"
-# }
+variable "execution_role_arn" {
+  type        = string
+  description = "ECS Task Execution Role ARN (Innovation Sandbox with ISBStudent=true tag)"
+}
 
 variable "log_group_name" {
   type        = string

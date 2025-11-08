@@ -18,6 +18,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   tags = {
     Name        = "${var.project_name}-${var.environment}-ecs-task-execution-role"
     Environment = var.environment
+    ISBStudent  = "true"  # Required for Innovation Sandbox IAM role creation
   }
 }
 

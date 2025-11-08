@@ -122,16 +122,12 @@ resource "aws_lb_listener_rule" "service" {
 module "ecs" {
   source             = "./modules/ecs"
   service_name       = var.service_name
-  # NOTE: AWS Innovation Sandbox limitations prevent using private ECR
-  # - Cannot create IAM execution roles (iam:CreateRole denied by SCP)
-  # - Fargate requires execution role to pull from private ECR
-  # Docker image successfully built and pushed to: ${module.ecr.repository_url}:latest
-  # To use it, add execution_role_arn to task definition when you have IAM permissions
-  image              = "public.ecr.aws/nginx/nginx:latest"
+  # Use image digest to ensure ECS always pulls the latest image
+  image              = "${module.ecr.repository_url}@${docker_registry_image.app.sha256_digest}"
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
-  # execution_role_arn and task_role_arn removed - not supported in AWS Innovation Sandbox
+  execution_role_arn = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
@@ -163,7 +159,7 @@ resource "docker_image" "app" {
   name = "${module.ecr.repository_url}:latest"
 
   build {
-    context    = "/Users/wenshuangzhou/Developer/CS6650-Project"  # Project root (Dockerfile expects proto/)
+    context    = "${path.module}/../.."  # Project root (Dockerfile expects proto/)
     dockerfile = "web-service/Dockerfile"  # Path to Dockerfile from project root
     pull_parent = false
     no_cache    = false

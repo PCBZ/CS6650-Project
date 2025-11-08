@@ -133,14 +133,12 @@ resource "aws_lb_listener_rule" "service" {
 module "ecs" {
   source             = "./modules/ecs"
   service_name       = var.service_name
-  # TEMPORARY: Using public nginx image as placeholder
-  # After terraform apply, manually build and push your image to ECR, then update the service
-  # image              = "${module.ecr.repository_url}:latest"
-  image              = "public.ecr.aws/nginx/nginx:latest"
+  # Use image digest to ensure ECS always pulls the latest image
+  image              = "${module.ecr.repository_url}@${docker_registry_image.app.sha256_digest}"
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids  # Changed from private_subnet_ids
   security_group_ids = [aws_security_group.app.id]
-  # execution_role_arn and task_role_arn removed - not supported in AWS Innovation Sandbox
+  execution_role_arn = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
@@ -161,30 +159,34 @@ module "ecs" {
   enable_request_based_scaling = var.enable_request_based_scaling
   request_count_target_value  = var.request_count_target_value
   alb_resource_label          = "${var.alb_arn_suffix}/${aws_lb_target_group.service.arn_suffix}"
+  
+  # Ensure ECS service waits for Docker image to be pushed
+  depends_on = [docker_registry_image.app]
 }
 
 # Build & push the Go app image into ECR
-# Commented out - Docker build takes too long, manually build and push instead
-# resource "docker_image" "app" {
-#   name = "${module.ecr.repository_url}:latest"
-#
-#   build {
-#     context    = "../../.."  # Project root to include proto directory
-#     dockerfile = "services/user-service/Dockerfile"
-#     pull_parent = false      # Don't pull parent image if exists locally
-#     no_cache    = false      # Use Docker cache
-#     remove      = true       # Remove intermediate containers
-#   }
-#
-#   # Force rebuild on trigger changes
-#   triggers = {
-#     dockerfile_hash = filemd5("${path.module}/../../../services/user-service/Dockerfile")
-#     src_hash       = sha1(join("", [for f in fileset("${path.module}/../../../services/user-service/src", "**") : filemd5("${path.module}/../../../services/user-service/src/${f}")]))
-#   }
-# }
-#
-# resource "docker_registry_image" "app" {
-#   name          = docker_image.app.name
-#   keep_remotely = true  # Don't delete from ECR when destroyed
-# }
+resource "docker_image" "app" {
+  name = "${module.ecr.repository_url}:latest"
 
+  build {
+    context    = "${path.module}/../../.."  # Project root (Dockerfile expects proto/)
+    dockerfile = "services/user-service/Dockerfile"  # Path to Dockerfile from project root
+    pull_parent = false
+    no_cache    = false
+    remove      = true
+  }
+
+  # Force rebuild on trigger changes
+  triggers = {
+    dockerfile_hash = filemd5("${path.module}/../Dockerfile")
+    src_hash       = sha1(join("", [for f in fileset("${path.module}/../", "**/*.go") : filemd5("${path.module}/../${f}")]))
+  }
+}
+
+resource "docker_registry_image" "app" {
+  name          = docker_image.app.name
+  keep_remotely = true  # Don't delete from ECR when destroyed
+  
+  # Ensure the image is built before pushing
+  depends_on = [docker_image.app]
+}
