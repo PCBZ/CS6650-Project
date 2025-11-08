@@ -16,4 +16,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
 )
 
-replace github.com/cs6650/proto => ../proto
+replace github.com/cs6650/proto => ./proto

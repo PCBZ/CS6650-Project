@@ -19,7 +19,7 @@ resource "aws_ecs_task_definition" "app" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
   memory                   = var.memory
-  # execution_role_arn       = var.execution_role_arn  # Commented out for AWS Innovation Sandbox
+  # execution_role_arn not supported in AWS Innovation Sandbox
   # task_role_arn            = var.task_role_arn       # Commented out for AWS Innovation Sandbox
 
   # Specify CPU architecture for Fargate
@@ -62,14 +62,7 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = var.log_group_name
-          awslogs-region        = var.region
-          awslogs-stream-prefix = "ecs"
-        }
-      }
+      # logConfiguration removed - Innovation Sandbox doesn't allow execution role
 
       essential = true
     }

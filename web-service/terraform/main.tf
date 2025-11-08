@@ -122,12 +122,16 @@ resource "aws_lb_listener_rule" "service" {
 module "ecs" {
   source             = "./modules/ecs"
   service_name       = var.service_name
-  image              = "${module.ecr.repository_url}:latest"
+  # NOTE: AWS Innovation Sandbox limitations prevent using private ECR
+  # - Cannot create IAM execution roles (iam:CreateRole denied by SCP)
+  # - Fargate requires execution role to pull from private ECR
+  # Docker image successfully built and pushed to: ${module.ecr.repository_url}:latest
+  # To use it, add execution_role_arn to task definition when you have IAM permissions
+  image              = "public.ecr.aws/nginx/nginx:latest"
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
-  execution_role_arn = local.lab_role_arn
-  task_role_arn      = local.lab_role_arn
+  # execution_role_arn and task_role_arn removed - not supported in AWS Innovation Sandbox
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
@@ -149,6 +153,9 @@ module "ecs" {
   enable_request_based_scaling = var.enable_request_based_scaling
   request_count_target_value  = var.request_count_target_value
   alb_resource_label          = "${var.alb_arn_suffix}/${aws_lb_target_group.service.arn_suffix}"
+  
+  # Ensure ECS service waits for Docker image to be pushed
+  depends_on = [docker_registry_image.app]
 }
 
 # Build & push the Go app image into ECR
@@ -156,11 +163,24 @@ resource "docker_image" "app" {
   name = "${module.ecr.repository_url}:latest"
 
   build {
-    context    = "../.."  # Project root to include proto directory
-    dockerfile = "web-service/Dockerfile"
+    context    = "/Users/wenshuangzhou/Developer/CS6650-Project"  # Project root (Dockerfile expects proto/)
+    dockerfile = "web-service/Dockerfile"  # Path to Dockerfile from project root
+    pull_parent = false
+    no_cache    = false
+    remove      = true
+  }
+
+  # Force rebuild on trigger changes
+  triggers = {
+    dockerfile_hash = filemd5("${path.module}/../Dockerfile")
+    src_hash       = sha1(join("", [for f in fileset("${path.module}/../", "**/*.go") : filemd5("${path.module}/../${f}")]))
   }
 }
 
 resource "docker_registry_image" "app" {
-  name = docker_image.app.name
+  name          = docker_image.app.name
+  keep_remotely = true  # Don't delete from ECR when destroyed
+  
+  # Ensure the image is built before pushing
+  depends_on = [docker_image.app]
 }

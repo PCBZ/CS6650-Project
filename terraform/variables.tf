@@ -4,6 +4,12 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "aws_account_id" {
+  description = "AWS Account ID"
+  type        = string
+  default     = "964932215897"
+}
+
 variable "project_name" {
   description = "Name of the project"
   type        = string
@@ -247,4 +253,18 @@ variable "timeline_service_cache_ttl_seconds" {
   description = "Cache TTL in seconds for timeline data"
   type        = number
   default     = 300
+}
+
+# Post Service Configuration
+variable "post_service_ecs_count" {
+  description = "Number of ECS tasks for post service"
+  type        = number
+  default     = 1
+}
+
+# Social Graph Service Configuration
+variable "social_graph_service_ecs_count" {
+  description = "Number of ECS tasks for social graph service"
+  type        = number
+  default     = 1
 }

@@ -116,12 +116,14 @@ resource "aws_lb_listener_rule" "service" {
 module "ecs" {
   source             = "./modules/ecs"
   service_name       = var.service_name
-  image              = "${module.ecr.repository_url}:latest"
+  # TEMPORARY: Using public nginx image as placeholder
+  # After terraform apply, manually build and push your image to ECR, then update the service
+  # image              = "${module.ecr.repository_url}:latest"
+  image              = "public.ecr.aws/nginx/nginx:latest"
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
-  execution_role_arn = local.lab_role_arn
-  task_role_arn      = local.lab_role_arn
+  # execution_role_arn and task_role_arn removed - not supported in AWS Innovation Sandbox
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
@@ -148,15 +150,27 @@ module "ecs" {
 }
 
 # Build & push the Go app image into ECR
-resource "docker_image" "app" {
-  name = "${module.ecr.repository_url}:latest"
+# Commented out - Docker build takes too long, manually build and push instead
+# resource "docker_image" "app" {
+#   name = "${module.ecr.repository_url}:latest"
+#
+#   build {
+#     context    = "../../.."  # Project root to include proto directory
+#     dockerfile = "services/timeline-service/Dockerfile"
+#     pull_parent = false      # Don't pull parent image if exists locally
+#     no_cache    = false      # Use Docker cache
+#     remove      = true       # Remove intermediate containers
+#   }
+#
+#   # Force rebuild on trigger changes
+#   triggers = {
+#     dockerfile_hash = filemd5("${path.module}/../../../services/timeline-service/Dockerfile")
+#     src_hash       = sha1(join("", [for f in fileset("${path.module}/../../../services/timeline-service/src", "**") : filemd5("${path.module}/../../../services/timeline-service/src/${f}")]))
+#   }
+# }
+#
+# resource "docker_registry_image" "app" {
+#   name          = docker_image.app.name
+#   keep_remotely = true  # Don't delete from ECR when destroyed
+# }
 
-  build {
-    context    = "../../.."  # Project root to include proto directory
-    dockerfile = "services/timeline-service/Dockerfile"
-  }
-}
-
-resource "docker_registry_image" "app" {
-  name = docker_image.app.name
-}
