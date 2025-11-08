@@ -66,9 +66,6 @@ tfplan
 *.tfplan
 plan_output.txt
 
-# Docker
-.dockerignore
-
 # Logs
 *.log
 logs/
