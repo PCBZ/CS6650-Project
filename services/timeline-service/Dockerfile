@@ -1,24 +1,27 @@
-FROM golang:1.21-alpine AS builder
+FROM --platform=linux/amd64 golang:1.24-alpine AS builder
 
 WORKDIR /app
 
 # Install dependencies
 RUN apk add --no-cache git
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Copy timeline-service proto directory
+COPY services/timeline-service/proto/ ./proto/
+
+# Copy timeline-service files
+COPY services/timeline-service/go.mod services/timeline-service/go.sum ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy source
-COPY src/ ./src/
+# Copy source code
+COPY services/timeline-service/src/ ./src/
 
-# Build
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o timeline-service ./src/main.go
+# Build the main application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o timeline-service ./src
 
 # Final image
-FROM alpine:latest
+FROM --platform=linux/amd64 alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
@@ -27,21 +30,9 @@ WORKDIR /root/
 # Copy binary from builder
 COPY --from=builder /app/timeline-service .
 
-# Copy env file
-COPY .env .env
-
-# Environment variables with default values
-ENV TIMELINE_SERVICE_PORT=8084
-ENV ENVIRONMENT=dev
-ENV AWS_REGION=us-east-1
-ENV DYNAMODB_POSTS_TABLE=posts-dev
-ENV SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/123456789012/timeline-feed-queue
-ENV USER_SERVICE_ENDPOINT=mock
-ENV POST_SERVICE_ENDPOINT=mock
-ENV SOCIAL_GRAPH_SERVICE_ENDPOINT=mock
-ENV FANOUT_STRATEGY=push
-ENV CELEBRITY_THRESHOLD=50000
-ENV LOG_LEVEL=info
+# Environment variables (will be overridden by ECS environment)
+ENV PORT=8084
+ENV AWS_REGION=us-west-2
 
 EXPOSE 8084
 

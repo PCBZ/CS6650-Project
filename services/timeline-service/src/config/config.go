@@ -34,14 +34,14 @@ type Config struct {
 
 func Load() *Config {
 	return &Config{
-		Port:                       getEnvInt("TIMELINE_SERVICE_PORT", 8084),
+		Port:                       getEnvInt("PORT", 8084),
 		Env:                        getEnv("ENVIRONMENT", "dev"),
-		AWSRegion:                  getEnv("AWS_REGION", "us-east-1"),
-		PostsTableName:             getEnv("DYNAMODB_POSTS_TABLE", "posts-dev"),
-		SQSQueueURL:                getEnv("SQS_QUEUE_URL", "https://sqs.us-east-1.amazonaws.com/123456789012/timeline-feed-queue"),
-		UserServiceEndpoint:        getEnv("USER_SERVICE_ENDPOINT", "mock"),
-		PostServiceEndpoint:        getEnv("POST_SERVICE_ENDPOINT", "mock"),
-		SocialGraphServiceEndpoint: getEnv("SOCIAL_GRAPH_SERVICE_ENDPOINT", "mock"),
+		AWSRegion:                  getEnv("AWS_REGION", "us-west-2"),
+		PostsTableName:             getEnv("DYNAMODB_TABLE_NAME", "posts-timeline_service"),
+		SQSQueueURL:                getEnv("SQS_QUEUE_URL", ""),
+		UserServiceEndpoint:        getEnv("USER_SERVICE_URL", "user-service-grpc:50051"),
+		PostServiceEndpoint:        getEnv("POST_SERVICE_URL", "post-service-grpc:50051"),
+		SocialGraphServiceEndpoint: getEnv("SOCIAL_GRAPH_SERVICE_URL", "social-graph-service-grpc:50051"),
 		FanoutStrategy:             getEnv("FANOUT_STRATEGY", "push"),
 		CelebrityThreshold:         getEnvInt("CELEBRITY_THRESHOLD", 50000),
 		LogLevel:                   getEnv("LOG_LEVEL", "info"),

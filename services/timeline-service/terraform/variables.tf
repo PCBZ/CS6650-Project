@@ -35,35 +35,20 @@ variable "alb_arn_suffix" {
   type        = string
 }
 
-variable "rds_address" {
-  description = "RDS instance address from shared infrastructure"
-  type        = string
-}
-
-variable "rds_port" {
-  description = "RDS instance port from shared infrastructure"
-  type        = number
-}
-
-variable "rds_security_group_id" {
-  description = "RDS security group ID from shared infrastructure"
-  type        = string
-}
-
 # ECR & ECS settings
 variable "ecr_repository_name" {
   type    = string
-  default = "user_service"
+  default = "timeline_service"
 }
 
 variable "service_name" {
   type    = string
-  default = "user_service"
+  default = "timeline_service"
 }
 
 variable "container_port" {
   type    = number
-  default = 8080
+  default = 8084
 }
 
 variable "ecs_count" {
@@ -81,7 +66,7 @@ variable "execution_role_arn" {
 variable "alb_priority" {
   description = "Priority for ALB listener rule"
   type        = number
-  default     = 100
+  default     = 300
 }
 
 # How long to keep logs
@@ -90,24 +75,54 @@ variable "log_retention_days" {
   default = 7
 }
 
-# Database settings (shared RDS)
-variable "database_name" {
-  description = "Name of the database to create in shared RDS instance"
-  type        = string
-  default     = "userservice"
+# DynamoDB settings
+variable "enable_pitr" {
+  description = "Enable Point-In-Time Recovery for DynamoDB"
+  type        = bool
+  default     = false
 }
 
-variable "rds_master_username" {
-  description = "Master username for shared RDS instance"
+# SQS Queue URL (from shared infrastructure or post-service)
+variable "sqs_queue_url" {
+  description = "SQS queue URL for async feed writes"
   type        = string
-  default     = "postgres"
+  default     = ""
 }
 
-variable "rds_master_password" {
-  description = "Master password for shared RDS instance"
+# Service URLs for gRPC communication
+variable "post_service_url" {
+  description = "Post Service URL for gRPC communication"
   type        = string
-  sensitive   = true
-  # No default value - must be provided via environment variable or tfvars file
+  default     = "post-service-grpc:50051"
+}
+
+variable "social_graph_service_url" {
+  description = "Social Graph Service URL for gRPC communication"
+  type        = string
+  default     = "social-graph-service-grpc:50051"
+}
+
+variable "user_service_url" {
+  description = "User Service URL for gRPC communication"
+  type        = string
+  default     = "user-service-grpc:50051"
+}
+
+# Timeline Strategy Configuration
+variable "fanout_strategy" {
+  description = "Timeline fanout strategy: push, pull, or hybrid"
+  type        = string
+  default     = "hybrid"
+  validation {
+    condition     = contains(["push", "pull", "hybrid"], var.fanout_strategy)
+    error_message = "Fanout strategy must be one of: push, pull, hybrid"
+  }
+}
+
+variable "celebrity_threshold" {
+  description = "Follower count threshold to determine celebrity status for hybrid strategy"
+  type        = number
+  default     = 50000
 }
 
 # Auto-scaling configuration

@@ -1,4 +1,4 @@
-# Wire together three focused modules: ecr, logging, ecs.
+# Wire together modules: ecr, logging, ecs, DynamoDB, SQS
 
 module "ecr" {
   source          = "./modules/ecr"
@@ -12,10 +12,6 @@ module "logging" {
 }
 
 # Use IAM role ARN directly instead of data source (AWS learner lab permission issue)
-# data "aws_iam_role" "lab_role" {
-#   name = "LabRole"
-# }
-
 locals {
   # Directly specify LabRole ARN for AWS learner lab environment
   lab_role_arn = "arn:aws:iam::964932215897:role/LabRole"
@@ -35,15 +31,6 @@ resource "aws_security_group" "app" {
     description = "Allow traffic from ALB and VPC"
   }
 
-  # Allow gRPC traffic on port 50051
-  ingress {
-    from_port   = 50051
-    to_port     = 50051
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-    description = "Allow gRPC traffic"
-  }
-
   # Allow all outbound traffic
   egress {
     from_port   = 0
@@ -58,21 +45,20 @@ resource "aws_security_group" "app" {
     Service = var.service_name
   }
 
-  # CRITICAL: Ensure this security group is destroyed before VPC
   lifecycle {
     create_before_destroy = false
   }
 }
 
-# Allow ECS service to access RDS
-resource "aws_security_group_rule" "app_to_rds" {
-  type                     = "ingress"
-  from_port                = var.rds_port
-  to_port                  = var.rds_port
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.app.id
-  security_group_id        = var.rds_security_group_id
-  description              = "Allow ${var.service_name} to access RDS"
+# Allow ECS service to access DynamoDB
+resource "aws_security_group_rule" "app_to_dynamodb" {
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.app.id
+  description       = "Allow ${var.service_name} to access DynamoDB"
 }
 
 # Target group for this service in the shared ALB
@@ -106,9 +92,6 @@ resource "aws_lb_target_group" "service" {
 }
 
 # ALB listener rule for routing to this service
-# This rule allows web-service to call user-service internally through ALB
-# External users should only access web-service (priority 200)
-# This internal rule has lower priority (higher number) so it won't interfere
 resource "aws_lb_listener_rule" "service" {
   listener_arn = var.alb_listener_arn
   priority     = var.alb_priority
@@ -120,7 +103,7 @@ resource "aws_lb_listener_rule" "service" {
 
   condition {
     path_pattern {
-      values = ["/api/users*"]
+      values = ["/api/timeline*", "/timeline*"]
     }
   }
 
@@ -136,7 +119,7 @@ module "ecs" {
   # Use image digest to ensure ECS always pulls the latest image
   image              = "${module.ecr.repository_url}@${docker_registry_image.app.sha256_digest}"
   container_port     = var.container_port
-  subnet_ids         = var.public_subnet_ids  # Changed from private_subnet_ids
+  subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
   execution_role_arn = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
   log_group_name     = module.logging.log_group_name
@@ -145,11 +128,14 @@ module "ecs" {
   region             = var.aws_region
   service_connect_namespace_arn = var.service_connect_namespace_arn
   
-  # Database connection environment variables (shared RDS)
-  db_host     = var.rds_address
-  db_port     = var.rds_port
-  db_name     = var.database_name
-  db_password = var.rds_master_password
+  # Timeline Service specific configuration
+  dynamodb_table_name       = aws_dynamodb_table.posts.name
+  sqs_queue_url             = var.sqs_queue_url
+  post_service_url          = var.post_service_url
+  social_graph_service_url  = var.social_graph_service_url
+  user_service_url          = var.user_service_url
+  fanout_strategy           = var.fanout_strategy
+  celebrity_threshold       = var.celebrity_threshold
 
   # Auto-scaling configuration
   min_capacity                 = var.min_capacity
@@ -170,7 +156,7 @@ resource "docker_image" "app" {
 
   build {
     context    = "${path.module}/../../.."  # Project root (Dockerfile expects proto/)
-    dockerfile = "services/user-service/Dockerfile"  # Path to Dockerfile from project root
+    dockerfile = "services/timeline-service/Dockerfile"  # Path to Dockerfile from project root
     pull_parent = false
     no_cache    = false
     remove      = true
@@ -179,7 +165,7 @@ resource "docker_image" "app" {
   # Force rebuild on trigger changes
   triggers = {
     dockerfile_hash = filemd5("${path.module}/../Dockerfile")
-    src_hash       = sha1(join("", [for f in fileset("${path.module}/../", "**/*.go") : filemd5("${path.module}/../${f}")]))
+    src_hash       = sha1(join("", [for f in fileset("${path.module}/../src", "**/*.go") : filemd5("${path.module}/../src/${f}")]))
   }
 }
 

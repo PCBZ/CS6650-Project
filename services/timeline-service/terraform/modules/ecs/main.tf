@@ -44,20 +44,40 @@ resource "aws_ecs_task_definition" "app" {
 
       environment = [
         {
+          name  = "PORT"
+          value = tostring(var.container_port)
+        },
+        {
+          name  = "AWS_REGION"
+          value = var.region
+        },
+        {
+          name  = "DYNAMODB_TABLE_NAME"
+          value = var.dynamodb_table_name
+        },
+        {
+          name  = "SQS_QUEUE_URL"
+          value = var.sqs_queue_url
+        },
+        {
+          name  = "POST_SERVICE_URL"
+          value = var.post_service_url
+        },
+        {
+          name  = "SOCIAL_GRAPH_SERVICE_URL"
+          value = var.social_graph_service_url
+        },
+        {
           name  = "USER_SERVICE_URL"
           value = var.user_service_url
         },
         {
-          name  = "USER_SERVICE_GRPC_HOST"
-          value = var.user_service_grpc_host
+          name  = "FANOUT_STRATEGY"
+          value = var.fanout_strategy
         },
         {
-          name  = "TIMELINE_SERVICE_URL"
-          value = var.timeline_service_url
-        },
-        {
-          name  = "PORT"
-          value = tostring(var.container_port)
+          name  = "CELEBRITY_THRESHOLD"
+          value = tostring(var.celebrity_threshold)
         }
       ]
 
@@ -80,13 +100,17 @@ resource "aws_ecs_task_definition" "app" {
   }
 }
 
-# ECS Service with Service Connect (client mode only)
+# ECS Service with Service Connect
 resource "aws_ecs_service" "app" {
   name            = var.service_name
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.ecs_count
   launch_type     = "FARGATE"
+
+  # CRITICAL: Ensure clean shutdown during destroy
+  enable_execute_command = false
+  wait_for_steady_state  = false
 
   network_configuration {
     subnets          = var.subnet_ids
@@ -100,11 +124,20 @@ resource "aws_ecs_service" "app" {
     container_port   = var.container_port
   }
 
-  # ECS Service Connect configuration - client mode only
-  # This service doesn't expose ports, it only consumes other services
+  # ECS Service Connect configuration
   service_connect_configuration {
     enabled   = true
     namespace = var.service_connect_namespace_arn
+
+    service {
+      port_name      = "http"
+      discovery_name = var.service_name
+      
+      client_alias {
+        port     = var.container_port
+        dns_name = var.service_name
+      }
+    }
   }
 
   depends_on = [var.target_group_arn]

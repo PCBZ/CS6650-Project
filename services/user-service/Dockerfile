@@ -3,14 +3,17 @@ FROM --platform=linux/amd64 golang:1.25.1-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod and sum files
-COPY go.mod go.sum ./
+# Copy proto directory (build context is project root)
+COPY proto/ proto/
+
+# Copy user-service files
+COPY services/user-service/go.mod services/user-service/go.sum ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy source code (including proto directory)
-COPY . .
+# Copy source code
+COPY services/user-service/ .
 
 # Build the application for AMD64
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main .

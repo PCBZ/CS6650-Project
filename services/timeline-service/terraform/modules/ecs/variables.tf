@@ -61,23 +61,43 @@ variable "memory" {
   description = "Memory (MiB)"
 }
 
-# Web service specific: URL to communicate with user-service
+# Timeline Service specific variables
+variable "dynamodb_table_name" {
+  type        = string
+  description = "DynamoDB table name for timeline cache"
+}
+
+variable "sqs_queue_url" {
+  type        = string
+  description = "SQS queue URL for async feed writes"
+}
+
+variable "post_service_url" {
+  type        = string
+  description = "Post Service URL for gRPC communication"
+}
+
+variable "social_graph_service_url" {
+  type        = string
+  description = "Social Graph Service URL for gRPC communication"
+}
+
 variable "user_service_url" {
   type        = string
-  description = "Internal URL for user-service communication"
+  description = "User Service URL for gRPC communication"
 }
 
-# gRPC endpoint for user-service
-variable "user_service_grpc_host" {
+# Timeline Strategy Configuration
+variable "fanout_strategy" {
   type        = string
-  description = "gRPC endpoint for user-service (host:port)"
-  default     = ""
+  description = "Timeline fanout strategy: push, pull, or hybrid"
+  default     = "hybrid"
 }
 
-# Web service specific: URL to communicate with timeline-service
-variable "timeline_service_url" {
-  type        = string
-  description = "Internal URL for timeline-service communication"
+variable "celebrity_threshold" {
+  type        = number
+  description = "Follower count threshold for hybrid strategy"
+  default     = 50000
 }
 
 # Auto Scaling Variables
@@ -132,7 +152,7 @@ variable "request_count_target_value" {
 variable "alb_resource_label" {
   type        = string
   default     = ""
-  description = "ALB resource label for request-based scaling"
+  description = "ALB resource label for request-based scaling (format: loadbalancer/app/my-load-balancer/50dc6c495c0c9188/targetgroup/my-targets/73e2d6bc24d8a067)"
 }
 
 variable "alarm_actions" {
@@ -144,4 +164,10 @@ variable "alarm_actions" {
 variable "service_connect_namespace_arn" {
   description = "ARN of the ECS Service Connect namespace for service discovery"
   type        = string
+}
+
+variable "service_discovery_namespace_name" {
+  description = "Name of the service discovery namespace (e.g., cs6650-project-dev.local)"
+  type        = string
+  default     = ""
 }

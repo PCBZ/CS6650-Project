@@ -19,8 +19,7 @@ resource "aws_ecs_task_definition" "app" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
   memory                   = var.memory
-  execution_role_arn       = var.execution_role_arn
-  task_role_arn            = var.task_role_arn
+  execution_role_arn       = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
 
   # Specify CPU architecture for Fargate
   runtime_platform {
@@ -88,9 +87,9 @@ resource "aws_ecs_task_definition" "app" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = var.log_group_name
-          awslogs-region        = var.region
-          awslogs-stream-prefix = "ecs"
+          "awslogs-group"         = var.log_group_name
+          "awslogs-region"        = var.region
+          "awslogs-stream-prefix" = "ecs"
         }
       }
 

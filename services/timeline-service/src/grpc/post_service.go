@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	postpb "github.com/PCBZ/CS6650-Project/timeline-service/proto/post"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/models"
+	postpb "github.com/PCBZ/CS6650-Project/services/timeline-service/proto/post"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
 )
 
 // PostServiceClient defines the interface for calling Post Service

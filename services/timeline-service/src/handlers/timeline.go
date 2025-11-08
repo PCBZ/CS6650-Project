@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/config"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/fanout"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/models"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/config"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/fanout"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
 	"github.com/gin-gonic/gin"
 )
 

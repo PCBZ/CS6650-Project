@@ -1,7 +1,7 @@
 package fanout
 
 import (
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/models"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
 )
 
 // Strategy defines the interface for different fan-out algorithms

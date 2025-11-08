@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	socialgraphpb "github.com/PCBZ/CS6650-Project/timeline-service/proto/socialgraph"
+	socialgraphpb "github.com/PCBZ/CS6650-Project/services/timeline-service/proto/socialgraph"
 )
 
 // SocialGraphServiceClient defines the interface for calling Social Graph Service

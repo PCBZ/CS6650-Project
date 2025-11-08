@@ -56,6 +56,12 @@ variable "ecs_count" {
   default = 1
 }
 
+# IAM Role for ECS Task Execution (Innovation Sandbox with ISBStudent tag)
+variable "execution_role_arn" {
+  description = "ARN of the ECS task execution role"
+  type        = string
+}
+
 # ALB settings
 variable "alb_priority" {
   description = "Priority for ALB listener rule (lower number = higher priority)"
@@ -81,6 +87,13 @@ variable "user_service_grpc_host" {
   description = "gRPC endpoint for user-service (host:port)"
   type        = string
   default     = "user-service:50051"
+}
+
+# Timeline Service URL (internal communication)
+variable "timeline_service_url" {
+  description = "Internal URL for timeline-service communication"
+  type        = string
+  default     = "http://timeline-service:8084"
 }
 
 # User Service Security Group ID (for gRPC access)

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/grpc"
-	"github.com/PCBZ/CS6650-Project/timeline-service/src/models"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/grpc"
+	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
 )
 
 // PostHeap implements heap.Interface for models.TimelinePost
