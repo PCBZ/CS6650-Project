@@ -170,11 +170,12 @@ resource "docker_image" "app" {
   triggers = {
     dockerfile_hash = filemd5("${path.module}/../Dockerfile")
     src_hash       = sha1(join("", [for f in fileset("${path.module}/../", "**/*.go") : filemd5("${path.module}/../${f}")]))
+    proto_hash     = sha1(join("", [for f in fileset("${path.module}/../proto", "**/*.proto") : filemd5("${path.module}/../proto/${f}")]))
   }
+}
 
 resource "docker_registry_image" "app" {
   name          = docker_image.app.name
-  keep_remotely = true  # Don't delete from ECR when destroyed
   
   # Ensure the image is built before pushing
   depends_on = [docker_image.app]
