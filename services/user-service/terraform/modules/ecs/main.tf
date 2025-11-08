@@ -2,8 +2,12 @@
 resource "aws_ecs_cluster" "main" {
   name = var.service_name
 
-  service_connect_defaults {
-    namespace = var.service_connect_namespace_arn
+  # Conditionally enable Service Connect only if namespace ARN is provided
+  dynamic "service_connect_defaults" {
+    for_each = var.service_connect_namespace_arn != "" ? [1] : []
+    content {
+      namespace = var.service_connect_namespace_arn
+    }
   }
 
   tags = {
@@ -128,28 +132,31 @@ resource "aws_ecs_service" "app" {
     container_port   = var.container_port
   }
 
-  # ECS Service Connect configuration
-  service_connect_configuration {
-    enabled   = true
-    namespace = var.service_connect_namespace_arn
+  # ECS Service Connect configuration (disabled in learner lab)
+  dynamic "service_connect_configuration" {
+    for_each = var.service_connect_namespace_arn != "" ? [1] : []
+    content {
+      enabled   = true
+      namespace = var.service_connect_namespace_arn
 
-    service {
-      port_name      = "http"
-      discovery_name = var.service_name
-      
-      client_alias {
-        port     = var.container_port
-        dns_name = var.service_name
+      service {
+        port_name      = "http"
+        discovery_name = var.service_name
+        
+        client_alias {
+          port     = var.container_port
+          dns_name = var.service_name
+        }
       }
-    }
 
-    service {
-      port_name      = "grpc"
-      discovery_name = "${var.service_name}-grpc"
-      
-      client_alias {
-        port     = 50051
-        dns_name = "${var.service_name}-grpc"
+      service {
+        port_name      = "grpc"
+        discovery_name = "${var.service_name}-grpc"
+        
+        client_alias {
+          port     = 50051
+          dns_name = "${var.service_name}-grpc"
+        }
       }
     }
   }

@@ -18,7 +18,7 @@ module "logging" {
 
 locals {
   # Directly specify LabRole ARN for AWS learner lab environment
-  lab_role_arn = "arn:aws:iam::851725652643:role/LabRole"
+  lab_role_arn = "arn:aws:iam::291524115576:role/LabRole"
 }
 
 # Service-specific security group for ECS tasks

@@ -18,7 +18,7 @@ module "logging" {
 
 locals {
   # Directly specify LabRole ARN for AWS learner lab environment
-  lab_role_arn = "arn:aws:iam::851725652643:role/LabRole"
+  lab_role_arn = "arn:aws:iam::291524115576:role/LabRole"
 }
 
 # Service-specific security group for ECS tasks
@@ -163,6 +163,7 @@ resource "null_resource" "docker_build_push" {
   provisioner "local-exec" {
     command     = <<-EOT
       export DOCKER_CONFIG=$(mktemp -d) && \
+      echo '{"credsStore":""}' > $DOCKER_CONFIG/config.json && \
       aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]} && \
       docker build -f web-service/Dockerfile -t ${module.ecr.repository_url}:latest . && \
       docker push ${module.ecr.repository_url}:latest && \
