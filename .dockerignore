@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Terraform - exclude from ALL subdirectories
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+terraform.tfstate*
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfstate.backup
+
+# Build artifacts - exclude binaries but not source directories
+services/user-service/user-service
+web-service/web-service
+grpc-test-client/grpc-test-client
+**/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test data
+**/scripts/*.csv
+**/scripts/*.json
+
+# Documentation
+README.md
+LICENSE

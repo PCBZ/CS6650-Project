@@ -171,7 +171,6 @@ resource "docker_image" "app" {
     dockerfile_hash = filemd5("${path.module}/../Dockerfile")
     src_hash       = sha1(join("", [for f in fileset("${path.module}/../", "**/*.go") : filemd5("${path.module}/../${f}")]))
   }
-}
 
 resource "docker_registry_image" "app" {
   name          = docker_image.app.name
