@@ -4,6 +4,13 @@ variable "aws_region" {
   default = "us-west-2"
 }
 
+# Platform detection for shell command compatibility
+variable "is_windows" {
+  description = "Whether running on Windows (for shell command compatibility)"
+  type        = bool
+  default     = false
+}
+
 # Shared infrastructure values (passed from root terraform)
 variable "vpc_id" {
   description = "VPC ID from shared infrastructure"

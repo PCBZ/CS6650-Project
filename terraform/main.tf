@@ -1,3 +1,13 @@
+# IAM Roles for ECS Tasks (Innovation Sandbox requires ISBStudent=true tag)
+module "iam" {
+  source = "./modules/iam"
+  
+  project_name   = var.project_name
+  environment    = var.environment
+  aws_region     = var.aws_region
+  aws_account_id = var.aws_account_id
+}
+
 # Shared VPC and Networking
 module "network" {
   source = "./modules/network"
@@ -55,8 +65,12 @@ module "user_service" {
   rds_security_group_id = module.rds.security_group_id
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
   
+  # IAM role for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+  
   # Pass through necessary variables
   aws_region           = var.aws_region
+  is_windows           = var.is_windows
   service_name         = "user-service"
   ecr_repository_name  = "user-service"
   container_port       = 8080
@@ -87,8 +101,12 @@ module "web_service" {
   alb_dns_name      = module.alb.alb_dns_name
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
   
+  # IAM role for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+  
   # Pass through necessary variables
   aws_region          = var.aws_region
+  is_windows          = var.is_windows
   service_name        = "web-service"
   ecr_repository_name = "web-service"
   container_port      = 8081
@@ -108,4 +126,48 @@ module "web_service" {
   memory_target_value         = var.web_service_memory_target_value
   enable_request_based_scaling = var.web_service_enable_request_based_scaling
   request_count_target_value  = var.web_service_request_count_target_value
+}
+
+# Social Graph Service
+module "social_graph_service" {
+  source = "../services/social-graph-services/terraform"
+  
+  # Shared infrastructure values
+  vpc_id                        = module.network.vpc_id
+  vpc_cidr                      = module.network.vpc_cidr
+  public_subnet_ids             = module.network.public_subnet_ids
+  alb_listener_arn              = module.alb.listener_arn
+  alb_arn_suffix                = module.alb.alb_arn_suffix
+  service_connect_namespace_arn = module.network.service_connect_namespace_arn
+  
+  # IAM roles for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+  task_role_arn      = module.iam.social_graph_task_role_arn
+  
+  # Service configuration
+  aws_region           = var.aws_region
+  is_windows           = var.is_windows
+  service_name         = "social-graph"
+  ecr_repository_name  = "social-graph-service"
+  container_port       = 8080
+  ecs_desired_count    = var.social_graph_ecs_count
+  alb_priority         = 150  # Between user-service (100) and web-service (200)
+  
+  # DynamoDB table names
+  dynamodb_table_name           = "social-graph-followers"
+  dynamodb_following_table_name = "social-graph-following"
+  
+  # Auto-scaling settings
+  min_capacity                 = var.social_graph_min_capacity
+  max_capacity                 = var.social_graph_max_capacity
+  cpu_target_value             = var.social_graph_cpu_target_value
+  memory_target_value          = var.social_graph_memory_target_value
+  enable_request_based_scaling = var.social_graph_enable_request_based_scaling
+  request_count_target_value   = var.social_graph_request_count_target_value
+  
+  # Optional: DB connection (if social-graph needs RDS)
+  db_host     = ""
+  db_port     = ""
+  db_name     = ""
+  db_password = ""
 }

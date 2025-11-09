@@ -4,6 +4,18 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "aws_account_id" {
+  description = "AWS account ID"
+  type        = string
+  default     = "892825672262"
+}
+
+variable "is_windows" {
+  description = "Whether running on Windows (for shell command compatibility)"
+  type        = bool
+  default     = false  # Mac/Linux users should keep this false; Windows users set to true
+}
+
 variable "project_name" {
   description = "Name of the project"
   type        = string
@@ -160,6 +172,49 @@ variable "web_service_enable_request_based_scaling" {
 
 variable "web_service_request_count_target_value" {
   description = "Target request count per task for web service scaling"
+  type        = number
+  default     = 1000
+}
+
+# Social Graph Service Configuration
+variable "social_graph_ecs_count" {
+  description = "Number of ECS tasks for social graph service"
+  type        = number
+  default     = 2
+}
+
+variable "social_graph_min_capacity" {
+  description = "Minimum number of tasks for social graph service auto-scaling"
+  type        = number
+  default     = 1
+}
+
+variable "social_graph_max_capacity" {
+  description = "Maximum number of tasks for social graph service auto-scaling"
+  type        = number
+  default     = 10
+}
+
+variable "social_graph_cpu_target_value" {
+  description = "Target CPU utilization percentage for social graph service scaling"
+  type        = number
+  default     = 70
+}
+
+variable "social_graph_memory_target_value" {
+  description = "Target memory utilization percentage for social graph service scaling"
+  type        = number
+  default     = 80
+}
+
+variable "social_graph_enable_request_based_scaling" {
+  description = "Enable request-based auto-scaling for social graph service"
+  type        = bool
+  default     = true
+}
+
+variable "social_graph_request_count_target_value" {
+  description = "Target request count per task for social graph service scaling"
   type        = number
   default     = 1000
 }

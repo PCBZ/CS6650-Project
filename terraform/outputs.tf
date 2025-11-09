@@ -101,3 +101,34 @@ output "service_connect_namespace_arn" {
   description = "ARN of the Service Connect namespace"
   value       = module.network.service_connect_namespace_arn
 }
+
+# Social Graph Service Outputs
+output "social_graph_ecr_repository_url" {
+  description = "ECR repository URL for social graph service"
+  value       = module.social_graph_service.ecr_repository_url
+}
+
+output "social_graph_ecs_cluster_name" {
+  description = "ECS cluster name for social graph service"
+  value       = module.social_graph_service.ecs_cluster_name
+}
+
+output "social_graph_ecs_service_name" {
+  description = "ECS service name for social graph service"
+  value       = module.social_graph_service.ecs_service_name
+}
+
+output "social_graph_dynamodb_followers_table" {
+  description = "DynamoDB followers table name"
+  value       = module.social_graph_service.dynamodb_table_name
+}
+
+output "social_graph_dynamodb_following_table" {
+  description = "DynamoDB following table name"
+  value       = module.social_graph_service.dynamodb_following_table_name
+}
+
+output "social_graph_target_group_arn" {
+  description = "Target group ARN for social graph service"
+  value       = module.social_graph_service.target_group_arn
+}

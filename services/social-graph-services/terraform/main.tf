@@ -15,80 +15,8 @@ module "logging" {
 	retention_in_days = var.log_retention_days
 }
 
-# IAM roles for ECS (task and execution) with ISBStudent tag
-resource "aws_iam_role" "ecs_task_role" {
-	name = "${var.service_name}-task-role"
-
-	assume_role_policy = jsonencode({
-		Version = "2012-10-17"
-		Statement = [
-			{
-				Action = "sts:AssumeRole"
-				Effect = "Allow"
-				Principal = { Service = "ecs-tasks.amazonaws.com" }
-			}
-		]
-	})
-
-	tags = merge({ Name = "${var.service_name}-task-role", ISBStudent = "true" }, var.common_tags)
-}
-
-resource "aws_iam_role" "ecs_execution_role" {
-	name = "${var.service_name}-execution-role"
-
-	assume_role_policy = jsonencode({
-		Version = "2012-10-17"
-		Statement = [
-			{
-				Action = "sts:AssumeRole"
-				Effect = "Allow"
-				Principal = { Service = "ecs-tasks.amazonaws.com" }
-			}
-		]
-	})
-
-	tags = merge({ Name = "${var.service_name}-execution-role", ISBStudent = "true" }, var.common_tags)
-}
-
-resource "aws_iam_policy_attachment" "exec_attach" {
-	name       = "${var.service_name}-exec-policy-attach"
-	roles      = [aws_iam_role.ecs_execution_role.name]
-	policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-# Grant the task role basic DynamoDB access to the followers table
-resource "aws_iam_policy" "dynamodb_access" {
-	name        = "${var.service_name}-dynamodb-access"
-	description = "Allow access to followers and following DynamoDB tables"
-
-	policy = jsonencode({
-		Version = "2012-10-17",
-		Statement = [
-			{
-				Effect = "Allow",
-				Action = [
-					"dynamodb:PutItem",
-					"dynamodb:GetItem",
-					"dynamodb:Query",
-					"dynamodb:Scan",
-					"dynamodb:UpdateItem"
-				],
-				Resource = [
-					aws_dynamodb_table.followers.arn,
-					"${aws_dynamodb_table.followers.arn}/*",
-					aws_dynamodb_table.following.arn,
-					"${aws_dynamodb_table.following.arn}/*"
-				]
-			}
-		]
-	})
-}
-
-resource "aws_iam_policy_attachment" "task_dynamo_attach" {
-	name       = "${var.service_name}-task-dynamo-attach"
-	roles      = [aws_iam_role.ecs_task_role.name]
-	policy_arn = aws_iam_policy.dynamodb_access.arn
-}
+# Note: IAM roles are now created in the shared IAM module (terraform/modules/iam)
+# and passed in via variables: execution_role_arn and task_role_arn
 
 # DynamoDB table for followers
 resource "aws_dynamodb_table" "followers" {
@@ -212,14 +140,14 @@ resource "null_resource" "docker_build_push" {
 	}
 
 	provisioner "local-exec" {
-		command     = <<-EOT
-			export DOCKER_CONFIG=$(mktemp -d) && \
-			echo '{"credsStore":""}' > $DOCKER_CONFIG/config.json && \
-			aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]} && \
-			docker build -f services/social-graph-services/Dockerfile -t ${module.ecr.repository_url}:latest . && \
-			docker push ${module.ecr.repository_url}:latest && \
-			rm -rf $DOCKER_CONFIG
-		EOT
+		command = var.is_windows ? join("\n", [
+			"aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]}",
+			"if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }",
+			"docker build -f services/social-graph-services/Dockerfile -t ${module.ecr.repository_url}:latest .",
+			"if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }",
+			"docker push ${module.ecr.repository_url}:latest"
+		]) : "aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]} && docker build -f services/social-graph-services/Dockerfile -t ${module.ecr.repository_url}:latest . && docker push ${module.ecr.repository_url}:latest"
+		interpreter = var.is_windows ? ["PowerShell", "-Command"] : ["bash", "-c"]
 		working_dir = "${path.module}/../../.."
 	}
 
@@ -234,8 +162,8 @@ module "ecs" {
 	container_port     = var.container_port
 	subnet_ids         = var.public_subnet_ids
 	security_group_ids = [aws_security_group.app.id]
-	execution_role_arn = aws_iam_role.ecs_execution_role.arn
-	task_role_arn      = aws_iam_role.ecs_task_role.arn
+	execution_role_arn = var.execution_role_arn
+	task_role_arn      = var.task_role_arn
 	log_group_name     = module.logging.log_group_name
 	target_group_arn   = aws_lb_target_group.service.arn
 	ecs_count          = var.ecs_desired_count
