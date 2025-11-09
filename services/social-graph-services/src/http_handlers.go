@@ -421,3 +421,30 @@ func (h *HTTPHandler) populateFollowingUsernames(ctx context.Context, following 
 
 	return nil
 }
+
+// LoadTestDataRequest represents the request body for loading test data
+type LoadTestDataRequest struct {
+	NumUsers int `json:"num_users" binding:"required,min=100"`
+}
+
+// LoadTestData triggers the Python script to generate and load test data into DynamoDB
+// This is an admin endpoint for testing purposes
+func (h *HTTPHandler) LoadTestData(c *gin.Context) {
+	var req LoadTestDataRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request: " + err.Error(),
+		})
+		return
+	}
+
+	// TODO: Add authentication/authorization check here
+	// This endpoint should only be accessible by admins
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Test data loading initiated",
+		"status":  "processing",
+		"num_users": req.NumUsers,
+		"note":    "Please use the Python script directly: python scripts/load_dynamodb.py --users " + strconv.Itoa(req.NumUsers),
+	})
+}

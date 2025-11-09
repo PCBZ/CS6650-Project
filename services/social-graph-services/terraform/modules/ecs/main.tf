@@ -16,7 +16,7 @@ resource "aws_ecs_task_definition" "app" {
   cpu                      = var.cpu
   memory                   = var.memory
   execution_role_arn       = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
-  task_role_arn            = var.task_role_arn != "" ? var.task_role_arn : var.execution_role_arn  # Use task_role if provided
+  task_role_arn            = var.task_role_arn       # Task role for DynamoDB access
 
   # Specify CPU architecture for Fargate
   runtime_platform {
@@ -48,40 +48,36 @@ resource "aws_ecs_task_definition" "app" {
 
       environment = [
         {
-          name  = "PORT"
-          value = tostring(var.container_port)
+          name  = "HTTP_PORT"
+          value = "8085"
+        },
+        {
+          name  = "GRPC_PORT"
+          value = "50052"
+        },
+        {
+          name  = "ENVIRONMENT"
+          value = "production"
         },
         {
           name  = "AWS_REGION"
           value = var.region
         },
         {
-          name  = "DYNAMODB_TABLE_NAME"
-          value = var.dynamodb_table_name
+          name  = "FOLLOWERS_TABLE"
+          value = var.followers_table_name
         },
         {
-          name  = "SQS_QUEUE_URL"
-          value = var.sqs_queue_url
-        },
-        {
-          name  = "POST_SERVICE_URL"
-          value = var.post_service_url
-        },
-        {
-          name  = "SOCIAL_GRAPH_SERVICE_URL"
-          value = var.social_graph_service_url
+          name  = "FOLLOWING_TABLE"
+          value = var.following_table_name
         },
         {
           name  = "USER_SERVICE_URL"
-          value = var.user_service_url
+          value = var.user_service_endpoint
         },
         {
-          name  = "FANOUT_STRATEGY"
-          value = var.fanout_strategy
-        },
-        {
-          name  = "CELEBRITY_THRESHOLD"
-          value = tostring(var.celebrity_threshold)
+          name  = "LOG_LEVEL"
+          value = "info"
         }
       ]
 

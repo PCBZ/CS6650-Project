@@ -68,6 +68,17 @@ variable "alb_priority" {
   default     = 150
 }
 
+# IAM roles for ECS tasks
+variable "execution_role_arn" {
+  description = "ECS task execution role ARN (for pulling images, writing logs)"
+  type        = string
+}
+
+variable "task_role_arn" {
+  description = "ECS task role ARN (for DynamoDB access)"
+  type        = string
+}
+
 # How long to keep logs
 variable "log_retention_days" {
   type    = number

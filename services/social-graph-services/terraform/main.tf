@@ -12,13 +12,6 @@ module "logging" {
 }
 
 # Get current AWS caller identity to build IAM role ARN dynamically
-data "aws_caller_identity" "current" {}
-
-locals {
-  # Build LabRole ARN dynamically using current AWS account ID
-  lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
-}
-
 # Service-specific security group for ECS tasks
 resource "aws_security_group" "app" {
   name_prefix = "${var.service_name}-app-"
@@ -121,20 +114,18 @@ module "ecs" {
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
-  execution_role_arn = local.lab_role_arn
-  task_role_arn      = local.lab_role_arn
+  execution_role_arn = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
+  task_role_arn      = var.task_role_arn       # Task role for DynamoDB access
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_desired_count
   region             = var.aws_region
   service_connect_namespace_arn = var.service_connect_namespace_arn
 
-  # Timeline service specific variables (using defaults/empty values for social-graph)
-  dynamodb_table_name        = var.followers_table_name
-  sqs_queue_url              = ""
-  post_service_url           = ""
-  social_graph_service_url   = ""
-  user_service_url           = ""
+  # Social Graph Service specific variables
+  followers_table_name  = var.followers_table_name
+  following_table_name  = var.following_table_name
+  user_service_endpoint = "user-service-grpc:50051"
 
   min_capacity                 = var.min_capacity
   max_capacity                 = var.max_capacity

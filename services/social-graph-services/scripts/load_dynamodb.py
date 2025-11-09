@@ -34,7 +34,7 @@ def load_to_dynamodb(
         following_table_name: Name of the following table
         region: AWS region
     """
-    print(f"\n📤 Loading data to DynamoDB in region {region}...")
+    print(f"\n Loading data to DynamoDB in region {region}...")
     print(f"   Followers table: {followers_table_name}")
     print(f"   Following table: {following_table_name}")
     
@@ -44,7 +44,7 @@ def load_to_dynamodb(
     following_table = dynamodb.Table(following_table_name)
     
     # Batch write to followers table
-    print(f"\n📊 Writing to {followers_table_name}...")
+    print(f"\n Writing to {followers_table_name}...")
     with followers_table.batch_writer() as batch:
         for user_id, followers in follower_map.items():
             if followers:  # Only write if user has followers
@@ -54,10 +54,10 @@ def load_to_dynamodb(
                 }
                 batch.put_item(Item=item)
     
-    print(f"✅ Wrote {len(follower_map)} users to {followers_table_name}")
+    print(f" Wrote {len(follower_map)} users to {followers_table_name}")
     
     # Batch write to following table
-    print(f"\n📊 Writing to {following_table_name}...")
+    print(f"\n Writing to {following_table_name}...")
     with following_table.batch_writer() as batch:
         for user_id, following in following_map.items():
             if following:  # Only write if user is following someone
@@ -66,8 +66,8 @@ def load_to_dynamodb(
                     'following_ids': list(map(str, sorted(following)))
                 }
                 batch.put_item(Item=item)
-    
-    print(f"✅ Wrote {len(following_map)} users to {following_table_name}")
+
+    print(f" Wrote {len(following_map)} users to {following_table_name}")
 
 
 def generate_and_load(
@@ -87,11 +87,11 @@ def generate_and_load(
         region: AWS region
         verbose: Print detailed progress
     """
-    print(f"\n🚀 Generating and loading social graph data for {total_users:,} users")
+    print(f"\n Generating and loading social graph data for {total_users:,} users")
     print(f"=" * 80)
     
     # Step 1: Segment users
-    print("\n📋 Step 1: Segmenting users...")
+    print("\n Step 1: Segmenting users...")
     user_ids = list(range(1, total_users + 1))
     segmentation = UserSegmentation(total_users)
     segments = segmentation.segment_users(user_ids)
@@ -101,14 +101,14 @@ def generate_and_load(
             print(f"  {segment_name.capitalize()}: {len(users):,} users")
     
     # Step 2: Generate relationships
-    print("\n🔗 Step 2: Generating relationships...")
+    print("\n Step 2: Generating relationships...")
     generator = RelationshipGenerator(segments, segmentation, verbose=verbose)
     generator.generate_followers_first()
     generator.enforce_following_limits()
     generator.enforce_follower_limits()
     
     # Step 3: Get statistics
-    print("\n📊 Step 3: Relationship statistics...")
+    print("\n Step 3: Relationship statistics...")
     stats = generator.get_statistics()
     print(f"  Total relationships: {stats['total_relationships']:,}")
     
@@ -120,7 +120,7 @@ def generate_and_load(
         print(f"    Following: min={following_stats['min']}, max={following_stats['max']}, avg={following_stats['avg']:.1f}")
     
     # Step 4: Load to DynamoDB
-    print("\n💾 Step 4: Loading to DynamoDB...")
+    print("\n Step 4: Loading to DynamoDB...")
     follower_map = generator.get_follower_map()
     following_map = generator.get_following_map()
     
@@ -131,8 +131,8 @@ def generate_and_load(
         following_table_name=following_table_name,
         region=region
     )
-    
-    print(f"\n✅ Successfully loaded {total_users:,} users to DynamoDB!")
+
+    print(f"\n Successfully loaded {total_users:,} users to DynamoDB!")
     print(f"=" * 80)
 
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
             verbose=not args.quiet
         )
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n Error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

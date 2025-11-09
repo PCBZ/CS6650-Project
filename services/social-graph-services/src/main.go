@@ -88,6 +88,9 @@ func main() {
 		api.GET("/followers/:userId/count", httpHandler.GetFollowerCount)
 		api.GET("/following/:userId/count", httpHandler.GetFollowingCount)
 		api.GET("/relationship/check", httpHandler.CheckFollowRelationship)
+		
+		// Admin endpoints
+		api.POST("/admin/load-test-data", httpHandler.LoadTestData)
 	}
 
 	// Direct routes (without /api prefix)
@@ -98,6 +101,7 @@ func main() {
 	router.GET("/followers/:userId/count", httpHandler.GetFollowerCount)
 	router.GET("/following/:userId/count", httpHandler.GetFollowingCount)
 	router.GET("/relationship/check", httpHandler.CheckFollowRelationship)
+	router.POST("/admin/load-test-data", httpHandler.LoadTestData)
 
 	var wg sync.WaitGroup
 	wg.Add(2)

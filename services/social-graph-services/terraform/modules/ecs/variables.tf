@@ -30,8 +30,7 @@ variable "execution_role_arn" {
 
 variable "task_role_arn" {
   type        = string
-  description = "ECS Task Role ARN for application permissions (DynamoDB, SQS)"
-  default     = ""
+  description = "ECS Task Role ARN for application permissions (DynamoDB access)"
 }
 
 variable "log_group_name" {
@@ -67,43 +66,21 @@ variable "memory" {
   description = "Memory (MiB)"
 }
 
-# Timeline Service specific variables
-variable "dynamodb_table_name" {
+# Social Graph Service specific variables
+variable "followers_table_name" {
   type        = string
-  description = "DynamoDB table name for timeline cache"
+  description = "DynamoDB followers table name"
 }
 
-variable "sqs_queue_url" {
+variable "following_table_name" {
   type        = string
-  description = "SQS queue URL for async feed writes"
+  description = "DynamoDB following table name"
 }
 
-variable "post_service_url" {
+variable "user_service_endpoint" {
   type        = string
-  description = "Post Service URL for gRPC communication"
-}
-
-variable "social_graph_service_url" {
-  type        = string
-  description = "Social Graph Service URL for gRPC communication"
-}
-
-variable "user_service_url" {
-  type        = string
-  description = "User Service URL for gRPC communication"
-}
-
-# Timeline Strategy Configuration
-variable "fanout_strategy" {
-  type        = string
-  description = "Timeline fanout strategy: push, pull, or hybrid"
-  default     = "hybrid"
-}
-
-variable "celebrity_threshold" {
-  type        = number
-  description = "Follower count threshold for hybrid strategy"
-  default     = 50000
+  description = "User Service endpoint for gRPC communication (e.g., user-service-grpc:50051)"
+  default     = "user-service-grpc:50051"
 }
 
 # Auto Scaling Variables

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -15,20 +14,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-// FollowerRecord represents a follower relationship in DynamoDB
+// FollowerRecord represents a user's follower list in DynamoDB
 type FollowerRecord struct {
-	UserID     int64  `dynamodbav:"user_id"`
-	FollowerID int64  `dynamodbav:"follower_id"`
-	CreatedAt  int64  `dynamodbav:"created_at"`
-	Username   string `dynamodbav:"follower_username,omitempty"`
+	UserID      string   `dynamodbav:"user_id"`
+	FollowerIDs []string `dynamodbav:"follower_ids"`
 }
 
-// FollowingRecord represents a following relationship in DynamoDB
+// FollowingRecord represents a user's following list in DynamoDB
 type FollowingRecord struct {
-	UserID     int64  `dynamodbav:"user_id"`
-	FolloweeID int64  `dynamodbav:"followee_id"`
-	CreatedAt  int64  `dynamodbav:"created_at"`
-	Username   string `dynamodbav:"followee_username,omitempty"`
+	UserID       string   `dynamodbav:"user_id"`
+	FollowingIDs []string `dynamodbav:"following_ids"`
 }
 
 // DynamoDBClient wraps the AWS DynamoDB client
@@ -47,279 +42,366 @@ func NewDynamoDBClient(client *dynamodb.Client, followersTable, followingTable s
 	}
 }
 
-// InsertFollowRelationship inserts a follow relationship into both tables
+// InsertFollowRelationship inserts a follow relationship into both tables using list format
+// Uses DynamoDB's list append operation (if not exists, creates new list)
 func (db *DynamoDBClient) InsertFollowRelationship(ctx context.Context, followerID, followeeID int64) error {
-	now := time.Now().Unix()
+	followerIDStr := fmt.Sprintf("%d", followerID)
+	followeeIDStr := fmt.Sprintf("%d", followeeID)
 
-	// Insert into FollowersTable (user_id = followee, follower_id = follower)
-	followerRecord := FollowerRecord{
-		UserID:     followeeID,
-		FollowerID: followerID,
-		CreatedAt:  now,
-	}
-
-	followerItem, err := attributevalue.MarshalMap(followerRecord)
-	if err != nil {
-		return fmt.Errorf("failed to marshal follower record: %w", err)
-	}
-
-	_, err = db.client.PutItem(ctx, &dynamodb.PutItemInput{
+	// Add to FollowersTable (user_id = followee, add follower to follower_ids list)
+	_, err := db.client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(db.followersTableName),
-		Item:      followerItem,
+		Key: map[string]types.AttributeValue{
+			"user_id": &types.AttributeValueMemberS{Value: followeeIDStr},
+		},
+		UpdateExpression: aws.String("SET follower_ids = list_append(if_not_exists(follower_ids, :empty_list), :new_follower)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":new_follower": &types.AttributeValueMemberL{
+				Value: []types.AttributeValue{
+					&types.AttributeValueMemberS{Value: followerIDStr},
+				},
+			},
+			":empty_list": &types.AttributeValueMemberL{Value: []types.AttributeValue{}},
+		},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to insert into FollowersTable: %w", err)
+		return fmt.Errorf("failed to update FollowersTable: %w", err)
 	}
 
-	// Insert into FollowingTable (user_id = follower, followee_id = followee)
-	followingRecord := FollowingRecord{
-		UserID:     followerID,
-		FolloweeID: followeeID,
-		CreatedAt:  now,
-	}
-
-	followingItem, err := attributevalue.MarshalMap(followingRecord)
-	if err != nil {
-		return fmt.Errorf("failed to marshal following record: %w", err)
-	}
-
-	_, err = db.client.PutItem(ctx, &dynamodb.PutItemInput{
+	// Add to FollowingTable (user_id = follower, add followee to following_ids list)
+	_, err = db.client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(db.followingTableName),
-		Item:      followingItem,
+		Key: map[string]types.AttributeValue{
+			"user_id": &types.AttributeValueMemberS{Value: followerIDStr},
+		},
+		UpdateExpression: aws.String("SET following_ids = list_append(if_not_exists(following_ids, :empty_list), :new_following)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":new_following": &types.AttributeValueMemberL{
+				Value: []types.AttributeValue{
+					&types.AttributeValueMemberS{Value: followeeIDStr},
+				},
+			},
+			":empty_list": &types.AttributeValueMemberL{Value: []types.AttributeValue{}},
+		},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to insert into FollowingTable: %w", err)
+		return fmt.Errorf("failed to update FollowingTable: %w", err)
 	}
 
 	return nil
 }
 
-// DeleteFollowRelationship removes a follow relationship from both tables
+// DeleteFollowRelationship removes a follow relationship from both tables using list format
+// Note: This is O(n) operation - finds and removes the ID from the list
 func (db *DynamoDBClient) DeleteFollowRelationship(ctx context.Context, followerID, followeeID int64) error {
-	// Delete from FollowersTable
-	_, err := db.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
+	followerIDStr := fmt.Sprintf("%d", followerID)
+	followeeIDStr := fmt.Sprintf("%d", followeeID)
+
+	// First, get the current follower list to find the index
+	getFollowersResult, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(db.followersTableName),
 		Key: map[string]types.AttributeValue{
-			"user_id":     &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followeeID)},
-			"follower_id": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followerID)},
+			"user_id": &types.AttributeValueMemberS{Value: followeeIDStr},
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to delete from FollowersTable: %w", err)
+		return fmt.Errorf("failed to get followers list: %w", err)
 	}
 
-	// Delete from FollowingTable
-	_, err = db.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
+	// Find index of follower to remove
+	if getFollowersResult.Item != nil {
+		var record FollowerRecord
+		if err := attributevalue.UnmarshalMap(getFollowersResult.Item, &record); err == nil {
+			for idx, fid := range record.FollowerIDs {
+				if fid == followerIDStr {
+					// Remove from FollowersTable using index
+					_, err = db.client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+						TableName: aws.String(db.followersTableName),
+						Key: map[string]types.AttributeValue{
+							"user_id": &types.AttributeValueMemberS{Value: followeeIDStr},
+						},
+						UpdateExpression: aws.String(fmt.Sprintf("REMOVE follower_ids[%d]", idx)),
+					})
+					if err != nil {
+						return fmt.Errorf("failed to remove from FollowersTable: %w", err)
+					}
+					break
+				}
+			}
+		}
+	}
+
+	// Get the current following list to find the index
+	getFollowingResult, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(db.followingTableName),
 		Key: map[string]types.AttributeValue{
-			"user_id":     &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followerID)},
-			"followee_id": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followeeID)},
+			"user_id": &types.AttributeValueMemberS{Value: followerIDStr},
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to delete from FollowingTable: %w", err)
+		return fmt.Errorf("failed to get following list: %w", err)
+	}
+
+	// Find index of followee to remove
+	if getFollowingResult.Item != nil {
+		var record FollowingRecord
+		if err := attributevalue.UnmarshalMap(getFollowingResult.Item, &record); err == nil {
+			for idx, fid := range record.FollowingIDs {
+				if fid == followeeIDStr {
+					// Remove from FollowingTable using index
+					_, err = db.client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+						TableName: aws.String(db.followingTableName),
+						Key: map[string]types.AttributeValue{
+							"user_id": &types.AttributeValueMemberS{Value: followerIDStr},
+						},
+						UpdateExpression: aws.String(fmt.Sprintf("REMOVE following_ids[%d]", idx)),
+					})
+					if err != nil {
+						return fmt.Errorf("failed to remove from FollowingTable: %w", err)
+					}
+					break
+				}
+			}
+		}
 	}
 
 	return nil
 }
 
-// GetFollowers retrieves all followers of a user
+// GetFollowers retrieves all followers of a user (from list format)
+// Note: With list format, this is now O(1) instead of O(n) query
 func (db *DynamoDBClient) GetFollowers(ctx context.Context, userID int64, limit int32, lastEvaluatedKey map[string]types.AttributeValue) ([]int64, map[string]types.AttributeValue, error) {
-	input := &dynamodb.QueryInput{
-		TableName:              aws.String(db.followersTableName),
-		KeyConditionExpression: aws.String("user_id = :uid"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":uid": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", userID)},
+	userIDStr := fmt.Sprintf("%d", userID)
+
+	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(db.followersTableName),
+		Key: map[string]types.AttributeValue{
+			"user_id": &types.AttributeValueMemberS{Value: userIDStr},
 		},
-		Limit: aws.Int32(limit),
-	}
-
-	if lastEvaluatedKey != nil {
-		input.ExclusiveStartKey = lastEvaluatedKey
-	}
-
-	result, err := db.client.Query(ctx, input)
+	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to query followers: %w", err)
+		return nil, nil, fmt.Errorf("failed to get followers: %w", err)
 	}
 
-	followers := make([]int64, 0, len(result.Items))
-	for _, item := range result.Items {
-		var record FollowerRecord
-		err := attributevalue.UnmarshalMap(item, &record)
+	if result.Item == nil {
+		return []int64{}, nil, nil
+	}
+
+	var record FollowerRecord
+	err = attributevalue.UnmarshalMap(result.Item, &record)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to unmarshal follower record: %w", err)
+	}
+
+	// Convert string IDs to int64
+	followers := make([]int64, 0, len(record.FollowerIDs))
+	for _, fidStr := range record.FollowerIDs {
+		fid, err := strconv.ParseInt(fidStr, 10, 64)
 		if err != nil {
-			log.Printf("failed to unmarshal follower record: %v", err)
+			log.Printf("failed to parse follower ID %s: %v", fidStr, err)
 			continue
 		}
-		followers = append(followers, record.FollowerID)
+		followers = append(followers, fid)
 	}
 
-	return followers, result.LastEvaluatedKey, nil
+	// Simple pagination: slice the result
+	// Note: This is in-memory pagination. For better efficiency, consider storing offset in cursor
+	startIdx := 0
+	if lastEvaluatedKey != nil {
+		if offsetVal, ok := lastEvaluatedKey["offset"]; ok {
+			if offsetN, ok := offsetVal.(*types.AttributeValueMemberN); ok {
+				offset, _ := strconv.Atoi(offsetN.Value)
+				startIdx = offset
+			}
+		}
+	}
+
+	endIdx := startIdx + int(limit)
+	if endIdx > len(followers) {
+		endIdx = len(followers)
+	}
+
+	paginatedFollowers := followers[startIdx:endIdx]
+
+	// Create next cursor if there are more results
+	var nextKey map[string]types.AttributeValue
+	if endIdx < len(followers) {
+		nextKey = map[string]types.AttributeValue{
+			"offset": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", endIdx)},
+		}
+	}
+
+	return paginatedFollowers, nextKey, nil
 }
 
-// GetFollowing retrieves all users that a user follows
+// GetFollowing retrieves all users that a user follows (from list format)
+// Note: With list format, this is now O(1) instead of O(n) query
 func (db *DynamoDBClient) GetFollowing(ctx context.Context, userID int64, limit int32, lastEvaluatedKey map[string]types.AttributeValue) ([]int64, map[string]types.AttributeValue, error) {
-	input := &dynamodb.QueryInput{
-		TableName:              aws.String(db.followingTableName),
-		KeyConditionExpression: aws.String("user_id = :uid"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":uid": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", userID)},
-		},
-		Limit: aws.Int32(limit),
-	}
+	userIDStr := fmt.Sprintf("%d", userID)
 
-	if lastEvaluatedKey != nil {
-		input.ExclusiveStartKey = lastEvaluatedKey
-	}
-
-	result, err := db.client.Query(ctx, input)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to query following: %w", err)
-	}
-
-	following := make([]int64, 0, len(result.Items))
-	for _, item := range result.Items {
-		var record FollowingRecord
-		err := attributevalue.UnmarshalMap(item, &record)
-		if err != nil {
-			log.Printf("failed to unmarshal following record: %v", err)
-			continue
-		}
-		following = append(following, record.FolloweeID)
-	}
-
-	return following, result.LastEvaluatedKey, nil
-}
-
-// GetFollowersCount returns the count of followers for a user
-func (db *DynamoDBClient) GetFollowersCount(ctx context.Context, userID int64) (int32, error) {
-	input := &dynamodb.QueryInput{
-		TableName:              aws.String(db.followersTableName),
-		KeyConditionExpression: aws.String("user_id = :uid"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":uid": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", userID)},
-		},
-		Select: types.SelectCount,
-	}
-
-	result, err := db.client.Query(ctx, input)
-	if err != nil {
-		return 0, fmt.Errorf("failed to count followers: %w", err)
-	}
-
-	return result.Count, nil
-}
-
-// GetFollowingCount returns the count of users that a user follows
-func (db *DynamoDBClient) GetFollowingCount(ctx context.Context, userID int64) (int32, error) {
-	input := &dynamodb.QueryInput{
-		TableName:              aws.String(db.followingTableName),
-		KeyConditionExpression: aws.String("user_id = :uid"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":uid": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", userID)},
-		},
-		Select: types.SelectCount,
-	}
-
-	result, err := db.client.Query(ctx, input)
-	if err != nil {
-		return 0, fmt.Errorf("failed to count following: %w", err)
-	}
-
-	return result.Count, nil
-}
-
-// CheckFollowRelationship checks if follower follows followee
-func (db *DynamoDBClient) CheckFollowRelationship(ctx context.Context, followerID, followeeID int64) (bool, error) {
 	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(db.followingTableName),
 		Key: map[string]types.AttributeValue{
-			"user_id":     &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followerID)},
-			"followee_id": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followeeID)},
+			"user_id": &types.AttributeValueMemberS{Value: userIDStr},
 		},
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get following: %w", err)
+	}
+
+	if result.Item == nil {
+		return []int64{}, nil, nil
+	}
+
+	var record FollowingRecord
+	err = attributevalue.UnmarshalMap(result.Item, &record)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to unmarshal following record: %w", err)
+	}
+
+	// Convert string IDs to int64
+	following := make([]int64, 0, len(record.FollowingIDs))
+	for _, fidStr := range record.FollowingIDs {
+		fid, err := strconv.ParseInt(fidStr, 10, 64)
+		if err != nil {
+			log.Printf("failed to parse following ID %s: %v", fidStr, err)
+			continue
+		}
+		following = append(following, fid)
+	}
+
+	// Simple pagination: slice the result
+	startIdx := 0
+	if lastEvaluatedKey != nil {
+		if offsetVal, ok := lastEvaluatedKey["offset"]; ok {
+			if offsetN, ok := offsetVal.(*types.AttributeValueMemberN); ok {
+				offset, _ := strconv.Atoi(offsetN.Value)
+				startIdx = offset
+			}
+		}
+	}
+
+	endIdx := startIdx + int(limit)
+	if endIdx > len(following) {
+		endIdx = len(following)
+	}
+
+	paginatedFollowing := following[startIdx:endIdx]
+
+	// Create next cursor if there are more results
+	var nextKey map[string]types.AttributeValue
+	if endIdx < len(following) {
+		nextKey = map[string]types.AttributeValue{
+			"offset": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", endIdx)},
+		}
+	}
+
+	return paginatedFollowing, nextKey, nil
+}
+
+// GetFollowersCount returns the count of followers for a user (from list format)
+func (db *DynamoDBClient) GetFollowersCount(ctx context.Context, userID int64) (int32, error) {
+	userIDStr := fmt.Sprintf("%d", userID)
+
+	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(db.followersTableName),
+		Key: map[string]types.AttributeValue{
+			"user_id": &types.AttributeValueMemberS{Value: userIDStr},
+		},
+		ProjectionExpression: aws.String("follower_ids"),
+	})
+	if err != nil {
+		return 0, fmt.Errorf("failed to get followers count: %w", err)
+	}
+
+	if result.Item == nil {
+		return 0, nil
+	}
+
+	var record FollowerRecord
+	err = attributevalue.UnmarshalMap(result.Item, &record)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unmarshal follower record: %w", err)
+	}
+
+	return int32(len(record.FollowerIDs)), nil
+}
+
+// GetFollowingCount returns the count of users that a user follows (from list format)
+func (db *DynamoDBClient) GetFollowingCount(ctx context.Context, userID int64) (int32, error) {
+	userIDStr := fmt.Sprintf("%d", userID)
+
+	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(db.followingTableName),
+		Key: map[string]types.AttributeValue{
+			"user_id": &types.AttributeValueMemberS{Value: userIDStr},
+		},
+		ProjectionExpression: aws.String("following_ids"),
+	})
+	if err != nil {
+		return 0, fmt.Errorf("failed to get following count: %w", err)
+	}
+
+	if result.Item == nil {
+		return 0, nil
+	}
+
+	var record FollowingRecord
+	err = attributevalue.UnmarshalMap(result.Item, &record)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unmarshal following record: %w", err)
+	}
+
+	return int32(len(record.FollowingIDs)), nil
+}
+
+// CheckFollowRelationship checks if follower follows followee (from list format)
+func (db *DynamoDBClient) CheckFollowRelationship(ctx context.Context, followerID, followeeID int64) (bool, error) {
+	followerIDStr := fmt.Sprintf("%d", followerID)
+	followeeIDStr := fmt.Sprintf("%d", followeeID)
+
+	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(db.followingTableName),
+		Key: map[string]types.AttributeValue{
+			"user_id": &types.AttributeValueMemberS{Value: followerIDStr},
+		},
+		ProjectionExpression: aws.String("following_ids"),
 	})
 	if err != nil {
 		return false, fmt.Errorf("failed to check follow relationship: %w", err)
 	}
 
-	return result.Item != nil, nil
+	if result.Item == nil {
+		return false, nil
+	}
+
+	var record FollowingRecord
+	err = attributevalue.UnmarshalMap(result.Item, &record)
+	if err != nil {
+		return false, fmt.Errorf("failed to unmarshal following record: %w", err)
+	}
+
+	// Check if followee is in the list
+	for _, fid := range record.FollowingIDs {
+		if fid == followeeIDStr {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // BatchInsertFollowRelationships inserts multiple follow relationships
+// Note: For list format, this uses individual UpdateItem calls (not optimal for bulk loading)
+// For initial data loading, use the Python script which writes directly in list format
 func (db *DynamoDBClient) BatchInsertFollowRelationships(ctx context.Context, relationships [][2]int64) error {
-	const batchSize = 25 // DynamoDB BatchWriteItem limit
-
-	for i := 0; i < len(relationships); i += batchSize {
-		end := i + batchSize
-		if end > len(relationships) {
-			end = len(relationships)
-		}
-
-		batch := relationships[i:end]
-		if err := db.batchWriteFollowRelationships(ctx, batch); err != nil {
-			return fmt.Errorf("failed to batch write relationships: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (db *DynamoDBClient) batchWriteFollowRelationships(ctx context.Context, relationships [][2]int64) error {
-	now := time.Now().Unix()
-
-	followerRequests := make([]types.WriteRequest, 0, len(relationships))
-	followingRequests := make([]types.WriteRequest, 0, len(relationships))
-
+	// Process each relationship individually
 	for _, rel := range relationships {
 		followerID, followeeID := rel[0], rel[1]
-
-		// FollowersTable request
-		followerRecord := FollowerRecord{
-			UserID:     followeeID,
-			FollowerID: followerID,
-			CreatedAt:  now,
+		if err := db.InsertFollowRelationship(ctx, followerID, followeeID); err != nil {
+			log.Printf("Failed to insert relationship %d -> %d: %v", followerID, followeeID, err)
+			// Continue with other relationships instead of failing completely
 		}
-		followerItem, err := attributevalue.MarshalMap(followerRecord)
-		if err != nil {
-			return err
-		}
-		followerRequests = append(followerRequests, types.WriteRequest{
-			PutRequest: &types.PutRequest{Item: followerItem},
-		})
-
-		// FollowingTable request
-		followingRecord := FollowingRecord{
-			UserID:     followerID,
-			FolloweeID: followeeID,
-			CreatedAt:  now,
-		}
-		followingItem, err := attributevalue.MarshalMap(followingRecord)
-		if err != nil {
-			return err
-		}
-		followingRequests = append(followingRequests, types.WriteRequest{
-			PutRequest: &types.PutRequest{Item: followingItem},
-		})
-	}
-
-	// Write to FollowersTable
-	_, err := db.client.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
-		RequestItems: map[string][]types.WriteRequest{
-			db.followersTableName: followerRequests,
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to batch write to FollowersTable: %w", err)
-	}
-
-	// Write to FollowingTable
-	_, err = db.client.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
-		RequestItems: map[string][]types.WriteRequest{
-			db.followingTableName: followingRequests,
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to batch write to FollowingTable: %w", err)
 	}
 
 	return nil
