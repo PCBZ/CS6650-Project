@@ -65,9 +65,6 @@ module "user_service" {
   rds_security_group_id = module.rds.security_group_id
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
   
-  # IAM role for ECS tasks
-  execution_role_arn = module.iam.ecs_task_execution_role_arn
-  
   # Pass through necessary variables
   aws_region           = var.aws_region
   is_windows           = var.is_windows
@@ -100,9 +97,6 @@ module "web_service" {
   alb_arn_suffix    = module.alb.alb_arn_suffix
   alb_dns_name      = module.alb.alb_dns_name
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
-  
-  # IAM role for ECS tasks
-  execution_role_arn = module.iam.ecs_task_execution_role_arn
   
   # Pass through necessary variables
   aws_region          = var.aws_region
