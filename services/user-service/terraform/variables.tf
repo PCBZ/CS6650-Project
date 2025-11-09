@@ -71,6 +71,12 @@ variable "ecs_count" {
   default = 1
 }
 
+# IAM Role for ECS Task Execution (Innovation Sandbox with ISBStudent tag)
+variable "execution_role_arn" {
+  description = "ARN of the ECS task execution role"
+  type        = string
+}
+
 # ALB settings
 variable "alb_priority" {
   description = "Priority for ALB listener rule"
