@@ -1,86 +1,150 @@
-# ECS Cluster
-resource "aws_ecs_cluster" "this" {
-    name = "${var.service_name}-cluster"
-    // set monitoring enabled
-    setting {
-        name  = "containerInsights"
-        value = "enabled"
-    }
+# ECS Cluster (Service Connect configured at service level)
+resource "aws_ecs_cluster" "main" {
+  name = var.service_name
+
+  tags = {
+    Name    = "${var.service_name} Cluster"
+    Service = var.service_name
+  }
 }
 
 # Task Definition
-resource "aws_ecs_task_definition" "this" {
-    family                   = "${var.service_name}-task"
-    network_mode             = "awsvpc"
-    requires_compatibilities = ["FARGATE"]
-    cpu                      = var.cpu
-    memory                   = var.memory 
+resource "aws_ecs_task_definition" "app" {
+  family                   = var.service_name
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = var.cpu
+  memory                   = var.memory
+  execution_role_arn       = var.execution_role_arn
 
-    execution_role_arn = var.execution_role_arn
-    task_role_arn      = var.task_role_arn
-
-    container_definitions = jsonencode([{
-        name      = "${var.service_name}-container"
-        image     = var.image
-        essential = true
-
-        portMappings = var.container_port != null ? [{
-            containerPort = var.container_port
-        }] : []
-
-        environment = var.environment_variables
-
-        logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-            "awslogs-group"         = var.log_group_name
-            "awslogs-region"        = var.region
-            "awslogs-stream-prefix" = "ecs"
-        }
-    }
-    }])
-}
-
-# ECS
-resource "aws_ecs_service" "this" {
-    name = var.service_name
-    cluster         = aws_ecs_cluster.this.id
-    task_definition = aws_ecs_task_definition.this.arn
-    desired_count   = var.ecs_count
-    launch_type     = "FARGATE"   
-
-    network_configuration {
-    subnets         = var.subnet_ids
-    security_groups = var.security_group_ids
-    assign_public_ip = true # change to false when using ALB
+  # Specify CPU architecture for Fargate
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
   }
 
-   # Only add load balancer if target_group_arn is provided
-    dynamic "load_balancer" {
-        for_each = var.target_group_arn != null ? [1] : []
-        content {
-            target_group_arn = var.target_group_arn
-            container_name   = "${var.service_name}-container"
-            container_port   = var.container_port
+  container_definitions = jsonencode([
+    {
+      name  = var.service_name
+      image = var.image
+      
+      portMappings = [
+        {
+          name          = "http"
+          containerPort = var.container_port
+          hostPort      = var.container_port
+          protocol      = "tcp"
+          appProtocol   = "http"
+        },
+        {
+          name          = "grpc"
+          containerPort = 50053
+          hostPort      = 50053
+          protocol      = "tcp"
+          appProtocol   = "grpc"
         }
+      ]
+
+      environment = var.environment_variables
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = var.log_group_name
+          "awslogs-region"        = var.region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+
+      essential = true
     }
+  ])
+
+  tags = {
+    Name    = "${var.service_name} Task Definition"
+    Service = var.service_name
+  }
+}
+
+# ECS Service with Service Connect
+resource "aws_ecs_service" "app" {
+  name            = var.service_name
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.app.arn
+  desired_count   = var.ecs_count
+  launch_type     = "FARGATE"
+
+  # CRITICAL: Ensure clean shutdown during destroy
+  enable_execute_command = false
+  wait_for_steady_state  = false
+
+  network_configuration {
+    subnets          = var.subnet_ids
+    security_groups  = var.security_group_ids
+    assign_public_ip = true
+  }
+
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = var.service_name
+    container_port   = var.container_port
+  }
+
+  # ECS Service Connect configuration
+  service_connect_configuration {
+    enabled   = true
+    namespace = var.service_connect_namespace_arn
+
+    service {
+      port_name      = "http"
+      discovery_name = var.service_name
+      
+      client_alias {
+        port     = var.container_port
+        dns_name = var.service_name
+      }
+    }
+
+    service {
+      port_name      = "grpc"
+      discovery_name = "${var.service_name}-grpc"
+      
+      client_alias {
+        port     = 50053
+        dns_name = "${var.service_name}-grpc"
+      }
+    }
+  }
+
+  depends_on = [var.target_group_arn]
+
+  tags = {
+    Name    = "${var.service_name} Service"
+    Service = var.service_name
+  }
+
+  lifecycle {
+    ignore_changes = [desired_count] # Let auto-scaling manage this
+  }
 }
 
 # Auto Scaling Target
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = var.max_capacity
   min_capacity       = var.min_capacity
-  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.this.name}"
+  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.app.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
-  depends_on = [aws_ecs_service.this]
+  tags = {
+    Name    = "${var.service_name} Auto Scaling Target"
+    Service = var.service_name
+  }
 }
 
-# Auto Scaling Policy - CPU Based 
-resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
-  count              = var.scaling_metric == "cpu" ? 1 : 0
-  name               = "${var.service_name}-cpu-scaling"
+# Scale Up Policy (CPU-based)
+resource "aws_appautoscaling_policy" "scale_up_cpu" {
+  name               = "${var.service_name}-scale-up-cpu"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs_target.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
@@ -90,33 +154,46 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
-    target_value       = var.target_cpu_utilization
-    scale_out_cooldown = var.scale_out_cooldown
+    target_value       = var.cpu_target_value
     scale_in_cooldown  = var.scale_in_cooldown
+    scale_out_cooldown = var.scale_out_cooldown
   }
 }
 
-# Auto Scaling Policy - SQS Based (for processors)
-resource "aws_appautoscaling_policy" "ecs_policy_sqs" {
-  count              = var.scaling_metric == "sqs" ? 1 : 0
-  name               = "${var.service_name}-sqs-scaling"
+# Scale Up Policy (Memory-based)
+resource "aws_appautoscaling_policy" "scale_up_memory" {
+  name               = "${var.service_name}-scale-up-memory"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs_target.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
   service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    customized_metric_specification {
-      metric_name = "ApproximateNumberOfVisibleMessages"
-      namespace   = "AWS/SQS"
-      statistic   = "Average"
-      dimensions {
-        name  = "QueueName"
-        value = var.sqs_queue_name
-      }
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
     }
-    target_value       = var.sqs_target_value  # Scale when queue has more than X messages
-    scale_out_cooldown = var.scale_out_cooldown
+    target_value       = var.memory_target_value
     scale_in_cooldown  = var.scale_in_cooldown
+    scale_out_cooldown = var.scale_out_cooldown
+  }
+}
+
+# Scale Up Policy (ALB Request Count based)
+resource "aws_appautoscaling_policy" "scale_up_requests" {
+  count              = var.enable_request_based_scaling ? 1 : 0
+  name               = "${var.service_name}-scale-up-requests"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ALBRequestCountPerTarget"
+      resource_label         = var.alb_resource_label
+    }
+    target_value       = var.request_count_target_value
+    scale_in_cooldown  = var.scale_in_cooldown
+    scale_out_cooldown = var.scale_out_cooldown
   }
 }

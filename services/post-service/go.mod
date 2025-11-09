@@ -8,10 +8,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.21
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.52.4
 	github.com/aws/aws-sdk-go-v2/service/sns v1.39.3
+	github.com/cs6650/proto v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.11.0
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10
 )
+
+replace github.com/cs6650/proto => ../../proto
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.21 // indirect

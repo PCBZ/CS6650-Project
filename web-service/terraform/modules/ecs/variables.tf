@@ -74,6 +74,19 @@ variable "user_service_grpc_host" {
   default     = ""
 }
 
+# Web service specific: URL to communicate with post-service
+variable "post_service_url" {
+  type        = string
+  description = "Internal URL for post-service communication"
+}
+
+# Post Service gRPC endpoint
+variable "post_service_grpc_host" {
+  type        = string
+  description = "gRPC endpoint for post-service (host:port)"
+  default     = ""
+}
+
 # Web service specific: URL to communicate with timeline-service
 variable "timeline_service_url" {
   type        = string

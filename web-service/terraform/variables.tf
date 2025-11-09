@@ -89,6 +89,20 @@ variable "user_service_grpc_host" {
   default     = "user-service:50051"
 }
 
+# Post Service URL (internal communication)
+variable "post_service_url" {
+  description = "Internal URL for post-service communication"
+  type        = string
+  default     = "http://post-service:8083"
+}
+
+# Post Service gRPC endpoint
+variable "post_service_grpc_host" {
+  description = "gRPC endpoint for post-service (host:port)"
+  type        = string
+  default     = "post-service-grpc:50053"
+}
+
 # Timeline Service URL (internal communication)
 variable "timeline_service_url" {
   description = "Internal URL for timeline-service communication"

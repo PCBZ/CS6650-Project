@@ -7,8 +7,9 @@ import (
 	"log"
 	"post-service/internal/client"
 	"post-service/internal/model"
-	pb "post-service/pkg/generated/post"
 	"time"
+
+	pb "github.com/cs6650/proto/post"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"

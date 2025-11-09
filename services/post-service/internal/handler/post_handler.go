@@ -5,8 +5,9 @@ import (
 	"os"
 	"post-service/internal/model"
 	"post-service/internal/service"
-	pb "post-service/pkg/generated/post"
 	"strings"
+
+	pb "github.com/cs6650/proto/post"
 
 	"github.com/gin-gonic/gin"
 )
@@ -108,4 +109,22 @@ func (h *PostHandler) BatchGetPosts(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"result": result, "message": "Run Hybrid Strategy successfully"})
+}
+
+// Health check endpoint
+func (h *PostHandler) Health(c *gin.Context) {
+	strategy := strings.ToLower(os.Getenv("POST_STRATEGY"))
+	if strategy == "" {
+		strategy = "hybrid"
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":               "healthy",
+		"service":              "post-service",
+		"current_strategy":     strategy,
+		"available_strategies": []string{"push", "pull", "hybrid"},
+		"endpoints": gin.H{
+			"posts": "GET /api/posts",
+			"health":   "GET /api/health",
+		},
+	})
 }

@@ -5,7 +5,7 @@ import (
 	"log"
 	"post-service/internal/service"
 
-	pb "post-service/pkg/generated/post"
+	pb "github.com/cs6650/proto/post"
 )
 
 type GRPCHandler struct {

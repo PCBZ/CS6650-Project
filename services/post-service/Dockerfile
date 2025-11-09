@@ -1,38 +1,34 @@
-# syntax=docker/dockerfile:1
+# Build stage
+FROM --platform=linux/amd64 golang:1.25.1-alpine AS builder
 
-FROM golang:1.25 AS build-stage
+WORKDIR /build/services/post-service
 
-# Set destination for COPY
-WORKDIR /app
+# Copy proto dependencies first (go.mod expects ../../proto from services/post-service)
+COPY proto/ ../../proto/
 
-# Download Go modules
-COPY go.mod go.sum ./
+# Copy post-service go.mod files
+COPY services/post-service/go.mod services/post-service/go.sum ./
 RUN go mod download
 
-# Copy the source code
-COPY . ./
+# Copy post-service source code
+COPY services/post-service/ ./
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /post-service ./cmd 
+# Build the application for AMD64
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o post-service ./cmd 
 
-##
-## Run the tests in the container
-##
+# Final stage
+FROM --platform=linux/amd64 alpine:latest
 
-FROM build-stage AS run-test-stage
-RUN go test -v ./...
-##
-## Deploy the application binary into a lean image
-##
+# Install ca-certificates for HTTPS requests
+RUN apk --no-cache add ca-certificates
 
-FROM gcr.io/distroless/base-debian11 AS build-release-stage
+WORKDIR /root/
 
-WORKDIR /
+# Copy the binary from builder stage
+COPY --from=builder /build/services/post-service/post-service .
 
-COPY --from=build-stage /post-service /post-service
+# Expose both HTTP and gRPC ports
+EXPOSE 8083 50053
 
-EXPOSE 8082 50053
-
-USER nonroot:nonroot
-
-ENTRYPOINT ["/post-service"]
+# Command to run
+CMD ["./post-service"]

@@ -117,6 +117,10 @@ module "web_service" {
   user_service_grpc_host = "user-service-grpc:50051"
   user_service_security_group_id = module.user_service.security_group_id
   
+  # Post Service URL (via Service Connect)
+  post_service_url = "http://post-service:8083"
+  post_service_grpc_host = "post-service-grpc:50053"
+  
   # Timeline Service URL
   timeline_service_url = "http://timeline-service:8084"
   
@@ -127,6 +131,47 @@ module "web_service" {
   memory_target_value         = var.web_service_memory_target_value
   enable_request_based_scaling = var.web_service_enable_request_based_scaling
   request_count_target_value  = var.web_service_request_count_target_value
+  
+  # Ensure post-service is deployed before web-service starts
+  # This helps with Service Connect DNS registration timing
+  depends_on = [module.post_service]
+}
+
+# Post Service
+module "post_service" {
+  source = "../services/post-service/terraform"
+  
+  # Shared infrastructure values
+  vpc_id                = module.network.vpc_id
+  vpc_cidr              = module.network.vpc_cidr
+  public_subnet_ids     = module.network.public_subnet_ids
+  private_subnet_ids    = module.network.private_subnet_ids
+  alb_listener_arn      = module.alb.listener_arn
+  alb_arn_suffix        = module.alb.alb_arn_suffix
+  service_connect_namespace_arn = module.network.service_connect_namespace_arn
+  
+  # IAM role for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+  
+  # Pass through necessary variables
+  aws_region           = var.aws_region
+  service_name         = "post-service"
+  ecr_repository_name  = "post-service"
+  container_port       = 8083
+  ecs_count           = var.post_service_ecs_count
+  alb_priority        = 300  # Post service priority 
+  
+  # Post Service specific configuration
+  social_graph_url  = "social-graph-service-grpc:50052"
+  post_strategy           = var.post_service_post_strategy
+  
+  # Auto-scaling settings
+  min_capacity                = var.post_service_min_capacity
+  max_capacity                = var.post_service_max_capacity
+  cpu_target_value            = var.post_service_cpu_target_value
+  memory_target_value         = var.post_service_memory_target_value
+  enable_request_based_scaling = var.post_service_enable_request_based_scaling
+  request_count_target_value  = var.post_service_request_count_target_value
 }
 
 # Timeline Service
@@ -152,12 +197,12 @@ module "timeline_service" {
   ecr_repository_name  = "timeline-service"
   container_port       = 8084
   ecs_count           = var.timeline_service_ecs_count
-  alb_priority        = 300  # Timeline service priority
+  alb_priority        = 400  # Timeline service priority
   
   # Timeline Service specific configuration
   sqs_queue_url             = var.timeline_service_sqs_queue_url
-  post_service_url          = "post-service-grpc:50051"
-  social_graph_service_url  = "social-graph-service-grpc:50051"
+  post_service_url          = "post-service-grpc:50053"
+  social_graph_service_url  = "social-graph-service-grpc:50052"
   user_service_url          = "user-service-grpc:50051"
   fanout_strategy           = var.timeline_service_fanout_strategy
   celebrity_threshold       = var.timeline_service_celebrity_threshold

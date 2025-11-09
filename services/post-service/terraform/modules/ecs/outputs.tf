@@ -1,11 +1,11 @@
 output "cluster_name" {
     description = "ECS cluster name"
-    value       = aws_ecs_cluster.this.name
+    value       = aws_ecs_cluster.main.name
 }
 
 output "service_name" {
     description = "ECS service name"
-    value       = aws_ecs_service.this.name
+    value       = aws_ecs_service.app.name
 }
 
 output "autoscaling_target_resource_id" {

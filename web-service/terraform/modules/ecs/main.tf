@@ -1,10 +1,6 @@
-# ECS Cluster with Service Connect enabled
+# ECS Cluster (Service Connect configured at service level)
 resource "aws_ecs_cluster" "main" {
   name = var.service_name
-
-  service_connect_defaults {
-    namespace = var.service_connect_namespace_arn
-  }
 
   tags = {
     Name    = "${var.service_name} Cluster"
@@ -50,6 +46,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "USER_SERVICE_GRPC_HOST"
           value = var.user_service_grpc_host
+        },
+        {
+          name  = "POST_SERVICE_URL"
+          value = var.post_service_url
+        },
+        {
+          name  = "POST_SERVICE_GRPC_HOST"
+          value = var.post_service_grpc_host
         },
         {
           name  = "TIMELINE_SERVICE_URL"
