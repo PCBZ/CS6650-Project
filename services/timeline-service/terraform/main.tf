@@ -11,10 +11,21 @@ module "logging" {
   retention_in_days = var.log_retention_days
 }
 
-# Use IAM role ARN directly instead of data source (AWS learner lab permission issue)
+# SQS module for subscribing to post-service SNS notifications
+module "sqs" {
+  source = "./modules/sqs"
+  
+  service_name    = var.service_name
+  environment     = "dev"
+  sns_topic_arn   = var.post_service_sns_topic_arn
+}
+
+# Get current AWS caller identity to build IAM role ARN dynamically
+data "aws_caller_identity" "current" {}
+
 locals {
-  # Directly specify LabRole ARN for AWS learner lab environment
-  lab_role_arn = "arn:aws:iam::964932215897:role/LabRole"
+  # Build LabRole ARN dynamically using current AWS account ID
+  lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 }
 
 # Service-specific security group for ECS tasks
@@ -131,7 +142,7 @@ module "ecs" {
   
   # Timeline Service specific configuration
   dynamodb_table_name       = aws_dynamodb_table.posts.name
-  sqs_queue_url             = var.sqs_queue_url
+  sqs_queue_url             = module.sqs.queue_url
   post_service_url          = var.post_service_url
   social_graph_service_url  = var.social_graph_service_url
   user_service_url          = var.user_service_url

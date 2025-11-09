@@ -5,9 +5,9 @@ variable "aws_region" {
 }
 
 variable "aws_account_id" {
-  description = "AWS Account ID"
+  description = "AWS Account ID (will be auto-detected if not provided)"
   type        = string
-  default     = "497892280895"
+  default     = ""
 }
 
 variable "project_name" {
@@ -174,13 +174,7 @@ variable "web_service_request_count_target_value" {
 variable "timeline_service_ecs_count" {
   description = "Number of ECS tasks for timeline service"
   type        = number
-  default     = 2
-}
-
-variable "timeline_service_sqs_queue_url" {
-  description = "SQS queue URL for async feed writes"
-  type        = string
-  default     = ""
+  default     = 1000
 }
 
 variable "timeline_service_fanout_strategy" {

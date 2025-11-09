@@ -87,13 +87,6 @@ variable "enable_pitr" {
   default     = false
 }
 
-# SQS Queue URL (from shared infrastructure or post-service)
-variable "sqs_queue_url" {
-  description = "SQS queue URL for async feed writes"
-  type        = string
-  default     = ""
-}
-
 # Service URLs for gRPC communication
 variable "post_service_url" {
   description = "Post Service URL for gRPC communication"
@@ -169,5 +162,10 @@ variable "request_count_target_value" {
 
 variable "service_connect_namespace_arn" {
   description = "ARN of the ECS Service Connect namespace for service discovery"
+  type        = string
+}
+
+variable "post_service_sns_topic_arn" {
+  description = "ARN of the post-service SNS topic for timeline updates"
   type        = string
 }
