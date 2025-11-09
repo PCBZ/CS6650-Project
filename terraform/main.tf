@@ -219,3 +219,38 @@ module "timeline_service" {
   enable_request_based_scaling = var.timeline_service_enable_request_based_scaling
   request_count_target_value  = var.timeline_service_request_count_target_value
 }
+
+# Social Graph Service
+module "social_graph_service" {
+  source = "../services/social-graph-services/terraform"
+  
+  # Shared infrastructure values
+  vpc_id                = module.network.vpc_id
+  vpc_cidr              = module.network.vpc_cidr
+  public_subnet_ids     = module.network.public_subnet_ids
+  private_subnet_ids    = module.network.private_subnet_ids
+  alb_listener_arn      = module.alb.listener_arn
+  alb_arn_suffix        = module.alb.alb_arn_suffix
+  service_connect_namespace_arn = module.network.service_connect_namespace_arn
+  
+  # Pass through necessary variables
+  aws_region           = var.aws_region
+  is_windows           = var.is_windows
+  service_name         = "social-graph-service"
+  ecr_repository_name  = "social-graph-service"
+  container_port       = 8085
+  ecs_desired_count    = var.social_graph_service_ecs_count
+  alb_priority         = 150  # Social graph service priority
+  
+  # DynamoDB table names
+  followers_table_name = "social-graph-followers"
+  following_table_name = "social-graph-following"
+  
+  # Auto-scaling settings
+  min_capacity                 = var.social_graph_service_min_capacity
+  max_capacity                 = var.social_graph_service_max_capacity
+  cpu_target_value             = var.social_graph_service_cpu_target_value
+  memory_target_value          = var.social_graph_service_memory_target_value
+  enable_request_based_scaling = var.social_graph_service_enable_request_based_scaling
+  request_count_target_value   = var.social_graph_service_request_count_target_value
+}

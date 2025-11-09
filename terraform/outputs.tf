@@ -132,3 +132,49 @@ output "timeline_service_connect_endpoint" {
   description = "Service Connect HTTP endpoint for timeline service"
   value       = module.timeline_service.service_connect_http_endpoint
 }
+
+# Social Graph Service Outputs
+output "social_graph_service_ecr_repository_url" {
+  description = "ECR repository URL for social graph service"
+  value       = module.social_graph_service.ecr_repository_url
+}
+
+output "social_graph_service_ecs_service_name" {
+  description = "ECS service name for social graph service"
+  value       = module.social_graph_service.ecs_service_name
+}
+
+output "social_graph_service_target_group_arn" {
+  description = "Target group ARN for social graph service"
+  value       = module.social_graph_service.target_group_arn
+}
+
+output "social_graph_service_security_group_id" {
+  description = "Security group ID for social graph service"
+  value       = module.social_graph_service.security_group_id
+}
+
+output "social_graph_service_followers_table_name" {
+  description = "DynamoDB followers table name for social graph service"
+  value       = module.social_graph_service.followers_table_name
+}
+
+output "social_graph_service_followers_table_arn" {
+  description = "DynamoDB followers table ARN for social graph service"
+  value       = module.social_graph_service.followers_table_arn
+}
+
+output "social_graph_service_following_table_name" {
+  description = "DynamoDB following table name for social graph service"
+  value       = module.social_graph_service.following_table_name
+}
+
+output "social_graph_service_following_table_arn" {
+  description = "DynamoDB following table ARN for social graph service"
+  value       = module.social_graph_service.following_table_arn
+}
+
+output "social_graph_service_connect_endpoint" {
+  description = "Service Connect gRPC endpoint for social graph service"
+  value       = module.social_graph_service.service_connect_grpc_endpoint
+}

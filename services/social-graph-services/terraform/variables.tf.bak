@@ -1,0 +1,309 @@
+# Region to deploy intovariable "aws_region" {
+
+variable "aws_region" {  description = "AWS region to deploy into"
+
+  type    = string  type        = string
+
+  default = "us-west-2"  default     = "us-west-2"
+
+}}
+
+
+
+# Platform detection for shell command compatibility# Platform detection for shell command compatibility
+
+variable "is_windows" {variable "is_windows" {
+
+  description = "Whether running on Windows (for shell command compatibility)"  description = "Whether running on Windows (for shell command compatibility)"
+
+  type        = bool  type        = bool
+
+  default     = false  default     = false
+
+}}
+
+
+
+# Shared infrastructure values (passed from root terraform)# Shared infrastructure values (passed from root terraform)
+
+variable "vpc_id" {variable "execution_role_arn" {
+
+  description = "VPC ID from shared infrastructure"  description = "ARN of the ECS task execution role (from shared IAM module)"
+
+  type        = string  type        = string
+
+}}
+
+
+
+variable "vpc_cidr" {variable "task_role_arn" {
+
+  description = "VPC CIDR block from shared infrastructure"  description = "ARN of the ECS task role for DynamoDB access (from shared IAM module)"
+
+  type        = string  type        = string
+
+}}
+
+
+
+variable "public_subnet_ids" {variable "vpc_id" {
+
+  description = "Public subnet IDs from shared infrastructure"  description = "VPC ID from shared infrastructure"
+
+  type        = list(string)  type        = string
+
+}}
+
+
+
+variable "private_subnet_ids" {variable "vpc_cidr" {
+
+  description = "Private subnet IDs from shared infrastructure"  description = "VPC CIDR block from shared infrastructure"
+
+  type        = list(string)  type        = string
+
+}}
+
+
+
+variable "alb_listener_arn" {variable "public_subnet_ids" {
+
+  description = "ALB listener ARN from shared infrastructure"  description = "Public subnet IDs from shared infrastructure"
+
+  type        = string  type        = list(string)
+
+}}
+
+
+
+variable "alb_arn_suffix" {variable "alb_listener_arn" {
+
+  description = "ALB ARN suffix from shared infrastructure"  description = "ALB listener ARN from shared infrastructure"
+
+  type        = string  type        = string
+
+}}
+
+
+
+variable "service_connect_namespace_arn" {variable "alb_arn_suffix" {
+
+  description = "ECS Service Connect namespace ARN from shared infrastructure"  description = "ALB ARN suffix from shared infrastructure"
+
+  type        = string  type        = string
+
+}}
+
+
+
+# ECR & ECS settingsvariable "service_connect_namespace_arn" {
+
+variable "ecr_repository_name" {  description = "ECS Service Connect namespace ARN from shared infrastructure"
+
+  type    = string  type        = string
+
+  default = "social_graph_service"}
+
+}
+
+variable "common_tags" {
+
+variable "service_name" {  description = "Common tags to apply to resources"
+
+  type    = string  type        = map(string)
+
+  default = "social_graph_service"  default     = {}
+
+}}
+
+
+
+variable "container_port" {variable "container_port" {
+
+  type    = number  description = "Container port to expose"
+
+  default = 50052  type        = number
+
+}  default     = 8080
+
+}
+
+variable "ecs_desired_count" {
+
+  type    = numbervariable "ecs_desired_count" {
+
+  default = 2  description = "Number of ECS tasks to run"
+
+}  type        = number
+
+  default     = 2
+
+variable "log_retention_days" {}
+
+  type    = number
+
+  default = 14variable "log_retention_days" {
+
+}  description = "CloudWatch Logs retention days"
+
+  type        = number
+
+# ALB settings  default     = 14
+
+variable "alb_priority" {}
+
+  description = "Priority for ALB listener rule"
+
+  type        = number# ALB settings
+
+  default     = 150variable "alb_priority" {
+
+}  description = "Priority for ALB listener rule"
+
+  type        = number
+
+# DynamoDB settings  default     = 150
+
+variable "followers_table_name" {}
+
+  description = "DynamoDB table name for followers"
+
+  type        = stringvariable "ecr_repository_name" {
+
+  default     = "social-graph-followers"  description = "Name of the ECR repository for this service"
+
+}  type        = string
+
+  default     = "social-graph-service"
+
+variable "following_table_name" {}
+
+  description = "DynamoDB table name for following relationships"
+
+  type        = stringvariable "service_name" {
+
+  default     = "social-graph-following"  description = "Service name used for ECS, ALB, and logs"
+
+}  type        = string
+
+  default     = "social-graph"
+
+# Database placeholders (optional - for RDS if needed)}
+
+variable "db_host" {
+
+  type    = stringvariable "dynamodb_table_name" {
+
+  default = ""  description = "DynamoDB table name for followers"
+
+}  type        = string
+
+  default     = "social-graph-followers"
+
+variable "db_port" {}
+
+  type    = string
+
+  default = ""variable "dynamodb_following_table_name" {
+
+}  description = "DynamoDB table name for following relationships"
+
+  type        = string
+
+variable "db_name" {  default     = "social-graph-following"
+
+  type    = string}
+
+  default = ""
+
+}# Database placeholders (optional)
+
+variable "db_host" {
+
+variable "db_password" {  type        = string
+
+  type      = string  default     = ""
+
+  default   = ""}
+
+  sensitive = true
+
+}variable "db_port" {
+
+  type        = string
+
+# Auto-scaling settings  default     = ""
+
+variable "min_capacity" {}
+
+  type    = number
+
+  default = 1variable "db_name" {
+
+}  type        = string
+
+  default     = ""
+
+variable "max_capacity" {}
+
+  type    = number
+
+  default = 4variable "db_password" {
+
+}  type        = string
+
+  default     = ""
+
+variable "cpu_target_value" {  sensitive   = true
+
+  type    = number}
+
+  default = 70
+
+}# Auto-scaling defaults
+
+variable "min_capacity" {
+
+variable "memory_target_value" {  type    = number
+
+  type    = number  default = 1
+
+  default = 80}
+
+}
+
+variable "max_capacity" {
+
+variable "enable_request_based_scaling" {  type    = number
+
+  type    = bool  default = 4
+
+  default = true}
+
+}
+
+variable "cpu_target_value" {
+
+variable "request_count_target_value" {  type    = number
+
+  type    = number  default = 70
+
+  default = 1000}
+
+}
+
+variable "memory_target_value" {
+  type    = number
+  default = 80
+}
+
+variable "enable_request_based_scaling" {
+  type    = bool
+  default = false
+}
+
+variable "request_count_target_value" {
+  type    = number
+  default = 1000
+}
+

@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package socialgraph;
+
+option go_package = "github.com/PCBZ/CS6650-Project/services/social-graph-services/socialgraph";
+
+// SocialGraphService manages follow relationships between users
+service SocialGraphService {
+  // FollowUser creates a follow relationship
+  rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
+  
+  // UnfollowUser removes a follow relationship
+  rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
+  
+  // GetFollowers retrieves the list of users who follow a specified user
+  rpc GetFollowers(GetFollowersRequest) returns (GetFollowersResponse);
+  
+  // GetFollowing retrieves the list of users that a specified user follows
+  rpc GetFollowing(GetFollowingRequest) returns (GetFollowingResponse);
+  
+  // GetFollowersCount retrieves the follower count for a user
+  rpc GetFollowersCount(GetFollowersCountRequest) returns (GetFollowersCountResponse);
+  
+  // GetFollowingCount retrieves the following count for a user
+  rpc GetFollowingCount(GetFollowingCountRequest) returns (GetFollowingCountResponse);
+  
+  // CheckFollowRelationship checks if a follow relationship exists
+  rpc CheckFollowRelationship(CheckFollowRelationshipRequest) returns (CheckFollowRelationshipResponse);
+  
+  // BatchCreateFollowRelationships creates multiple follow relationships (for data generation)
+  rpc BatchCreateFollowRelationships(BatchCreateFollowRelationshipsRequest) returns (BatchCreateFollowRelationshipsResponse);
+}
+
+// FollowUser
+message FollowUserRequest {
+  int64 follower_user_id = 1;  // The user who wants to follow
+  int64 target_user_id = 2;    // The user to be followed
+}
+
+message FollowUserResponse {
+  bool success = 1;
+  string error_message = 2;
+  string error_code = 3;
+  int64 created_at = 4;  // Unix timestamp
+}
+
+// UnfollowUser
+message UnfollowUserRequest {
+  int64 follower_user_id = 1;  // The user who wants to unfollow
+  int64 target_user_id = 2;    // The user to be unfollowed
+}
+
+message UnfollowUserResponse {
+  bool success = 1;
+  string error_message = 2;
+  string error_code = 3;
+}
+
+// GetFollowers
+message GetFollowersRequest {
+  int64 user_id = 1;           // Required: ID of the user whose followers to retrieve
+  int32 limit = 2;             // Optional: Maximum number of followers to return (default: 1000)
+  int32 offset = 3;            // Optional: Pagination offset (default: 0)
+}
+
+message GetFollowersResponse {
+  repeated int64 user_ids = 1;      // List of follower user IDs
+  int32 total_count = 2;            // Total follower count before pagination
+  bool has_more = 3;                // Whether there are more results available
+  string error_message = 4;         // Error message if request failed
+}
+
+// GetFollowing
+message GetFollowingRequest {
+  int64 user_id = 1;           // Required: ID of the user whose following list to retrieve
+  int32 min_followers = 2;     // Optional: Minimum follower count filter (default: 0)
+  int32 limit = 3;             // Optional: Maximum number of users to return (default: 1000)
+}
+
+message GetFollowingResponse {
+  repeated int64 user_ids = 1;       // List of user IDs that the user follows
+  int32 total_count = 2;             // Total count before limit applied
+  bool has_more = 3;                 // Whether there are more results available
+  string error_message = 4;          // Error message if request failed
+}
+
+// GetFollowersCount
+message GetFollowersCountRequest {
+  int64 user_id = 1;
+}
+
+message GetFollowersCountResponse {
+  int64 user_id = 1;
+  int32 followers_count = 2;
+  string error_message = 3;
+}
+
+// GetFollowingCount
+message GetFollowingCountRequest {
+  int64 user_id = 1;
+}
+
+message GetFollowingCountResponse {
+  int64 user_id = 1;
+  int32 following_count = 2;
+  string error_message = 3;
+}
+
+// CheckFollowRelationship
+message CheckFollowRelationshipRequest {
+  int64 follower_user_id = 1;
+  int64 target_user_id = 2;
+}
+
+message CheckFollowRelationshipResponse {
+  bool is_following = 1;
+  string error_message = 2;
+}
+
+// BatchCreateFollowRelationships (for data generation)
+message BatchCreateFollowRelationshipsRequest {
+  repeated FollowRelationship relationships = 1;
+}
+
+message FollowRelationship {
+  int64 follower_user_id = 1;
+  int64 target_user_id = 2;
+}
+
+message BatchCreateFollowRelationshipsResponse {
+  int32 created_count = 1;
+  int32 failed_count = 2;
+  bool success = 3;
+  string error_message = 4;
+}
