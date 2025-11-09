@@ -233,6 +233,10 @@ module "social_graph_service" {
   alb_arn_suffix        = module.alb.alb_arn_suffix
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
   
+  # IAM roles for ECS tasks
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+  task_role_arn      = module.iam.social_graph_service_task_role_arn
+  
   # Pass through necessary variables
   aws_region           = var.aws_region
   service_name         = "social-graph-service"

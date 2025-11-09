@@ -96,3 +96,32 @@ resource "aws_iam_role_policy_attachment" "timeline_sqs" {
   role       = aws_iam_role.timeline_service_task_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
 }
+
+# Social Graph Service Task Role (for DynamoDB access)
+resource "aws_iam_role" "social_graph_service_task_role" {
+  name = "${var.project_name}-${var.environment}-social-graph-task-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-social-graph-task-role"
+    Environment = var.environment
+    ISBStudent  = "true"  # Required for Innovation Sandbox IAM role creation
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "social_graph_dynamodb" {
+  role       = aws_iam_role.social_graph_service_task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+}
