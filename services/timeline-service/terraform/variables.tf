@@ -48,7 +48,7 @@ variable "service_name" {
 
 variable "container_port" {
   type    = number
-  default = 8083
+  default = 8084
 }
 
 variable "ecs_count" {
