@@ -36,7 +36,10 @@ class UserSegmentation:
             Dictionary mapping segment names to lists of user IDs
         """
         shuffled_users = user_ids.copy()
+        # Use fixed seed for consistent, reproducible segmentation across runs
+        random.seed(42)
         random.shuffle(shuffled_users)
+        random.seed()  # Reset to random seed for subsequent operations
         
         segments = {
             "small": shuffled_users[:self.small_count],

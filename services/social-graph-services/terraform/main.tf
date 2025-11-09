@@ -110,7 +110,7 @@ resource "aws_lb_listener_rule" "service" {
 module "ecs" {
   source             = "./modules/ecs"
   service_name       = var.service_name
-  image              = "${module.ecr.repository_url}:latest"
+  image              = "${module.ecr.repository_url}@${docker_registry_image.app.sha256_digest}"
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
@@ -134,4 +134,33 @@ module "ecs" {
   enable_request_based_scaling = var.enable_request_based_scaling
   request_count_target_value  = var.request_count_target_value
   alb_resource_label          = "${var.alb_arn_suffix}/${aws_lb_target_group.service.arn_suffix}"
+  
+  # Ensure ECS service waits for Docker image to be pushed
+  depends_on = [docker_registry_image.app]
+}
+
+# Build & push the Go app image into ECR
+resource "docker_image" "app" {
+  name = "${module.ecr.repository_url}:latest"
+
+  build {
+    context    = "${path.module}/../../.."  # Project root (Dockerfile expects proto/)
+    dockerfile = "services/social-graph-services/Dockerfile"  # Path to Dockerfile from project root
+    pull_parent = false
+    no_cache    = false
+    remove      = true
+  }
+
+  # Force rebuild on trigger changes
+  triggers = {
+    dockerfile_hash = filemd5("${path.module}/../Dockerfile")
+    src_hash       = sha1(join("", [for f in fileset("${path.module}/../", "**/*.go") : filemd5("${path.module}/../${f}")]))
+  }
+}
+
+resource "docker_registry_image" "app" {
+  name          = docker_image.app.name
+  
+  # Ensure the image is built before pushing
+  depends_on = [docker_image.app]
 }

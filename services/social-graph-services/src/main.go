@@ -73,6 +73,26 @@ func main() {
 	router := gin.Default()
 	router.Use(corsMiddleware())
 
+	// Routes with /api/social-graph prefix (for ALB routing via /api/social-graph/*)
+	apiSocialGraph := router.Group("/api/social-graph")
+	{
+		// Follow/unfollow operations
+		apiSocialGraph.POST("/follow", httpHandler.FollowUser)
+		
+		// User followers and following lists
+		apiSocialGraph.GET("/:user_id/followers", httpHandler.GetFollowers)
+		apiSocialGraph.GET("/:user_id/following", httpHandler.GetFollowing)
+		
+		// Health and stats endpoints
+		apiSocialGraph.GET("/health", httpHandler.Health)
+		apiSocialGraph.GET("/followers/:userId/count", httpHandler.GetFollowerCount)
+		apiSocialGraph.GET("/following/:userId/count", httpHandler.GetFollowingCount)
+		apiSocialGraph.GET("/relationship/check", httpHandler.CheckFollowRelationship)
+		
+		// Admin endpoints
+		apiSocialGraph.POST("/admin/load-test-data", httpHandler.LoadTestData)
+	}
+	
 	// Routes - support both /api prefix and direct paths for gateway compatibility
 	api := router.Group("/api")
 	{

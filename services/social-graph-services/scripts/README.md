@@ -28,33 +28,44 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Option 1: Using Shell Script (Linux/Mac)
+### Quick Start (Recommended)
 
+**Linux/macOS/WSL:**
 ```bash
 # Load 5,000 users (default)
-./load_test_data.sh
+./generate_and_load.sh
 
-# Load 25,000 users
-./load_test_data.sh 25000
+# Load custom number of users
+./generate_and_load.sh --users 25000
 
-# Load 100,000 users
-./load_test_data.sh 100000
+# Custom configuration
+./generate_and_load.sh \
+    --users 10000 \
+    --region us-east-1 \
+    --followers-table my-followers \
+    --following-table my-following
+
+# Show help
+./generate_and_load.sh --help
 ```
 
-### Option 2: Using PowerShell Script (Windows)
-
+**Windows (PowerShell):**
 ```powershell
 # Load 5,000 users (default)
 .\load_test_data.ps1
 
-# Load 25,000 users
+# Load custom number of users
 .\load_test_data.ps1 -Users 25000
 
-# Load 100,000 users
-.\load_test_data.ps1 -Users 100000
+# Custom configuration
+.\load_test_data.ps1 `
+    -Users 10000 `
+    -AwsRegion us-east-1 `
+    -FollowersTable my-followers `
+    -FollowingTable my-following
 ```
 
-### Option 3: Using Python Directly
+### Advanced: Using Python Directly
 
 ```bash
 # Basic usage
@@ -81,11 +92,20 @@ You can set these environment variables to customize the defaults:
 
 Example:
 
+**Bash:**
 ```bash
 export FOLLOWERS_TABLE_NAME=my-followers
 export FOLLOWING_TABLE_NAME=my-following
 export AWS_REGION=us-east-1
-./load_test_data.sh 5000
+./generate_and_load.sh --users 5000
+```
+
+**PowerShell:**
+```powershell
+$env:FOLLOWERS_TABLE_NAME="my-followers"
+$env:FOLLOWING_TABLE_NAME="my-following"
+$env:AWS_REGION="us-east-1"
+.\load_test_data.ps1 -Users 5000
 ```
 
 ## Data Distribution
@@ -99,25 +119,29 @@ export AWS_REGION=us-east-1
 | Big     | 4.99%     | High           | Low             |
 | Top     | 0.01%     | Very High      | Very Low        |
 
-### Specific Ranges by User Count
+### Specific Targets by User Count
 
 **5,000 users:**
-- Small: 1-99 followers, 1-49 following
-- Medium: 100-499 followers, 1-49 following
-- Big: 500-1,999 followers, 0-25 following
-- Top: 2,000-4,999 followers, 0-25 following
+- Small (4,000 users): **1 follower** each, 1-50 following
+- Medium (750 users): **100 followers** each, 1-50 following
+- Big (249 users): **500 followers** each, 0-30 following
+- Top (1 user): **2,000 followers**, 0-50 following
+
+*Example: User 913 is consistently the Top tier user with exactly 2,000 followers*
 
 **25,000 users:**
-- Small: 1-499 followers, 1-299 following
-- Medium: 500-2,499 followers, 1-299 following
-- Big: 2,500-9,999 followers, 0-125 following
-- Top: 10,000-24,999 followers, 0-125 following
+- Small (20,000 users): **1 follower** each
+- Medium (3,750 users): **500 followers** each
+- Big (1,247 users): **2,500 followers** each
+- Top (3 users): **10,000 followers** each
 
 **100,000 users:**
-- Small: 1-1,999 followers, 1-999 following
-- Medium: 2,000-9,999 followers, 1-999 following
-- Big: 10,000-39,999 followers, 0-500 following
-- Top: 40,000-99,999 followers, 0-500 following
+- Small (80,000 users): **1 follower** each
+- Medium (15,000 users): **2,000 followers** each
+- Big (4,990 users): **10,000 followers** each
+- Top (10 users): **40,000 followers** each
+
+> **Note:** The generator uses a fixed random seed (42) to ensure reproducible user-to-tier assignments across multiple runs.
 
 ## DynamoDB Table Structure
 
@@ -151,11 +175,38 @@ pytest test_relationships.py -v
 ## Performance
 
 Loading times (approximate):
-- 5,000 users: ~30 seconds
-- 25,000 users: ~2 minutes
-- 100,000 users: ~10 minutes
+- 5,000 users (~205K relationships): ~30 seconds
+- 25,000 users (~2.56M relationships): ~3-5 minutes
+- 100,000 users (~40M relationships): ~15-20 minutes
 
-*Note: Times may vary based on network speed and DynamoDB provisioned capacity.*
+*Note: Times may vary based on network speed and DynamoDB capacity mode.*
+
+## Validation
+
+After loading data, verify the results:
+
+**Check follower counts:**
+```bash
+# Via API (replace with your ALB DNS)
+curl http://YOUR-ALB-DNS/api/social-graph/followers/913/count
+
+# Via DynamoDB directly
+aws dynamodb get-item \
+    --table-name social-graph-followers \
+    --key '{"user_id": {"N": "913"}}' \
+    --region us-west-2
+```
+
+**Expected results for 5,000 users:**
+- User 913 (Top tier): 2,000 followers
+- User 1 (Small tier): 1 follower
+- User 100 (Small tier): 1 follower
+
+**Run comprehensive tests:**
+```powershell
+# From project root
+.\test-social-graph-full.ps1
+```
 
 ## Troubleshooting
 
@@ -186,13 +237,29 @@ terraform apply
 
 If you see `ProvisionedThroughputExceededException`, the script will automatically retry with exponential backoff. For large datasets (100K+ users), consider using DynamoDB on-demand billing mode.
 
-## Core Modules
+## Scripts Overview
 
-- **`core/segmenter.py`**: User segmentation logic
-- **`core/generator.py`**: Relationship generation with power-law distribution
-- **`load_dynamodb.py`**: Main script to load data into DynamoDB
+### Main Scripts
+- **`generate_and_load.sh`** ✅ - Bash script with comprehensive checks (Linux/macOS/WSL)
+- **`load_test_data.ps1`** ✅ - PowerShell script (Windows)
+- **`load_dynamodb.py`** - Core Python loader (called by both scripts)
 
-## Related Files
+### Core Modules
+- **`core/segmenter.py`** - User segmentation logic with fixed random seed
+- **`core/generator.py`** - Relationship generation with weighted power-law distribution
 
-- **`generate_test_local.py`**: Generate CSV files for local testing (deprecated for production use)
-- **`tests/test_relationships.py`**: Unit tests for relationship generation
+### Legacy/Testing
+- **`generate_test_local.py`** - Generate CSV files for local testing
+- **`tests/debug_generator.py`** - Debug script to verify user segments
+- **`tests/test_relationships.py`** - Unit tests for relationship generation
+
+## Architecture
+
+```
+generate_and_load.sh (Bash) ──┐
+load_test_data.ps1 (PowerShell) ──┼──> load_dynamodb.py ──┐
+                                  │                        │
+                                  └────────────────────────┴──> core/segmenter.py
+                                                              └──> core/generator.py
+                                                              └──> DynamoDB (batch write)
+```

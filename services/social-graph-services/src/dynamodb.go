@@ -324,7 +324,15 @@ func (db *DynamoDBClient) GetFollowersCount(ctx context.Context, userID int64) (
 		return 0, fmt.Errorf("failed to unmarshal follower record: %w", err)
 	}
 
-	return int32(len(record.FollowerIDs)), nil
+	count := int32(len(record.FollowerIDs))
+	// Debug logging for verification
+	sampleSize := 5
+	if len(record.FollowerIDs) < sampleSize {
+		sampleSize = len(record.FollowerIDs)
+	}
+	log.Printf("GetFollowersCount: user=%d, count=%d, sample_ids=%v", userID, count, record.FollowerIDs[:sampleSize])
+	
+	return count, nil
 }
 
 // GetFollowingCount returns the count of users that a user follows (from list format)

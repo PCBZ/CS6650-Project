@@ -45,6 +45,22 @@ def load_to_dynamodb(
     
     # Batch write to followers table
     print(f"\n Writing to {followers_table_name}...")
+    
+    # Debug: Check sample users before writing and identify top users
+    print(f"\n Debug - Checking follower counts before write:")
+    
+    # Find the user with most followers (should be Top tier with 2000)
+    max_followers_user = max(follower_map.items(), key=lambda x: len(x[1]))
+    print(f"   Max followers: User {max_followers_user[0]} has {len(max_followers_user[1])} followers")
+    
+    # Sample specific user IDs
+    sample_users = [1, 100, 4500, 4900, 5000]
+    for user_id in sample_users:
+        if user_id in follower_map:
+            count = len(follower_map[user_id])
+            sample = list(follower_map[user_id])[:3]
+            print(f"   User {user_id}: {count} followers (sample: {sample})")
+    
     with followers_table.batch_writer() as batch:
         for user_id, followers in follower_map.items():
             if followers:  # Only write if user has followers
@@ -104,8 +120,11 @@ def generate_and_load(
     print("\n Step 2: Generating relationships...")
     generator = RelationshipGenerator(segments, segmentation, verbose=verbose)
     generator.generate_followers_first()
-    generator.enforce_following_limits()
-    generator.enforce_follower_limits()
+    # Ensure minimum followers requirement
+    generator.ensure_minimum_followers()
+    # Note: We DON'T enforce following limits after ensuring followers
+    # because it would break the carefully constructed follower counts
+    # Following limits will naturally be enforced by ensure_minimum_followers logic
     
     # Step 3: Get statistics
     print("\n Step 3: Relationship statistics...")

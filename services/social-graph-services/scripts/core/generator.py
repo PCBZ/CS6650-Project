@@ -12,70 +12,99 @@ from collections import defaultdict
 
 
 class RelationshipGenerator:
-    """Generate follow relationships with power-law distribution"""
-    
+    """Generate follow relationships with power-law / weighted model.
+
+    Enhancements vs original version:
+      - Weighted generation (top > big > medium > small)
+      - Deterministic target follower counts per tier (exact caps):
+            small=1, medium=100, big=500, top=2000 (for <=5k users)
+      - ensure_minimum_followers now also trims excess to reach exact targets
+      - Avoids erasing follower assignments while enforcing following limits
+    """
+
     def __init__(self, segments: Dict[str, List[int]], segmentation, verbose: bool = False):
-        """
-        Initialize the relationship generator
-        
-        Args:
-            segments: Dictionary mapping segment names to user ID lists
-            segmentation: UserSegmentation instance for range information
-            verbose: Whether to print detailed progress
-        """
         self.segments = segments
         self.segmentation = segmentation
         self.verbose = verbose
-        
+
         # Data structures
         self.relationships: Set[Tuple[int, int]] = set()
         self.follower_map: Dict[int, Set[int]] = defaultdict(set)
         self.following_map: Dict[int, Set[int]] = defaultdict(set)
+
+        # Pre-compute user -> tier mapping for O(1) lookups
+        self.user_tier: Dict[int, str] = {}
+        for tier, users in segments.items():
+            for uid in users:
+                self.user_tier[uid] = tier
     
     def powerlaw_random(self, n: int, alpha: float = 2.5) -> int:
         """
         Generate a random number following power-law distribution
         
         Args:
-            n: Maximum value
+            n: Maximum value (exclusive - will return 0 to n-1)
             alpha: Power-law exponent (default: 2.5 for social networks)
             
         Returns:
-            Random integer following power-law distribution
+            Random integer following power-law distribution (0 to n-1)
         """
-        return int(n * (1 - random.random()) ** (1 / (1 - alpha)))
+        # Ensure result is within valid array index range [0, n-1]
+        result = int(n * (1 - random.random()) ** (1 / (1 - alpha)))
+        return min(result, n - 1)
     
     def generate_followers_first(self):
-        """
-        Generate followers using power-law distribution
-        Strategy: Assign followers to users based on their segment
+        """Weighted initial relationship seeding.
+
+        We generate an initial organic graph by letting each user choose a
+        following list whose size depends on its own tier; the probability of
+        picking a followee is weighted by the followee's tier (rich-get-richer).
+        This produces a skew before we enforce *exact* follower targets.
         """
         if self.verbose:
-            print("\n📊 Generating followers (power-law distribution)...")
-        
-        all_users = []
-        for users in self.segments.values():
-            all_users.extend(users)
-        
-        # Generate followers for each user
-        for user_id in all_users:
-            # Determine how many followers to select
-            num_potential_followers = max(1, len(all_users) // 10)
-            
-            for _ in range(num_potential_followers):
-                # Use power-law distribution to select follower
-                follower_idx = self.powerlaw_random(len(all_users))
-                follower_id = all_users[follower_idx]
-                
-                # Avoid self-follow and duplicates
-                if follower_id != user_id:
-                    relationship = (follower_id, user_id)
-                    if relationship not in self.relationships:
-                        self.relationships.add(relationship)
-                        self.follower_map[user_id].add(follower_id)
-                        self.following_map[follower_id].add(user_id)
-        
-        print(f"✅ Generated {len(self.relationships):,} follow relationships")
+            print("\n📊 Generating followers (weighted by tier)...")
+
+        # Flatten all users
+        all_users: List[int] = [u for tier_list in self.segments.values() for u in tier_list]
+
+        # Weights by *followee* tier (top users attract more followers)
+        tier_weights = {"small": 1, "medium": 3, "big": 10, "top": 50}
+        weights = [tier_weights.get(self.user_tier[u], 1) for u in all_users]
+
+        # Per-tier following count ranges (looser than follower ranges)
+        def following_target(user_id: int) -> int:
+            tier = self.user_tier[user_id]
+            if tier == "top":
+                return random.randint(20, 80)
+            if tier == "big":
+                return random.randint(10, 50)
+            # small / medium
+            return random.randint(5, 30)
+
+        for follower_id in all_users:
+            k = following_target(follower_id)
+            # Use random.choices (with replacement) then remove duplicates/self
+            # Retry sampling if needed to fill diversity (cap attempts to avoid loops)
+            attempts = 0
+            selected: Set[int] = set()
+            while len(selected) < k and attempts < 5:
+                batch = random.choices(all_users, weights=weights, k=k)
+                for cand in batch:
+                    if cand == follower_id:
+                        continue
+                    selected.add(cand)
+                    if len(selected) >= k:
+                        break
+                attempts += 1
+
+            for followee_id in selected:
+                rel = (follower_id, followee_id)
+                if rel not in self.relationships:
+                    self.relationships.add(rel)
+                    self.follower_map[followee_id].add(follower_id)
+                    self.following_map[follower_id].add(followee_id)
+
+        print(f"✅ Seeded {len(self.relationships):,} preliminary relationships")
     
     def enforce_following_limits(self):
         """
@@ -119,88 +148,62 @@ class RelationshipGenerator:
         print(f"✅ Final relationship count: {len(self.relationships):,}")
     
     def ensure_minimum_followers(self):
+        """Enforce *exact* follower targets per tier.
+
+        For <=5k users we adopt fixed targets:
+            small=1, medium=100, big=500, top=2000
+        Steps per user:
+          1. If current > target: randomly trim excess (remove relationships)
+          2. If current < target: add missing by sampling from all other users
+        This produces deterministic-looking distribution useful for predictable
+        performance & downstream service tests.
         """
-        Ensure each user has at least the minimum required followers
-        """
-        print(f"\n🔧 Ensuring minimum follower requirements...")
-        
-        added_count = 0
-        
-        for user_type, users in self.segments.items():
-            min_followers = self.segmentation.get_follower_range(user_type)[0]
-            
-            for user_id in users:
-                current_followers = len(self.follower_map[user_id])
-                
-                if current_followers < min_followers:
-                    needed = min_followers - current_followers
-                    
-                    # Allow overflow for Big and Top users
-                    allow_overflow = user_type in ["big", "top"]
-                    
-                    potential_followers = []
-                    
-                    # Priority 1: Small users
-                    for small_user_id in self.segments.get("small", []):
-                        if small_user_id == user_id:
+        print("\n🔧 Enforcing exact follower targets per tier...")
+
+        if self.segmentation.total_users <= 5000:
+            targets = {"small": 1, "medium": 100, "big": 500, "top": 2000}
+        else:
+            # Scaled-up scenario (simple proportional scaling)
+            targets = {"small": 1, "medium": 1000, "big": 5000, "top": 20000}
+
+        all_users: List[int] = [u for tier_list in self.segments.values() for u in tier_list]
+        added = 0
+        trimmed = 0
+
+        for tier, users in self.segments.items():
+            target = targets.get(tier, 0)
+            if target == 0:
+                continue
+            for uid in users:
+                current = len(self.follower_map[uid])
+                # Trim if above target
+                if current > target:
+                    excess = current - target
+                    to_remove = random.sample(list(self.follower_map[uid]), excess)
+                    for follower_id in to_remove:
+                        self.follower_map[uid].discard(follower_id)
+                        self.following_map[follower_id].discard(uid)
+                        self.relationships.discard((follower_id, uid))
+                        trimmed += 1
+                    current = target
+                # Add if below target
+                if current < target:
+                    needed = target - current
+                    # Candidate pool: all users except self and existing followers
+                    candidates = [c for c in all_users if c != uid and c not in self.follower_map[uid]]
+                    if not candidates:
+                        continue
+                    k = min(needed, len(candidates))
+                    new_followers = random.sample(candidates, k)
+                    for fid in new_followers:
+                        if (fid, uid) in self.relationships:
                             continue
-                        if (small_user_id, user_id) in self.relationships:
-                            continue
-                        
-                        current_following = len(self.following_map[small_user_id])
-                        max_following = self.segmentation.get_following_range("small")[1]
-                        
-                        if allow_overflow:
-                            if current_following < max_following + 10:
-                                potential_followers.append(small_user_id)
-                        else:
-                            if current_following < max_following:
-                                potential_followers.append(small_user_id)
-                    
-                    # Priority 2: Medium users
-                    if len(potential_followers) < needed:
-                        for medium_user_id in self.segments.get("medium", []):
-                            if medium_user_id == user_id:
-                                continue
-                            if (medium_user_id, user_id) in self.relationships:
-                                continue
-                            
-                            current_following = len(self.following_map[medium_user_id])
-                            max_following = self.segmentation.get_following_range("medium")[1]
-                            
-                            if allow_overflow:
-                                if current_following < max_following + 10:
-                                    potential_followers.append(medium_user_id)
-                            else:
-                                if current_following < max_following:
-                                    potential_followers.append(medium_user_id)
-                    
-                    # Priority 3: Big users (for Top users only)
-                    if len(potential_followers) < needed and user_type == "top":
-                        for big_user_id in self.segments.get("big", []):
-                            if big_user_id == user_id:
-                                continue
-                            if (big_user_id, user_id) in self.relationships:
-                                continue
-                            
-                            current_following = len(self.following_map[big_user_id])
-                            max_following = self.segmentation.get_following_range("big")[1]
-                            
-                            if current_following < max_following:
-                                potential_followers.append(big_user_id)
-                    
-                    # Add relationships
-                    if potential_followers:
-                        selected = random.sample(potential_followers, min(needed, len(potential_followers)))
-                        
-                        for follower_id in selected:
-                            self.relationships.add((follower_id, user_id))
-                            self.following_map[follower_id].add(user_id)
-                            self.follower_map[user_id].add(follower_id)
-                            added_count += 1
-        
-        if added_count > 0:
-            print(f"  Added {added_count:,} relationships to meet minimum follower requirements")
+                        self.relationships.add((fid, uid))
+                        self.follower_map[uid].add(fid)
+                        self.following_map[fid].add(uid)
+                        added += 1
+
+        print(f"  Added {added:,} follower links; trimmed {trimmed:,} excess links")
         print(f"✅ Final relationship count: {len(self.relationships):,}")
     
     def get_statistics(self) -> Dict:
