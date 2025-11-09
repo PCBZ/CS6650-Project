@@ -122,6 +122,7 @@ module "ecs" {
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
   execution_role_arn = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
+  task_role_arn      = var.task_role_arn  # Task role for DynamoDB/SQS access
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
