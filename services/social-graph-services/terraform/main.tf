@@ -113,29 +113,6 @@ resource "aws_lb_listener_rule" "service" {
   }
 }
 
-# Build & push image to ECR (local-exec)
-resource "null_resource" "docker_build_push" {
-  triggers = {
-    dockerfile_hash = filesha256("${path.module}/../Dockerfile")
-    handlers_hash   = filesha256("${path.module}/../src/handlers.go")
-    ecr_repo        = module.ecr.repository_url
-  }
-
-  provisioner "local-exec" {
-    command = var.is_windows ? join("; ", [
-      "aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]}",
-      "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }",
-      "docker build -f services/social-graph-services/Dockerfile -t ${module.ecr.repository_url}:latest .",
-      "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }",
-      "docker push ${module.ecr.repository_url}:latest"
-    ]) : "aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]} && docker build -f services/social-graph-services/Dockerfile -t ${module.ecr.repository_url}:latest . && docker push ${module.ecr.repository_url}:latest"
-    interpreter = var.is_windows ? ["PowerShell", "-Command"] : ["bash", "-c"]
-    working_dir = "${path.module}/../../.."
-  }
-
-  depends_on = [module.ecr]
-}
-
 # ECS module wiring
 module "ecs" {
   source             = "./modules/ecs"
@@ -166,6 +143,4 @@ module "ecs" {
   enable_request_based_scaling = var.enable_request_based_scaling
   request_count_target_value  = var.request_count_target_value
   alb_resource_label          = "${var.alb_arn_suffix}/${aws_lb_target_group.service.arn_suffix}"
-
-  depends_on = [null_resource.docker_build_push]
 }

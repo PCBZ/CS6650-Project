@@ -235,7 +235,6 @@ module "social_graph_service" {
   
   # Pass through necessary variables
   aws_region           = var.aws_region
-  is_windows           = var.is_windows
   service_name         = "social-graph-service"
   ecr_repository_name  = "social-graph-service"
   container_port       = 8085

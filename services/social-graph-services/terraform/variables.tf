@@ -109,12 +109,6 @@ variable "db_password" {
   sensitive = true
 }
 
-# Windows flag for docker build commands
-variable "is_windows" {
-  type    = bool
-  default = true
-}
-
 # Auto-scaling configuration
 variable "min_capacity" {
   description = "Minimum number of ECS tasks"

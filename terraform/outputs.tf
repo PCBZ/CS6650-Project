@@ -156,22 +156,22 @@ output "social_graph_service_security_group_id" {
 
 output "social_graph_service_followers_table_name" {
   description = "DynamoDB followers table name for social graph service"
-  value       = module.social_graph_service.followers_table_name
+  value       = module.social_graph_service.dynamodb_followers_table_name
 }
 
 output "social_graph_service_followers_table_arn" {
   description = "DynamoDB followers table ARN for social graph service"
-  value       = module.social_graph_service.followers_table_arn
+  value       = module.social_graph_service.dynamodb_followers_table_arn
 }
 
 output "social_graph_service_following_table_name" {
   description = "DynamoDB following table name for social graph service"
-  value       = module.social_graph_service.following_table_name
+  value       = module.social_graph_service.dynamodb_following_table_name
 }
 
 output "social_graph_service_following_table_arn" {
   description = "DynamoDB following table ARN for social graph service"
-  value       = module.social_graph_service.following_table_arn
+  value       = module.social_graph_service.dynamodb_following_table_arn
 }
 
 output "social_graph_service_connect_endpoint" {
