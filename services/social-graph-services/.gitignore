@@ -1,0 +1,44 @@
+# Binaries
+social-graph-service
+social-graph-service.exe
+*.exe
+
+# Python
+__pycache__/
+*.py[cod]
+*_pb2.py
+*_pb2_grpc.py
+*.pyc
+.pytest_cache/
+
+# Generated proto code (optional - remove this line if you want to commit generated code)
+socialgraph/*.pb.go
+
+# Data files and outputs
+scripts/output/
+data/
+*.csv
+user_ids.json
+relationships.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies
+go.sum
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
