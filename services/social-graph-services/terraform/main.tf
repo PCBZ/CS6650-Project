@@ -117,7 +117,7 @@ resource "aws_lb_listener_rule" "service" {
 resource "null_resource" "docker_build_push" {
   triggers = {
     dockerfile_hash = filesha256("${path.module}/../Dockerfile")
-    main_go_hash    = filesha256("${path.module}/../main.go")
+    handlers_hash   = filesha256("${path.module}/../src/handlers.go")
     ecr_repo        = module.ecr.repository_url
   }
 
@@ -152,11 +152,12 @@ module "ecs" {
   region             = var.aws_region
   service_connect_namespace_arn = var.service_connect_namespace_arn
 
-  # Database environment variables (optional - social-graph uses DynamoDB)
-  db_host     = var.db_host
-  db_port     = var.db_port
-  db_name     = var.db_name
-  db_password = var.db_password
+  # Timeline service specific variables (using defaults/empty values for social-graph)
+  dynamodb_table_name        = var.followers_table_name
+  sqs_queue_url              = ""
+  post_service_url           = ""
+  social_graph_service_url   = ""
+  user_service_url           = ""
 
   min_capacity                 = var.min_capacity
   max_capacity                 = var.max_capacity
@@ -168,4 +169,3 @@ module "ecs" {
 
   depends_on = [null_resource.docker_build_push]
 }
-

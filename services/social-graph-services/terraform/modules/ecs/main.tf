@@ -36,6 +36,13 @@ resource "aws_ecs_task_definition" "app" {
           hostPort      = var.container_port
           protocol      = "tcp"
           appProtocol   = "http"
+        },
+        {
+          name          = "grpc"
+          containerPort = 50052
+          hostPort      = 50052
+          protocol      = "tcp"
+          appProtocol   = "grpc"
         }
       ]
 
@@ -133,6 +140,16 @@ resource "aws_ecs_service" "app" {
       client_alias {
         port     = var.container_port
         dns_name = var.service_name
+      }
+    }
+
+    service {
+      port_name      = "grpc"
+      discovery_name = "${var.service_name}-grpc"
+      
+      client_alias {
+        port     = 50052
+        dns_name = "${var.service_name}-grpc"
       }
     }
   }

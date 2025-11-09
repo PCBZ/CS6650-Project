@@ -37,3 +37,8 @@ output "service_connect_http_endpoint" {
   description = "Service Connect HTTP endpoint (DNS name)"
   value       = var.service_name
 }
+
+output "service_connect_grpc_endpoint" {
+  description = "Service Connect gRPC endpoint (DNS name:port)"
+  value       = "${var.service_name}-grpc"
+}
