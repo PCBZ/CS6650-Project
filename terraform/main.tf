@@ -200,13 +200,15 @@ module "timeline_service" {
   alb_priority        = 400  # Timeline service priority
   
   # Timeline Service specific configuration
-  sqs_queue_url             = var.timeline_service_sqs_queue_url
   post_service_url          = "post-service-grpc:50053"
   social_graph_service_url  = "social-graph-service-grpc:50052"
   user_service_url          = "user-service-grpc:50051"
   fanout_strategy           = var.timeline_service_fanout_strategy
   celebrity_threshold       = var.timeline_service_celebrity_threshold
   enable_pitr               = var.timeline_service_enable_pitr
+  
+  # Auto-fetch SNS topic ARN from post-service module
+  post_service_sns_topic_arn = module.post_service.sns_topic_arn
   
   # Auto-scaling settings
   min_capacity                 = var.timeline_service_min_capacity
