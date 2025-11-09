@@ -168,5 +168,4 @@ variable "service_connect_namespace_arn" {
 variable "post_service_sns_topic_arn" {
   description = "ARN of the post-service SNS topic for timeline updates"
   type        = string
-  default     = ""
 }

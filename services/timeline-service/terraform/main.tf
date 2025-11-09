@@ -13,8 +13,6 @@ module "logging" {
 
 # SQS module for subscribing to post-service SNS notifications
 module "sqs" {
-  count = var.post_service_sns_topic_arn != "" ? 1 : 0
-  
   source = "./modules/sqs"
   
   service_name    = var.service_name
@@ -142,7 +140,7 @@ module "ecs" {
   
   # Timeline Service specific configuration
   dynamodb_table_name       = aws_dynamodb_table.posts.name
-  sqs_queue_url             = length(module.sqs) > 0 ? module.sqs[0].queue_url : ""
+  sqs_queue_url             = module.sqs.queue_url
   post_service_url          = var.post_service_url
   social_graph_service_url  = var.social_graph_service_url
   user_service_url          = var.user_service_url
