@@ -27,17 +27,32 @@ func NewPostRepository(client *dynamodb.Client, tableName string) *PostRepositor
 
 // Create a new post and save to dynamodb 
 func(r *PostRepository) CreatePost(ctx context.Context, post *pb.Post) error {
-	item, err := attributevalue.MarshalMap(post)
-	if err != nil {
-		return fmt.Errorf("failed to marshal post: %w", err)
+	// Manually create DynamoDB item with correct field names (post_id, user_id, etc.)
+	item := map[string]types.AttributeValue{
+		"post_id": &types.AttributeValueMemberS{
+			Value: fmt.Sprintf("%d", post.PostId),
+		},
+		"user_id": &types.AttributeValueMemberN{
+			Value: fmt.Sprintf("%d", post.UserId),
+		},
+		"content": &types.AttributeValueMemberS{
+			Value: post.Content,
+		},
+		"timestamp": &types.AttributeValueMemberN{
+			Value: fmt.Sprintf("%d", post.Timestamp),
+		},
 	}
-
-	_, err = r.client.PutItem(ctx, &dynamodb.PutItemInput{
+	
+	_, err := r.client.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(r.tableName),
-		Item: item,
+		Item:      item,
 	})
 
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to create post: %w", err)
+	}
+
+	return nil
 }
 
 // Retrieves a single post by PostID
@@ -45,7 +60,7 @@ func(r *PostRepository)GetPost(ctx context.Context, postID int64)(*pb.Post, erro
 	result, err := r.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(r.tableName),
 		Key: map[string]types.AttributeValue{
-			"post_id": &types.AttributeValueMemberN{
+			"post_id": &types.AttributeValueMemberS{
 				Value: fmt.Sprintf("%d", postID),
 			},
 		},

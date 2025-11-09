@@ -29,6 +29,9 @@ locals {
 # Configure DynamoDB tables
 module "dynamodb" {
   source = "./modules/dynamodb"
+  
+  table_name  = var.dynamo_table
+  environment = var.environment
 }
 
 # Service-specific security group for ECS tasks
@@ -134,6 +137,7 @@ module "ecs" {
   subnet_ids         = var.public_subnet_ids
   security_group_ids = [aws_security_group.app.id]
   execution_role_arn = var.execution_role_arn
+  task_role_arn      = var.task_role_arn  # Task role for DynamoDB/SNS access
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
@@ -152,7 +156,7 @@ module "ecs" {
     },
     {
       name  = "DYNAMO_TABLE"
-      value = var.dynamo_table
+      value = module.dynamodb.table_name
     },
     {
       name  = "POST_STRATEGY"
