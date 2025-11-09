@@ -140,7 +140,7 @@ resource "null_resource" "docker_build_push" {
 	}
 
 	provisioner "local-exec" {
-		command = var.is_windows ? join("\n", [
+		command = var.is_windows ? join("; ", [
 			"aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]}",
 			"if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }",
 			"docker build -f services/social-graph-services/Dockerfile -t ${module.ecr.repository_url}:latest .",

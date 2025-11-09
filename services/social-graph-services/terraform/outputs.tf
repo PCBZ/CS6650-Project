@@ -29,8 +29,13 @@ output "dynamodb_following_table_arn" {
 }
 
 output "iam_task_role_arn" {
-  description = "IAM role ARN for ECS task role"
-  value       = aws_iam_role.ecs_task_role.arn
+  description = "IAM role ARN for ECS task role (from shared IAM module)"
+  value       = var.task_role_arn
+}
+
+output "iam_execution_role_arn" {
+  description = "IAM role ARN for ECS execution role (from shared IAM module)"
+  value       = var.execution_role_arn
 }
 
 output "ecr_repository_url" {

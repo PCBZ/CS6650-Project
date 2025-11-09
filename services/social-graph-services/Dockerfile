@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM --platform=linux/amd64 golang:1.25.1-alpine AS builder
 
 WORKDIR /app
 
