@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.33.0
-// source: social_graph_service.proto
+// source: proto/social_graph_service.proto
 
 package socialgraph
 
@@ -22,7 +22,7 @@ const (
 	SocialGraphService_FollowUser_FullMethodName                     = "/socialgraph.SocialGraphService/FollowUser"
 	SocialGraphService_UnfollowUser_FullMethodName                   = "/socialgraph.SocialGraphService/UnfollowUser"
 	SocialGraphService_GetFollowers_FullMethodName                   = "/socialgraph.SocialGraphService/GetFollowers"
-	SocialGraphService_GetFollowing_FullMethodName                   = "/socialgraph.SocialGraphService/GetFollowing"
+	SocialGraphService_GetFollowingList_FullMethodName               = "/socialgraph.SocialGraphService/GetFollowingList"
 	SocialGraphService_GetFollowersCount_FullMethodName              = "/socialgraph.SocialGraphService/GetFollowersCount"
 	SocialGraphService_GetFollowingCount_FullMethodName              = "/socialgraph.SocialGraphService/GetFollowingCount"
 	SocialGraphService_CheckFollowRelationship_FullMethodName        = "/socialgraph.SocialGraphService/CheckFollowRelationship"
@@ -41,8 +41,8 @@ type SocialGraphServiceClient interface {
 	UnfollowUser(ctx context.Context, in *UnfollowUserRequest, opts ...grpc.CallOption) (*UnfollowUserResponse, error)
 	// GetFollowers retrieves the list of users who follow a specified user
 	GetFollowers(ctx context.Context, in *GetFollowersRequest, opts ...grpc.CallOption) (*GetFollowersResponse, error)
-	// GetFollowing retrieves the list of users that a specified user follows
-	GetFollowing(ctx context.Context, in *GetFollowingRequest, opts ...grpc.CallOption) (*GetFollowingResponse, error)
+	// GetFollowingList retrieves the list of users that a specified user follows
+	GetFollowingList(ctx context.Context, in *GetFollowingListRequest, opts ...grpc.CallOption) (*GetFollowingListResponse, error)
 	// GetFollowersCount retrieves the follower count for a user
 	GetFollowersCount(ctx context.Context, in *GetFollowersCountRequest, opts ...grpc.CallOption) (*GetFollowersCountResponse, error)
 	// GetFollowingCount retrieves the following count for a user
@@ -91,10 +91,10 @@ func (c *socialGraphServiceClient) GetFollowers(ctx context.Context, in *GetFoll
 	return out, nil
 }
 
-func (c *socialGraphServiceClient) GetFollowing(ctx context.Context, in *GetFollowingRequest, opts ...grpc.CallOption) (*GetFollowingResponse, error) {
+func (c *socialGraphServiceClient) GetFollowingList(ctx context.Context, in *GetFollowingListRequest, opts ...grpc.CallOption) (*GetFollowingListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetFollowingResponse)
-	err := c.cc.Invoke(ctx, SocialGraphService_GetFollowing_FullMethodName, in, out, cOpts...)
+	out := new(GetFollowingListResponse)
+	err := c.cc.Invoke(ctx, SocialGraphService_GetFollowingList_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -153,8 +153,8 @@ type SocialGraphServiceServer interface {
 	UnfollowUser(context.Context, *UnfollowUserRequest) (*UnfollowUserResponse, error)
 	// GetFollowers retrieves the list of users who follow a specified user
 	GetFollowers(context.Context, *GetFollowersRequest) (*GetFollowersResponse, error)
-	// GetFollowing retrieves the list of users that a specified user follows
-	GetFollowing(context.Context, *GetFollowingRequest) (*GetFollowingResponse, error)
+	// GetFollowingList retrieves the list of users that a specified user follows
+	GetFollowingList(context.Context, *GetFollowingListRequest) (*GetFollowingListResponse, error)
 	// GetFollowersCount retrieves the follower count for a user
 	GetFollowersCount(context.Context, *GetFollowersCountRequest) (*GetFollowersCountResponse, error)
 	// GetFollowingCount retrieves the following count for a user
@@ -182,8 +182,8 @@ func (UnimplementedSocialGraphServiceServer) UnfollowUser(context.Context, *Unfo
 func (UnimplementedSocialGraphServiceServer) GetFollowers(context.Context, *GetFollowersRequest) (*GetFollowersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowers not implemented")
 }
-func (UnimplementedSocialGraphServiceServer) GetFollowing(context.Context, *GetFollowingRequest) (*GetFollowingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFollowing not implemented")
+func (UnimplementedSocialGraphServiceServer) GetFollowingList(context.Context, *GetFollowingListRequest) (*GetFollowingListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFollowingList not implemented")
 }
 func (UnimplementedSocialGraphServiceServer) GetFollowersCount(context.Context, *GetFollowersCountRequest) (*GetFollowersCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowersCount not implemented")
@@ -272,20 +272,20 @@ func _SocialGraphService_GetFollowers_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SocialGraphService_GetFollowing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetFollowingRequest)
+func _SocialGraphService_GetFollowingList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFollowingListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SocialGraphServiceServer).GetFollowing(ctx, in)
+		return srv.(SocialGraphServiceServer).GetFollowingList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SocialGraphService_GetFollowing_FullMethodName,
+		FullMethod: SocialGraphService_GetFollowingList_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SocialGraphServiceServer).GetFollowing(ctx, req.(*GetFollowingRequest))
+		return srv.(SocialGraphServiceServer).GetFollowingList(ctx, req.(*GetFollowingListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -382,8 +382,8 @@ var SocialGraphService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SocialGraphService_GetFollowers_Handler,
 		},
 		{
-			MethodName: "GetFollowing",
-			Handler:    _SocialGraphService_GetFollowing_Handler,
+			MethodName: "GetFollowingList",
+			Handler:    _SocialGraphService_GetFollowingList_Handler,
 		},
 		{
 			MethodName: "GetFollowersCount",
@@ -403,5 +403,5 @@ var SocialGraphService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "social_graph_service.proto",
+	Metadata: "proto/social_graph_service.proto",
 }

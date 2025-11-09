@@ -157,56 +157,22 @@ func (s *SocialGraphServer) GetFollowers(ctx context.Context, req *pb.GetFollowe
 	}, nil
 }
 
-// GetFollowing retrieves users that a user follows
-func (s *SocialGraphServer) GetFollowing(ctx context.Context, req *pb.GetFollowingRequest) (*pb.GetFollowingResponse, error) {
+// GetFollowingList retrieves all users that a user follows (for Timeline Service)
+func (s *SocialGraphServer) GetFollowingList(ctx context.Context, req *pb.GetFollowingListRequest) (*pb.GetFollowingListResponse, error) {
 	userID := req.UserId
-	limit := req.Limit
-	if limit == 0 {
-		limit = 1000 // Default limit as per spec
-	}
-	minFollowers := req.MinFollowers
 
-	// Get all following (we'll filter by min_followers afterward)
-	// Using a large limit to get all, then filter and limit
-	following, _, err := s.db.GetFollowing(ctx, userID, limit*2, nil)
+	// Get all following users (use large limit to get all)
+	following, _, err := s.db.GetFollowing(ctx, userID, 10000, nil)
 	if err != nil {
-		log.Printf("Error getting following: %v", err)
-		return &pb.GetFollowingResponse{
-			ErrorMessage: "Failed to get following",
+		log.Printf("Error getting following list: %v", err)
+		return &pb.GetFollowingListResponse{
+			ErrorCode:    "INTERNAL_ERROR",
+			ErrorMessage: "Failed to get following list",
 		}, nil
 	}
 
-	// Filter by min_followers if specified
-	var filteredFollowing []int64
-	if minFollowers > 0 {
-		for _, followedUserID := range following {
-			followerCount, err := s.db.GetFollowersCount(ctx, followedUserID)
-			if err != nil {
-				log.Printf("Error getting follower count for user %d: %v", followedUserID, err)
-				continue
-			}
-			if followerCount >= minFollowers {
-				filteredFollowing = append(filteredFollowing, followedUserID)
-			}
-		}
-	} else {
-		filteredFollowing = following
-	}
-
-	// Get total count before applying limit
-	totalCount := int32(len(filteredFollowing))
-
-	// Apply limit
-	hasMore := false
-	if int32(len(filteredFollowing)) > limit {
-		filteredFollowing = filteredFollowing[:limit]
-		hasMore = true
-	}
-
-	return &pb.GetFollowingResponse{
-		UserIds:      filteredFollowing,
-		TotalCount:   totalCount,
-		HasMore:      hasMore,
+	return &pb.GetFollowingListResponse{
+		FollowingUserIds: following,
 	}, nil
 }
 

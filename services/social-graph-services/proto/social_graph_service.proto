@@ -15,8 +15,8 @@ service SocialGraphService {
   // GetFollowers retrieves the list of users who follow a specified user
   rpc GetFollowers(GetFollowersRequest) returns (GetFollowersResponse);
   
-  // GetFollowing retrieves the list of users that a specified user follows
-  rpc GetFollowing(GetFollowingRequest) returns (GetFollowingResponse);
+  // GetFollowingList retrieves the list of users that a specified user follows
+  rpc GetFollowingList(GetFollowingListRequest) returns (GetFollowingListResponse);
   
   // GetFollowersCount retrieves the follower count for a user
   rpc GetFollowersCount(GetFollowersCountRequest) returns (GetFollowersCountResponse);
@@ -70,18 +70,15 @@ message GetFollowersResponse {
   string error_message = 4;         // Error message if request failed
 }
 
-// GetFollowing
-message GetFollowingRequest {
-  int64 user_id = 1;           // Required: ID of the user whose following list to retrieve
-  int32 min_followers = 2;     // Optional: Minimum follower count filter (default: 0)
-  int32 limit = 3;             // Optional: Maximum number of users to return (default: 1000)
+// GetFollowingList
+message GetFollowingListRequest {
+  int64 user_id = 1;               // Required: ID of the user whose following list to retrieve
 }
 
-message GetFollowingResponse {
-  repeated int64 user_ids = 1;       // List of user IDs that the user follows
-  int32 total_count = 2;             // Total count before limit applied
-  bool has_more = 3;                 // Whether there are more results available
-  string error_message = 4;          // Error message if request failed
+message GetFollowingListResponse {
+  repeated int64 following_user_ids = 1;  // Complete list of user IDs that the user follows
+  string error_code = 2;                  // Error code if request failed
+  string error_message = 3;               // Error message if request failed
 }
 
 // GetFollowersCount
