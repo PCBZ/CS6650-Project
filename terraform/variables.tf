@@ -5,9 +5,9 @@ variable "aws_region" {
 }
 
 variable "aws_account_id" {
-  description = "AWS Account ID"
+  description = "AWS Account ID (will be auto-detected if not provided)"
   type        = string
-  default     = "964932215897"
+  default     = ""
 }
 
 variable "project_name" {

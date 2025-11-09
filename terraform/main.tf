@@ -5,7 +5,7 @@ module "iam" {
   project_name   = var.project_name
   environment    = var.environment
   aws_region     = var.aws_region
-  aws_account_id = var.aws_account_id
+  aws_account_id = data.aws_caller_identity.current.account_id
 }
 
 # Shared VPC and Networking

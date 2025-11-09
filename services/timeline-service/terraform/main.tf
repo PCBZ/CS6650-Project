@@ -20,10 +20,12 @@ module "sqs" {
   sns_topic_arn   = var.post_service_sns_topic_arn
 }
 
-# Use IAM role ARN directly instead of data source (AWS learner lab permission issue)
+# Get current AWS caller identity to build IAM role ARN dynamically
+data "aws_caller_identity" "current" {}
+
 locals {
-  # Directly specify LabRole ARN for AWS learner lab environment
-  lab_role_arn = "arn:aws:iam::964932215897:role/LabRole"
+  # Build LabRole ARN dynamically using current AWS account ID
+  lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 }
 
 # Service-specific security group for ECS tasks
