@@ -101,34 +101,3 @@ output "service_connect_namespace_arn" {
   description = "ARN of the Service Connect namespace"
   value       = module.network.service_connect_namespace_arn
 }
-
-# Timeline Service Outputs
-output "timeline_service_ecr_repository_url" {
-  description = "ECR repository URL for timeline service"
-  value       = module.timeline_service.ecr_repository_url
-}
-
-output "timeline_service_ecs_service_name" {
-  description = "ECS service name for timeline service"
-  value       = module.timeline_service.ecs_service_name
-}
-
-output "timeline_service_target_group_arn" {
-  description = "Target group ARN for timeline service"
-  value       = module.timeline_service.target_group_arn
-}
-
-output "timeline_service_dynamodb_table_name" {
-  description = "DynamoDB table name for timeline service"
-  value       = module.timeline_service.dynamodb_table_name
-}
-
-output "timeline_service_dynamodb_table_arn" {
-  description = "DynamoDB table ARN for timeline service"
-  value       = module.timeline_service.dynamodb_table_arn
-}
-
-output "timeline_service_connect_endpoint" {
-  description = "Service Connect HTTP endpoint for timeline service"
-  value       = module.timeline_service.service_connect_http_endpoint
-}

@@ -25,7 +25,12 @@ variable "security_group_ids" {
 
 variable "execution_role_arn" {
   type        = string
-  description = "ECS Task Execution Role ARN (Innovation Sandbox with ISBStudent=true tag)"
+  description = "ECS Task Execution Role ARN"
+}
+
+variable "task_role_arn" {
+  type        = string
+  description = "IAM Role ARN for app permissions"
 }
 
 variable "log_group_name" {
@@ -72,25 +77,6 @@ variable "user_service_grpc_host" {
   type        = string
   description = "gRPC endpoint for user-service (host:port)"
   default     = ""
-}
-
-# Web service specific: URL to communicate with post-service
-variable "post_service_url" {
-  type        = string
-  description = "Internal URL for post-service communication"
-}
-
-# Post Service gRPC endpoint
-variable "post_service_grpc_host" {
-  type        = string
-  description = "gRPC endpoint for post-service (host:port)"
-  default     = ""
-}
-
-# Web service specific: URL to communicate with timeline-service
-variable "timeline_service_url" {
-  type        = string
-  description = "Internal URL for timeline-service communication"
 }
 
 # Auto Scaling Variables
