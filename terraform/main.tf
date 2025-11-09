@@ -68,6 +68,7 @@ module "user_service" {
   # Pass through necessary variables
   aws_region           = var.aws_region
   is_windows           = var.is_windows
+  skip_docker_build    = true  # Use build-and-push.ps1 script instead
   service_name         = "user-service"
   ecr_repository_name  = "user-service"
   container_port       = 8080
@@ -101,6 +102,7 @@ module "web_service" {
   # Pass through necessary variables
   aws_region          = var.aws_region
   is_windows          = var.is_windows
+  skip_docker_build   = true  # Use build-and-push.ps1 script instead
   service_name        = "web-service"
   ecr_repository_name = "web-service"
   container_port      = 8081
@@ -134,13 +136,13 @@ module "social_graph_service" {
   alb_arn_suffix                = module.alb.alb_arn_suffix
   service_connect_namespace_arn = module.network.service_connect_namespace_arn
   
-  # IAM roles for ECS tasks
-  execution_role_arn = module.iam.ecs_task_execution_role_arn
-  task_role_arn      = module.iam.social_graph_task_role_arn
+  # Note: IAM roles are now created within social-graph-service module using AWS managed policies
+  # This bypasses SCP restrictions by using aws:policy attachments instead of custom IAM policies
   
   # Service configuration
   aws_region           = var.aws_region
   is_windows           = var.is_windows
+  skip_docker_build    = true  # Use build-and-push.ps1 script instead
   service_name         = "social-graph"
   ecr_repository_name  = "social-graph-service"
   container_port       = 8080
