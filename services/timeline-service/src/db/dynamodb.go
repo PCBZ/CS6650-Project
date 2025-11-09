@@ -13,7 +13,11 @@ type DynamoDBClient struct {
 }
 
 func NewDynamoDBClient(ctx context.Context, region string) (*DynamoDBClient, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	// Load config with explicit credential providers to avoid IMDS issues
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion(region),
+		config.WithEC2IMDSRegion(), // Enable IMDSv2 support
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load AWS config: %w", err)
 	}

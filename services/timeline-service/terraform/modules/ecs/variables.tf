@@ -28,6 +28,12 @@ variable "execution_role_arn" {
   description = "ECS Task Execution Role ARN (Innovation Sandbox with ISBStudent=true tag)"
 }
 
+variable "task_role_arn" {
+  type        = string
+  description = "ECS Task Role ARN for application permissions (DynamoDB, SQS)"
+  default     = ""
+}
+
 variable "log_group_name" {
   type        = string
   description = "CloudWatch log group name"

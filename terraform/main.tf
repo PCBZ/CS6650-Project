@@ -144,6 +144,7 @@ module "timeline_service" {
   
   # IAM role for ECS tasks
   execution_role_arn = module.iam.ecs_task_execution_role_arn
+  task_role_arn      = module.iam.timeline_service_task_role_arn
   
   # Pass through necessary variables
   aws_region           = var.aws_region

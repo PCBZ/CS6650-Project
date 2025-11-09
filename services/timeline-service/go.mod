@@ -1,6 +1,6 @@
 module github.com/PCBZ/CS6650-Project/services/timeline-service
 
-go 1.23
+go 1.24.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.39.6
