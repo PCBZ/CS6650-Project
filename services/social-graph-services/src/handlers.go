@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/PCBZ/CS6650-Project/services/social-graph-services/socialgraph"
+	pb "github.com/cs6650/proto/social_graph"
 )
 
 // SocialGraphServer implements the gRPC service

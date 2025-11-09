@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.33.0
-// source: proto/social_graph_service.proto
+// source: social_graph/social_graph_service.proto
 
-package socialgraph
+package social_graph
 
 import (
 	context "context"
@@ -403,5 +403,5 @@ var SocialGraphService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/social_graph_service.proto",
+	Metadata: "social_graph/social_graph_service.proto",
 }

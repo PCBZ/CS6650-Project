@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,12 +11,16 @@ import (
 
 // HTTPHandler handles HTTP API requests
 type HTTPHandler struct {
-	db *DynamoDBClient
+	db                *DynamoDBClient
+	userServiceClient UserServiceClient
 }
 
 // NewHTTPHandler creates a new HTTP handler
-func NewHTTPHandler(db *DynamoDBClient) *HTTPHandler {
-	return &HTTPHandler{db: db}
+func NewHTTPHandler(db *DynamoDBClient, userServiceClient UserServiceClient) *HTTPHandler {
+	return &HTTPHandler{
+		db:                db,
+		userServiceClient: userServiceClient,
+	}
 }
 
 // FollowRequest represents the request body for follow/unfollow actions
@@ -272,6 +277,17 @@ func (h *HTTPHandler) GetFollowers(c *gin.Context) {
 		return
 	}
 
+	// Populate usernames from User Service
+	if err := h.populateFollowerUsernames(c.Request.Context(), followers); err != nil {
+		// Log error but don't fail the request
+		// Usernames will be empty if User Service is unavailable
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":      "Failed to fetch user information",
+			"error_code": "USER_SERVICE_ERROR",
+		})
+		return
+	}
+
 	// Get total count
 	totalCount, err := h.db.GetFollowerCount(c.Request.Context(), userID)
 	if err != nil {
@@ -332,10 +348,76 @@ func (h *HTTPHandler) GetFollowing(c *gin.Context) {
 		totalCount = 0 // Fallback to 0 if count fails
 	}
 
+	// Populate usernames from User Service
+	if err := h.populateFollowingUsernames(c.Request.Context(), following); err != nil {
+		// Log error but don't fail the request
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":      "Failed to fetch user information",
+			"error_code": "USER_SERVICE_ERROR",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"following":   following,
 		"total_count": totalCount,
 		"next_cursor": nextCursor,
 		"has_more":    hasMore,
 	})
+}
+
+// populateFollowerUsernames fetches usernames from User Service and populates the FollowerInfo slice
+func (h *HTTPHandler) populateFollowerUsernames(ctx context.Context, followers []FollowerInfo) error {
+	if len(followers) == 0 {
+		return nil
+	}
+
+	// Extract user IDs
+	userIDs := make([]int64, len(followers))
+	for i, follower := range followers {
+		userIDs[i] = follower.UserID
+	}
+
+	// Batch get user info from User Service
+	users, _, err := h.userServiceClient.BatchGetUserInfo(ctx, userIDs)
+	if err != nil {
+		return err
+	}
+
+	// Populate usernames
+	for i := range followers {
+		if userInfo, ok := users[followers[i].UserID]; ok {
+			followers[i].Username = userInfo.Username
+		}
+	}
+
+	return nil
+}
+
+// populateFollowingUsernames fetches usernames from User Service and populates the FollowingInfo slice
+func (h *HTTPHandler) populateFollowingUsernames(ctx context.Context, following []FollowingInfo) error {
+	if len(following) == 0 {
+		return nil
+	}
+
+	// Extract user IDs
+	userIDs := make([]int64, len(following))
+	for i, f := range following {
+		userIDs[i] = f.UserID
+	}
+
+	// Batch get user info from User Service
+	users, _, err := h.userServiceClient.BatchGetUserInfo(ctx, userIDs)
+	if err != nil {
+		return err
+	}
+
+	// Populate usernames
+	for i := range following {
+		if userInfo, ok := users[following[i].UserID]; ok {
+			following[i].Username = userInfo.Username
+		}
+	}
+
+	return nil
 }

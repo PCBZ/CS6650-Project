@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v6.33.0
-// source: proto/social_graph_service.proto
+// source: social_graph/social_graph_service.proto
 
-package socialgraph
+package social_graph
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -32,7 +32,7 @@ type FollowUserRequest struct {
 
 func (x *FollowUserRequest) Reset() {
 	*x = FollowUserRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[0]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *FollowUserRequest) String() string {
 func (*FollowUserRequest) ProtoMessage() {}
 
 func (x *FollowUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[0]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *FollowUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowUserRequest.ProtoReflect.Descriptor instead.
 func (*FollowUserRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{0}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *FollowUserRequest) GetFollowerUserId() int64 {
@@ -86,7 +86,7 @@ type FollowUserResponse struct {
 
 func (x *FollowUserResponse) Reset() {
 	*x = FollowUserResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[1]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -98,7 +98,7 @@ func (x *FollowUserResponse) String() string {
 func (*FollowUserResponse) ProtoMessage() {}
 
 func (x *FollowUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[1]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -111,7 +111,7 @@ func (x *FollowUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowUserResponse.ProtoReflect.Descriptor instead.
 func (*FollowUserResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{1}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *FollowUserResponse) GetSuccess() bool {
@@ -153,7 +153,7 @@ type UnfollowUserRequest struct {
 
 func (x *UnfollowUserRequest) Reset() {
 	*x = UnfollowUserRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[2]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -165,7 +165,7 @@ func (x *UnfollowUserRequest) String() string {
 func (*UnfollowUserRequest) ProtoMessage() {}
 
 func (x *UnfollowUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[2]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -178,7 +178,7 @@ func (x *UnfollowUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnfollowUserRequest.ProtoReflect.Descriptor instead.
 func (*UnfollowUserRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{2}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *UnfollowUserRequest) GetFollowerUserId() int64 {
@@ -206,7 +206,7 @@ type UnfollowUserResponse struct {
 
 func (x *UnfollowUserResponse) Reset() {
 	*x = UnfollowUserResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[3]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -218,7 +218,7 @@ func (x *UnfollowUserResponse) String() string {
 func (*UnfollowUserResponse) ProtoMessage() {}
 
 func (x *UnfollowUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[3]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -231,7 +231,7 @@ func (x *UnfollowUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnfollowUserResponse.ProtoReflect.Descriptor instead.
 func (*UnfollowUserResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{3}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *UnfollowUserResponse) GetSuccess() bool {
@@ -267,7 +267,7 @@ type GetFollowersRequest struct {
 
 func (x *GetFollowersRequest) Reset() {
 	*x = GetFollowersRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[4]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -279,7 +279,7 @@ func (x *GetFollowersRequest) String() string {
 func (*GetFollowersRequest) ProtoMessage() {}
 
 func (x *GetFollowersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[4]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -292,7 +292,7 @@ func (x *GetFollowersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowersRequest.ProtoReflect.Descriptor instead.
 func (*GetFollowersRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{4}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetFollowersRequest) GetUserId() int64 {
@@ -328,7 +328,7 @@ type GetFollowersResponse struct {
 
 func (x *GetFollowersResponse) Reset() {
 	*x = GetFollowersResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[5]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -340,7 +340,7 @@ func (x *GetFollowersResponse) String() string {
 func (*GetFollowersResponse) ProtoMessage() {}
 
 func (x *GetFollowersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[5]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +353,7 @@ func (x *GetFollowersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowersResponse.ProtoReflect.Descriptor instead.
 func (*GetFollowersResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{5}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetFollowersResponse) GetUserIds() []int64 {
@@ -394,7 +394,7 @@ type GetFollowingListRequest struct {
 
 func (x *GetFollowingListRequest) Reset() {
 	*x = GetFollowingListRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[6]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -406,7 +406,7 @@ func (x *GetFollowingListRequest) String() string {
 func (*GetFollowingListRequest) ProtoMessage() {}
 
 func (x *GetFollowingListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[6]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +419,7 @@ func (x *GetFollowingListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowingListRequest.ProtoReflect.Descriptor instead.
 func (*GetFollowingListRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{6}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetFollowingListRequest) GetUserId() int64 {
@@ -440,7 +440,7 @@ type GetFollowingListResponse struct {
 
 func (x *GetFollowingListResponse) Reset() {
 	*x = GetFollowingListResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[7]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -452,7 +452,7 @@ func (x *GetFollowingListResponse) String() string {
 func (*GetFollowingListResponse) ProtoMessage() {}
 
 func (x *GetFollowingListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[7]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -465,7 +465,7 @@ func (x *GetFollowingListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowingListResponse.ProtoReflect.Descriptor instead.
 func (*GetFollowingListResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{7}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetFollowingListResponse) GetFollowingUserIds() []int64 {
@@ -499,7 +499,7 @@ type GetFollowersCountRequest struct {
 
 func (x *GetFollowersCountRequest) Reset() {
 	*x = GetFollowersCountRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[8]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -511,7 +511,7 @@ func (x *GetFollowersCountRequest) String() string {
 func (*GetFollowersCountRequest) ProtoMessage() {}
 
 func (x *GetFollowersCountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[8]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -524,7 +524,7 @@ func (x *GetFollowersCountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowersCountRequest.ProtoReflect.Descriptor instead.
 func (*GetFollowersCountRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{8}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetFollowersCountRequest) GetUserId() int64 {
@@ -545,7 +545,7 @@ type GetFollowersCountResponse struct {
 
 func (x *GetFollowersCountResponse) Reset() {
 	*x = GetFollowersCountResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[9]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -557,7 +557,7 @@ func (x *GetFollowersCountResponse) String() string {
 func (*GetFollowersCountResponse) ProtoMessage() {}
 
 func (x *GetFollowersCountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[9]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -570,7 +570,7 @@ func (x *GetFollowersCountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowersCountResponse.ProtoReflect.Descriptor instead.
 func (*GetFollowersCountResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{9}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetFollowersCountResponse) GetUserId() int64 {
@@ -604,7 +604,7 @@ type GetFollowingCountRequest struct {
 
 func (x *GetFollowingCountRequest) Reset() {
 	*x = GetFollowingCountRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[10]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -616,7 +616,7 @@ func (x *GetFollowingCountRequest) String() string {
 func (*GetFollowingCountRequest) ProtoMessage() {}
 
 func (x *GetFollowingCountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[10]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -629,7 +629,7 @@ func (x *GetFollowingCountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowingCountRequest.ProtoReflect.Descriptor instead.
 func (*GetFollowingCountRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{10}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetFollowingCountRequest) GetUserId() int64 {
@@ -650,7 +650,7 @@ type GetFollowingCountResponse struct {
 
 func (x *GetFollowingCountResponse) Reset() {
 	*x = GetFollowingCountResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[11]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -662,7 +662,7 @@ func (x *GetFollowingCountResponse) String() string {
 func (*GetFollowingCountResponse) ProtoMessage() {}
 
 func (x *GetFollowingCountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[11]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -675,7 +675,7 @@ func (x *GetFollowingCountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowingCountResponse.ProtoReflect.Descriptor instead.
 func (*GetFollowingCountResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{11}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetFollowingCountResponse) GetUserId() int64 {
@@ -710,7 +710,7 @@ type CheckFollowRelationshipRequest struct {
 
 func (x *CheckFollowRelationshipRequest) Reset() {
 	*x = CheckFollowRelationshipRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[12]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -722,7 +722,7 @@ func (x *CheckFollowRelationshipRequest) String() string {
 func (*CheckFollowRelationshipRequest) ProtoMessage() {}
 
 func (x *CheckFollowRelationshipRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[12]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -735,7 +735,7 @@ func (x *CheckFollowRelationshipRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckFollowRelationshipRequest.ProtoReflect.Descriptor instead.
 func (*CheckFollowRelationshipRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{12}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *CheckFollowRelationshipRequest) GetFollowerUserId() int64 {
@@ -762,7 +762,7 @@ type CheckFollowRelationshipResponse struct {
 
 func (x *CheckFollowRelationshipResponse) Reset() {
 	*x = CheckFollowRelationshipResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[13]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -774,7 +774,7 @@ func (x *CheckFollowRelationshipResponse) String() string {
 func (*CheckFollowRelationshipResponse) ProtoMessage() {}
 
 func (x *CheckFollowRelationshipResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[13]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -787,7 +787,7 @@ func (x *CheckFollowRelationshipResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckFollowRelationshipResponse.ProtoReflect.Descriptor instead.
 func (*CheckFollowRelationshipResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{13}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CheckFollowRelationshipResponse) GetIsFollowing() bool {
@@ -814,7 +814,7 @@ type BatchCreateFollowRelationshipsRequest struct {
 
 func (x *BatchCreateFollowRelationshipsRequest) Reset() {
 	*x = BatchCreateFollowRelationshipsRequest{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[14]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -826,7 +826,7 @@ func (x *BatchCreateFollowRelationshipsRequest) String() string {
 func (*BatchCreateFollowRelationshipsRequest) ProtoMessage() {}
 
 func (x *BatchCreateFollowRelationshipsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[14]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -839,7 +839,7 @@ func (x *BatchCreateFollowRelationshipsRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use BatchCreateFollowRelationshipsRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateFollowRelationshipsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{14}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BatchCreateFollowRelationshipsRequest) GetRelationships() []*FollowRelationship {
@@ -859,7 +859,7 @@ type FollowRelationship struct {
 
 func (x *FollowRelationship) Reset() {
 	*x = FollowRelationship{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[15]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -871,7 +871,7 @@ func (x *FollowRelationship) String() string {
 func (*FollowRelationship) ProtoMessage() {}
 
 func (x *FollowRelationship) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[15]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -884,7 +884,7 @@ func (x *FollowRelationship) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowRelationship.ProtoReflect.Descriptor instead.
 func (*FollowRelationship) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{15}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *FollowRelationship) GetFollowerUserId() int64 {
@@ -913,7 +913,7 @@ type BatchCreateFollowRelationshipsResponse struct {
 
 func (x *BatchCreateFollowRelationshipsResponse) Reset() {
 	*x = BatchCreateFollowRelationshipsResponse{}
-	mi := &file_proto_social_graph_service_proto_msgTypes[16]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -925,7 +925,7 @@ func (x *BatchCreateFollowRelationshipsResponse) String() string {
 func (*BatchCreateFollowRelationshipsResponse) ProtoMessage() {}
 
 func (x *BatchCreateFollowRelationshipsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_social_graph_service_proto_msgTypes[16]
+	mi := &file_social_graph_social_graph_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -938,7 +938,7 @@ func (x *BatchCreateFollowRelationshipsResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use BatchCreateFollowRelationshipsResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateFollowRelationshipsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_social_graph_service_proto_rawDescGZIP(), []int{16}
+	return file_social_graph_social_graph_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *BatchCreateFollowRelationshipsResponse) GetCreatedCount() int32 {
@@ -969,11 +969,11 @@ func (x *BatchCreateFollowRelationshipsResponse) GetErrorMessage() string {
 	return ""
 }
 
-var File_proto_social_graph_service_proto protoreflect.FileDescriptor
+var File_social_graph_social_graph_service_proto protoreflect.FileDescriptor
 
-const file_proto_social_graph_service_proto_rawDesc = "" +
+const file_social_graph_social_graph_service_proto_rawDesc = "" +
 	"\n" +
-	" proto/social_graph_service.proto\x12\vsocialgraph\"c\n" +
+	"'social_graph/social_graph_service.proto\x12\vsocialgraph\"c\n" +
 	"\x11FollowUserRequest\x12(\n" +
 	"\x10follower_user_id\x18\x01 \x01(\x03R\x0efollowerUserId\x12$\n" +
 	"\x0etarget_user_id\x18\x02 \x01(\x03R\ftargetUserId\"\x91\x01\n" +
@@ -1046,22 +1046,22 @@ const file_proto_social_graph_service_proto_rawDesc = "" +
 	"\x11GetFollowersCount\x12%.socialgraph.GetFollowersCountRequest\x1a&.socialgraph.GetFollowersCountResponse\x12b\n" +
 	"\x11GetFollowingCount\x12%.socialgraph.GetFollowingCountRequest\x1a&.socialgraph.GetFollowingCountResponse\x12t\n" +
 	"\x17CheckFollowRelationship\x12+.socialgraph.CheckFollowRelationshipRequest\x1a,.socialgraph.CheckFollowRelationshipResponse\x12\x89\x01\n" +
-	"\x1eBatchCreateFollowRelationships\x122.socialgraph.BatchCreateFollowRelationshipsRequest\x1a3.socialgraph.BatchCreateFollowRelationshipsResponseBKZIgithub.com/PCBZ/CS6650-Project/services/social-graph-services/socialgraphb\x06proto3"
+	"\x1eBatchCreateFollowRelationships\x122.socialgraph.BatchCreateFollowRelationshipsRequest\x1a3.socialgraph.BatchCreateFollowRelationshipsResponseB&Z$github.com/cs6650/proto/social_graphb\x06proto3"
 
 var (
-	file_proto_social_graph_service_proto_rawDescOnce sync.Once
-	file_proto_social_graph_service_proto_rawDescData []byte
+	file_social_graph_social_graph_service_proto_rawDescOnce sync.Once
+	file_social_graph_social_graph_service_proto_rawDescData []byte
 )
 
-func file_proto_social_graph_service_proto_rawDescGZIP() []byte {
-	file_proto_social_graph_service_proto_rawDescOnce.Do(func() {
-		file_proto_social_graph_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_social_graph_service_proto_rawDesc), len(file_proto_social_graph_service_proto_rawDesc)))
+func file_social_graph_social_graph_service_proto_rawDescGZIP() []byte {
+	file_social_graph_social_graph_service_proto_rawDescOnce.Do(func() {
+		file_social_graph_social_graph_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_social_graph_social_graph_service_proto_rawDesc), len(file_social_graph_social_graph_service_proto_rawDesc)))
 	})
-	return file_proto_social_graph_service_proto_rawDescData
+	return file_social_graph_social_graph_service_proto_rawDescData
 }
 
-var file_proto_social_graph_service_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
-var file_proto_social_graph_service_proto_goTypes = []any{
+var file_social_graph_social_graph_service_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_social_graph_social_graph_service_proto_goTypes = []any{
 	(*FollowUserRequest)(nil),                      // 0: socialgraph.FollowUserRequest
 	(*FollowUserResponse)(nil),                     // 1: socialgraph.FollowUserResponse
 	(*UnfollowUserRequest)(nil),                    // 2: socialgraph.UnfollowUserRequest
@@ -1080,7 +1080,7 @@ var file_proto_social_graph_service_proto_goTypes = []any{
 	(*FollowRelationship)(nil),                     // 15: socialgraph.FollowRelationship
 	(*BatchCreateFollowRelationshipsResponse)(nil), // 16: socialgraph.BatchCreateFollowRelationshipsResponse
 }
-var file_proto_social_graph_service_proto_depIdxs = []int32{
+var file_social_graph_social_graph_service_proto_depIdxs = []int32{
 	15, // 0: socialgraph.BatchCreateFollowRelationshipsRequest.relationships:type_name -> socialgraph.FollowRelationship
 	0,  // 1: socialgraph.SocialGraphService.FollowUser:input_type -> socialgraph.FollowUserRequest
 	2,  // 2: socialgraph.SocialGraphService.UnfollowUser:input_type -> socialgraph.UnfollowUserRequest
@@ -1105,26 +1105,26 @@ var file_proto_social_graph_service_proto_depIdxs = []int32{
 	0,  // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_proto_social_graph_service_proto_init() }
-func file_proto_social_graph_service_proto_init() {
-	if File_proto_social_graph_service_proto != nil {
+func init() { file_social_graph_social_graph_service_proto_init() }
+func file_social_graph_social_graph_service_proto_init() {
+	if File_social_graph_social_graph_service_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_social_graph_service_proto_rawDesc), len(file_proto_social_graph_service_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_social_graph_social_graph_service_proto_rawDesc), len(file_social_graph_social_graph_service_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_social_graph_service_proto_goTypes,
-		DependencyIndexes: file_proto_social_graph_service_proto_depIdxs,
-		MessageInfos:      file_proto_social_graph_service_proto_msgTypes,
+		GoTypes:           file_social_graph_social_graph_service_proto_goTypes,
+		DependencyIndexes: file_social_graph_social_graph_service_proto_depIdxs,
+		MessageInfos:      file_social_graph_social_graph_service_proto_msgTypes,
 	}.Build()
-	File_proto_social_graph_service_proto = out.File
-	file_proto_social_graph_service_proto_goTypes = nil
-	file_proto_social_graph_service_proto_depIdxs = nil
+	File_social_graph_social_graph_service_proto = out.File
+	file_social_graph_social_graph_service_proto_goTypes = nil
+	file_social_graph_social_graph_service_proto_depIdxs = nil
 }

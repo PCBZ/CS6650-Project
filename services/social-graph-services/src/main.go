@@ -11,7 +11,7 @@ import (
 	appConfig "github.com/PCBZ/CS6650-Project/services/social-graph-services/src/config"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	pb "github.com/PCBZ/CS6650-Project/services/social-graph-services/socialgraph"
+	pb "github.com/cs6650/proto/social_graph"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -56,9 +56,18 @@ func main() {
 	dbClient := NewDynamoDBClient(dynamoClient, cfg.FollowersTableName, cfg.FollowingTableName)
 	log.Printf("DynamoDB Tables: %s, %s", cfg.FollowersTableName, cfg.FollowingTableName)
 
+	// Initialize User Service client
+	userServiceClient, err := NewUserServiceClient(cfg.UserServiceEndpoint)
+	if err != nil {
+		log.Printf("WARNING: Failed to create User Service client: %v", err)
+		log.Printf("Using mock User Service client for development")
+		userServiceClient = &MockUserServiceClient{}
+	}
+	defer userServiceClient.Close()
+
 	// Initialize handlers
 	grpcHandler := NewSocialGraphServer(dbClient)
-	httpHandler := NewHTTPHandler(dbClient)
+	httpHandler := NewHTTPHandler(dbClient, userServiceClient)
 
 	// Setup HTTP router
 	router := gin.Default()

@@ -18,6 +18,9 @@ type Config struct {
 	FollowersTableName string
 	FollowingTableName string
 
+	// External Services
+	UserServiceEndpoint string
+
 	// Data Generation (for testing)
 	DefaultNumUsers      int
 	DefaultNumFollowers  int
@@ -36,6 +39,7 @@ func Load() *Config {
 		AWSRegion:           getEnv("AWS_REGION", "us-west-2"),
 		FollowersTableName:  getEnv("FOLLOWERS_TABLE", "social-graph-followers"),
 		FollowingTableName:  getEnv("FOLLOWING_TABLE", "social-graph-following"),
+		UserServiceEndpoint: getEnv("USER_SERVICE_URL", "user-service-grpc:50051"),
 		DefaultNumUsers:     getEnvInt("DEFAULT_NUM_USERS", 10000),
 		DefaultNumFollowers: getEnvInt("DEFAULT_NUM_FOLLOWERS", 100),
 		PowerLawExponent:    getEnvFloat("POWER_LAW_EXPONENT", 2.0),
