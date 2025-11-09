@@ -67,6 +67,12 @@ variable "execution_role_arn" {
   type        = string
 }
 
+variable "task_role_arn" {
+  description = "ARN of the ECS task role for application permissions"
+  type        = string
+  default     = ""
+}
+
 # ALB settings
 variable "alb_priority" {
   description = "Priority for ALB listener rule"

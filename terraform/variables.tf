@@ -267,7 +267,7 @@ variable "post_service_ecs_count" {
 variable "post_service_post_strategy" {
   description = "Post strategy: push, pull, or hybrid"
   type        = string
-  default     = "hybrid"
+  default     = "pull"
 }
 
 
