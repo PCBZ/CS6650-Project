@@ -20,6 +20,9 @@ import (
 type Gateway struct {
 	userServiceURL      string
 	userServiceGRPCHost string
+	postServiceURL      string
+	postServiceGRPCHost string
+	timelineServiceURL  string
 	grpcClient          pb.UserServiceClient
 	grpcConn            *grpc.ClientConn
 }
@@ -27,10 +30,16 @@ type Gateway struct {
 func main() {
 	userServiceURL := getEnv("USER_SERVICE_URL", "http://localhost:8081")
 	userServiceGRPCHost := getEnv("USER_SERVICE_GRPC_HOST", "localhost:50051")
+	postServiceURL := getEnv("POST_SERVICE_URL", "http://localhost:8083")
+	postServiceGRPCHost := getEnv("POST_SERVICE_GRPC_HOST", "localhost:50053")
+	timelineServiceURL := getEnv("TIMELINE_SERVICE_URL", "http://localhost:8084")
 
 	gateway := &Gateway{
 		userServiceURL:      userServiceURL,
 		userServiceGRPCHost: userServiceGRPCHost,
+		postServiceURL:      postServiceURL,
+		postServiceGRPCHost: postServiceGRPCHost,
+		timelineServiceURL:  timelineServiceURL,
 	}
 
 	// Initialize gRPC connection if gRPC host is provided
@@ -54,6 +63,15 @@ func main() {
 	router.HandleFunc("/api/users", gateway.createUserHandler).Methods("POST")
 	router.HandleFunc("/api/users", gateway.getUsersHandler).Methods("GET")
 
+	// Post service routes - support both /posts and /api/posts paths
+	router.HandleFunc("/posts", gateway.createPostHandler).Methods("POST")
+	router.HandleFunc("/api/posts", gateway.createPostHandler).Methods("POST")
+
+
+	// Timeline service routes - support both /timeline and /api/timeline paths
+	router.PathPrefix("/api/timeline").HandlerFunc(gateway.forwardToTimelineService)
+	router.PathPrefix("/timeline").HandlerFunc(gateway.forwardToTimelineService)
+
 	// Enable CORS
 	router.Use(corsMiddleware)
 
@@ -61,6 +79,7 @@ func main() {
 	log.Printf("Web Service (API Gateway) starting on port %s", port)
 	log.Printf("User Service URL: %s", userServiceURL)
 	log.Printf("User Service gRPC Host: %s", userServiceGRPCHost)
+	log.Printf("Timeline Service URL: %s", timelineServiceURL)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
@@ -150,6 +169,43 @@ func (g *Gateway) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, resp.Body)
 }
 
+// createPostHandler proxies POST /posts requests to the post-service
+func (g *Gateway) createPostHandler(w http.ResponseWriter, r *http.Request) {
+	// Read the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeErrorResponse(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	// Create endpoint URL
+	postServiceEndpoint := fmt.Sprintf("%s/api/posts", g.postServiceURL)
+
+	// Make the request to post-service
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("POST", postServiceEndpoint, bytes.NewReader(body))
+	if err != nil {
+		log.Printf("Failed to create request to post-service: %v", err)
+		writeErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Failed to forward request to post-service: %v", err)
+		writeErrorResponse(w, "Failed to communicate with post service", http.StatusServiceUnavailable)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response back to client
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body)
+}
+
 // BatchGetUserInfo demonstrates using gRPC to call user-service
 // This can be used by other handlers that need to enrich data with user information
 func (g *Gateway) BatchGetUserInfo(ctx context.Context, userIDs []int64) (map[int64]*pb.UserInfo, error) {
@@ -171,6 +227,63 @@ func (g *Gateway) BatchGetUserInfo(ctx context.Context, userIDs []int64) (map[in
 	}
 
 	return resp.Users, nil
+}
+
+// forwardToTimelineService forwards all timeline-related requests to the timeline service
+func (g *Gateway) forwardToTimelineService(w http.ResponseWriter, r *http.Request) {
+	// Construct the target URL - keep the same path
+	targetURL := fmt.Sprintf("%s%s", g.timelineServiceURL, r.URL.Path)
+	if r.URL.RawQuery != "" {
+		targetURL = fmt.Sprintf("%s?%s", targetURL, r.URL.RawQuery)
+	}
+
+	// Read request body if present
+	var body io.Reader
+	if r.Body != nil {
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			writeErrorResponse(w, "Failed to read request body", http.StatusBadRequest)
+			return
+		}
+		defer r.Body.Close()
+		body = bytes.NewReader(bodyBytes)
+	}
+
+	// Create the forwarding request
+	client := &http.Client{Timeout: 30 * time.Second}
+	req, err := http.NewRequest(r.Method, targetURL, body)
+	if err != nil {
+		log.Printf("Failed to create request to timeline service: %v", err)
+		writeErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Copy request headers
+	for name, headers := range r.Header {
+		for _, h := range headers {
+			req.Header.Add(name, h)
+		}
+	}
+
+	// Forward the request
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Failed to forward request to timeline service: %v", err)
+		writeErrorResponse(w, "Failed to communicate with timeline service", http.StatusServiceUnavailable)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response headers
+	for name, headers := range resp.Header {
+		for _, h := range headers {
+			w.Header().Add(name, h)
+		}
+	}
+
+	// Copy response status and body
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body)
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
