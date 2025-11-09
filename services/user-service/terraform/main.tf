@@ -18,7 +18,7 @@ module "logging" {
 
 locals {
   # Directly specify LabRole ARN for AWS learner lab environment
-  lab_role_arn = "arn:aws:iam::964932215897:role/LabRole"
+  lab_role_arn = "arn:aws:iam::851725652643:role/LabRole"
 }
 
 # Service-specific security group for ECS tasks
@@ -133,12 +133,12 @@ resource "aws_lb_listener_rule" "service" {
 module "ecs" {
   source             = "./modules/ecs"
   service_name       = var.service_name
-  # Use image digest to ensure ECS always pulls the latest image
-  image              = "${module.ecr.repository_url}@${docker_registry_image.app.sha256_digest}"
+  image              = "${module.ecr.repository_url}:latest"
   container_port     = var.container_port
   subnet_ids         = var.public_subnet_ids  # Changed from private_subnet_ids
   security_group_ids = [aws_security_group.app.id]
-  execution_role_arn = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
+  execution_role_arn = local.lab_role_arn
+  task_role_arn      = local.lab_role_arn
   log_group_name     = module.logging.log_group_name
   target_group_arn   = aws_lb_target_group.service.arn
   ecs_count          = var.ecs_count
@@ -159,34 +159,31 @@ module "ecs" {
   enable_request_based_scaling = var.enable_request_based_scaling
   request_count_target_value  = var.request_count_target_value
   alb_resource_label          = "${var.alb_arn_suffix}/${aws_lb_target_group.service.arn_suffix}"
-  
-  # Ensure ECS service waits for Docker image to be pushed
-  depends_on = [docker_registry_image.app]
+
+  depends_on = [null_resource.docker_build_push]
 }
 
-# Build & push the Go app image into ECR
-resource "docker_image" "app" {
-  name = "${module.ecr.repository_url}:latest"
-
-  build {
-    context    = "${path.module}/../../.."  # Project root (Dockerfile expects proto/)
-    dockerfile = "services/user-service/Dockerfile"  # Path to Dockerfile from project root
-    pull_parent = false
-    no_cache    = false
-    remove      = true
-  }
-
-  # Force rebuild on trigger changes
+# Build & push the Go app image into ECR using local-exec
+# This approach respects .dockerignore and is faster than docker provider
+resource "null_resource" "docker_build_push" {
   triggers = {
-    dockerfile_hash = filemd5("${path.module}/../Dockerfile")
-    src_hash       = sha1(join("", [for f in fileset("${path.module}/../", "**/*.go") : filemd5("${path.module}/../${f}")]))
-    proto_hash     = sha1(join("", [for f in fileset("${path.module}/../proto", "**/*.proto") : filemd5("${path.module}/../proto/${f}")]))
+    # Rebuild if main.go or Dockerfile changes
+    dockerfile_hash = filesha256("${path.module}/../Dockerfile")
+    main_go_hash    = filesha256("${path.module}/../main.go")
+    ecr_repo        = module.ecr.repository_url
   }
-}
 
-resource "docker_registry_image" "app" {
-  name          = docker_image.app.name
-  
-  # Ensure the image is built before pushing
-  depends_on = [docker_image.app]
+  provisioner "local-exec" {
+    command     = <<-EOT
+      export DOCKER_CONFIG=$(mktemp -d) && \
+      echo '{"credsStore":""}' > $DOCKER_CONFIG/config.json && \
+      aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${split("/", module.ecr.repository_url)[0]} && \
+      docker build -f services/user-service/Dockerfile -t ${module.ecr.repository_url}:latest . && \
+      docker push ${module.ecr.repository_url}:latest && \
+      rm -rf $DOCKER_CONFIG
+    EOT
+    working_dir = "${path.module}/../../.."
+  }
+
+  depends_on = [module.ecr]
 }
