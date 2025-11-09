@@ -117,6 +117,10 @@ module "web_service" {
   user_service_grpc_host = "user-service-grpc:50051"
   user_service_security_group_id = module.user_service.security_group_id
   
+  # Post Service URL (via Service Connect)
+  post_service_url = "http://post-service:8083"
+  post_service_grpc_host = "post-service-grpc:50053"
+  
   # Timeline Service URL
   timeline_service_url = "http://timeline-service:8084"
   
@@ -127,10 +131,14 @@ module "web_service" {
   memory_target_value         = var.web_service_memory_target_value
   enable_request_based_scaling = var.web_service_enable_request_based_scaling
   request_count_target_value  = var.web_service_request_count_target_value
+  
+  # Ensure post-service is deployed before web-service starts
+  # This helps with Service Connect DNS registration timing
+  depends_on = [module.post_service]
 }
 
-# Timeline Service
-module "timeline_service" {
+# Post Service
+module "post_service" {
   source = "../services/post-service/terraform"
   
   # Shared infrastructure values
@@ -151,11 +159,10 @@ module "timeline_service" {
   ecr_repository_name  = "post-service"
   container_port       = 8083
   ecs_count           = var.post_service_ecs_count
-  alb_priority        = 300  # Post service priority
+  alb_priority        = 300  # Post service priority 
   
   # Post Service specific configuration
-  sns_topic_arn             = module.sns.topic_arn
-  social_graph_service_url  = "social-graph-service-grpc:50052"
+  social_graph_url  = "social-graph-service-grpc:50052"
   post_strategy           = var.post_service_post_strategy
   
   # Auto-scaling settings
@@ -189,13 +196,13 @@ module "timeline_service" {
   ecr_repository_name  = "timeline-service"
   container_port       = 8084
   ecs_count           = var.timeline_service_ecs_count
-  alb_priority        = 300  # Timeline service priority
+  alb_priority        = 400  # Timeline service priority
   
   # Timeline Service specific configuration
   sqs_queue_url             = var.timeline_service_sqs_queue_url
-  post_service_url          = "post-service-grpc:50051"
+  post_service_url          = "post-service-grpc:50053"
   social_graph_service_url  = "social-graph-service-grpc:50052"
-  user_service_url          = "user-service-grpc:50053"
+  user_service_url          = "user-service-grpc:50051"
   fanout_strategy           = var.timeline_service_fanout_strategy
   celebrity_threshold       = var.timeline_service_celebrity_threshold
   enable_pitr               = var.timeline_service_enable_pitr

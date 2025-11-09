@@ -138,6 +138,10 @@ module "ecs" {
   user_service_url       = var.user_service_url
   user_service_grpc_host = var.user_service_grpc_host
   
+  # Web service needs to know where post-service is
+  post_service_url       = var.post_service_url
+  post_service_grpc_host = var.post_service_grpc_host
+  
   # Web service needs to know where timeline-service is
   timeline_service_url   = var.timeline_service_url
 

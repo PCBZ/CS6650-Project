@@ -1,10 +1,6 @@
-# ECS Cluster with Service Connect enabled
+# ECS Cluster (Service Connect configured at service level)
 resource "aws_ecs_cluster" "main" {
   name = var.service_name
-
-  service_connect_defaults {
-    namespace = var.service_connect_namespace_arn
-  }
 
   tags = {
     Name    = "${var.service_name} Cluster"

@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "aws_account_id" {
   description = "AWS Account ID"
   type        = string
-  default     = "964932215897"
+  default     = "497892280895"
 }
 
 variable "project_name" {
@@ -255,12 +255,64 @@ variable "timeline_service_cache_ttl_seconds" {
   default     = 300
 }
 
+
+
 # Post Service Configuration
 variable "post_service_ecs_count" {
   description = "Number of ECS tasks for post service"
   type        = number
   default     = 1
 }
+
+variable "post_service_post_strategy" {
+  description = "Post strategy: push, pull, or hybrid"
+  type        = string
+  default     = "hybrid"
+}
+
+
+variable "post_service_min_capacity" {
+  description = "Minimum number of tasks for post service auto-scaling"
+  type        = number
+  default     = 1
+}
+
+variable "post_service_max_capacity" {
+  description = "Maximum number of tasks for post service auto-scaling"
+  type        = number
+  default     = 10
+}
+
+variable "post_service_cpu_target_value" {
+  description = "Target CPU utilization percentage for post service scaling"
+  type        = number
+  default     = 70
+}
+
+variable "post_service_memory_target_value" {
+  description = "Target memory utilization percentage for post service scaling"
+  type        = number
+  default     = 80
+}
+
+variable "post_service_enable_request_based_scaling" {
+  description = "Enable request-based auto-scaling for post service"
+  type        = bool
+  default     = true
+}
+
+variable "post_service_request_count_target_value" {
+  description = "Target request count per task for post service scaling"
+  type        = number
+  default     = 1000
+}
+
+variable "post_service_ecs_desired_count" {
+  description = "Desired number of ECS tasks for post service"
+  type        = number
+  default     = 1
+}
+
 
 # Social Graph Service Configuration
 variable "social_graph_service_ecs_count" {
