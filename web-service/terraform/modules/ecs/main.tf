@@ -1,10 +1,6 @@
-# ECS Cluster with Service Connect enabled
+# ECS Cluster (Service Connect configured at service level)
 resource "aws_ecs_cluster" "main" {
   name = var.service_name
-
-  service_connect_defaults {
-    namespace = var.service_connect_namespace_arn
-  }
 
   tags = {
     Name    = "${var.service_name} Cluster"
@@ -19,8 +15,7 @@ resource "aws_ecs_task_definition" "app" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
   memory                   = var.memory
-  execution_role_arn       = var.execution_role_arn
-  task_role_arn            = var.task_role_arn
+  execution_role_arn       = var.execution_role_arn  # Innovation Sandbox with ISBStudent=true tag
 
   # Specify CPU architecture for Fargate
   runtime_platform {
@@ -53,6 +48,18 @@ resource "aws_ecs_task_definition" "app" {
           value = var.user_service_grpc_host
         },
         {
+          name  = "POST_SERVICE_URL"
+          value = var.post_service_url
+        },
+        {
+          name  = "POST_SERVICE_GRPC_HOST"
+          value = var.post_service_grpc_host
+        },
+        {
+          name  = "TIMELINE_SERVICE_URL"
+          value = var.timeline_service_url
+        },
+        {
           name  = "PORT"
           value = tostring(var.container_port)
         }
@@ -61,9 +68,9 @@ resource "aws_ecs_task_definition" "app" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = var.log_group_name
-          awslogs-region        = var.region
-          awslogs-stream-prefix = "ecs"
+          "awslogs-group"         = var.log_group_name
+          "awslogs-region"        = var.region
+          "awslogs-stream-prefix" = "ecs"
         }
       }
 

@@ -1,6 +1,6 @@
 module github.com/cs6650/proto
 
-go 1.25.1
+go 1.23
 
 require (
 	golang.org/x/net v0.42.0 // indirect
