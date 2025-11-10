@@ -78,10 +78,15 @@ func (c *userServiceClient) BatchGetUserInfo(ctx context.Context, userIDs []int6
 func NewUserServiceClient(endpoint string) (UserServiceClient, error) {
 	log.Printf("Connecting to User Service at %s...", endpoint)
 
-	// Establish gRPC connection (NewClient doesn't support WithBlock)
-	conn, err := grpc.NewClient(
+	// Use Dial with Block to ensure connection is established and DNS is resolved
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(
+		ctx,
 		endpoint,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(), // Block until connection is established
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create User Service client for %s: %w", endpoint, err)
