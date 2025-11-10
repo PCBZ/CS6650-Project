@@ -278,14 +278,12 @@ func (h *HTTPHandler) GetFollowers(c *gin.Context) {
 	}
 
 	// Populate usernames from User Service
+	userServiceAvailable := true
 	if err := h.populateFollowerUsernames(c.Request.Context(), followers); err != nil {
 		// Log error but don't fail the request
 		// Usernames will be empty if User Service is unavailable
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":      "Failed to fetch user information",
-			"error_code": "USER_SERVICE_ERROR",
-		})
-		return
+		userServiceAvailable = false
+		// Note: We continue with empty usernames instead of failing
 	}
 
 	// Get total count
@@ -294,12 +292,20 @@ func (h *HTTPHandler) GetFollowers(c *gin.Context) {
 		totalCount = 0 // Fallback to 0 if count fails
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	response := gin.H{
+		"user_id":     userID,
 		"followers":   followers,
 		"total_count": totalCount,
 		"next_cursor": nextCursor,
 		"has_more":    hasMore,
-	})
+	}
+
+	// Add warning if user service is unavailable
+	if !userServiceAvailable {
+		response["warning"] = "User information unavailable, usernames will be empty"
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // GetFollowing returns the list of users that a user follows
@@ -349,21 +355,27 @@ func (h *HTTPHandler) GetFollowing(c *gin.Context) {
 	}
 
 	// Populate usernames from User Service
+	userServiceAvailable := true
 	if err := h.populateFollowingUsernames(c.Request.Context(), following); err != nil {
 		// Log error but don't fail the request
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":      "Failed to fetch user information",
-			"error_code": "USER_SERVICE_ERROR",
-		})
-		return
+		userServiceAvailable = false
+		// Note: We continue with empty usernames instead of failing
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	response := gin.H{
+		"user_id":     userID,
 		"following":   following,
 		"total_count": totalCount,
 		"next_cursor": nextCursor,
 		"has_more":    hasMore,
-	})
+	}
+
+	// Add warning if user service is unavailable
+	if !userServiceAvailable {
+		response["warning"] = "User information unavailable, usernames will be empty"
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // populateFollowerUsernames fetches usernames from User Service and populates the FollowerInfo slice

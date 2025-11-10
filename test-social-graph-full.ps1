@@ -1,13 +1,13 @@
 # Test Social Graph Service - HTTP API and gRPC endpoints
 
 $ErrorActionPreference = "Continue"
-$ALB_DNS = "cs6650-project-dev-alb-2003105151.us-west-2.elb.amazonaws.com"
+$ALB_DNS = "cs6650-project-dev-alb-315577819.us-west-2.elb.amazonaws.com"
 
 Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host "Social Graph Service - Full Test Suite" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
 
-# Test data - User 913 is Top tier with 2000 followers
+# Test data - User 913 is Top tier
 $topUser = 913
 $smallUser1 = 1
 $smallUser2 = 100

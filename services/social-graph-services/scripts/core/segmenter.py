@@ -2,15 +2,13 @@
 """
 User Segmentation Module
 
-Handles the logic for segmenting users into different tiers:
-- Small users: 80% of total (1-99 followers)
-- Medium users: 15% of total (100-499 followers)
-- Big users: 4.99% of total (500-1999 followers)
-- Top users: 0.01% of total (2000-4999 followers)
+Handles the logic for segmenting users into different tiers based on configuration.
+All ratios and thresholds are defined in config.py.
 """
 
 import random
 from typing import List, Dict
+from . import config
 
 
 class UserSegmentation:
@@ -19,10 +17,10 @@ class UserSegmentation:
     def __init__(self, total_users: int):
         self.total_users = total_users
         
-        # Calculate segment sizes
-        self.small_count = int(total_users * 0.80)
-        self.medium_count = int(total_users * 0.15)
-        self.big_count = int(total_users * 0.0499)
+        # Calculate segment sizes from config
+        self.small_count = int(total_users * config.USER_TIER_RATIOS["small"])
+        self.medium_count = int(total_users * config.USER_TIER_RATIOS["medium"])
+        self.big_count = int(total_users * config.USER_TIER_RATIOS["big"])
         self.top_count = max(1, total_users - self.small_count - self.medium_count - self.big_count)
     
     def segment_users(self, user_ids: List[int]) -> Dict[str, List[int]]:
@@ -36,10 +34,12 @@ class UserSegmentation:
             Dictionary mapping segment names to lists of user IDs
         """
         shuffled_users = user_ids.copy()
-        # Use fixed seed for consistent, reproducible segmentation across runs
-        random.seed(42)
+        # Use fixed seed from config for consistent, reproducible segmentation across runs
+        if config.SEGMENTATION_SEED is not None:
+            random.seed(config.SEGMENTATION_SEED)
         random.shuffle(shuffled_users)
-        random.seed()  # Reset to random seed for subsequent operations
+        if config.SEGMENTATION_SEED is not None:
+            random.seed()  # Reset to random seed for subsequent operations
         
         segments = {
             "small": shuffled_users[:self.small_count],
@@ -57,7 +57,10 @@ class UserSegmentation:
     
     def get_follower_range(self, user_type: str) -> tuple:
         """
-        Get expected follower count range for a user type
+        Get expected follower count range for a user type (dynamically scaled from config)
+        
+        Ranges are calculated as percentages of total users defined in config.FOLLOWER_RATIOS
+        with absolute minimums from config.FOLLOWER_ABSOLUTE_MINIMUMS
         
         Args:
             user_type: Type of user (small, medium, big, top)
@@ -65,26 +68,23 @@ class UserSegmentation:
         Returns:
             Tuple of (min_followers, max_followers)
         """
-        if self.total_users <= 5000:
-            ranges = {
-                "small": (1, 99),
-                "medium": (100, 499),
-                "big": (500, 1999),
-                "top": (2000, 4999)
-            }
-        else:
-            ranges = {
-                "small": (1, 999),
-                "medium": (1000, 4999),
-                "big": (5000, 19999),
-                "top": (20000, 49999)
-            }
+        if user_type not in config.FOLLOWER_RATIOS:
+            return (0, 0)
         
-        return ranges.get(user_type, (0, 0))
+        min_ratio, max_ratio = config.FOLLOWER_RATIOS[user_type]
+        abs_min = config.FOLLOWER_ABSOLUTE_MINIMUMS[user_type]
+        
+        min_followers = max(abs_min, int(self.total_users * min_ratio))
+        max_followers = max(min_followers + 1, int(self.total_users * max_ratio))
+        
+        return (min_followers, max_followers)
     
     def get_following_range(self, user_type: str) -> tuple:
         """
-        Get expected following count range for a user type
+        Get expected following count range for a user type (dynamically scaled from config)
+        
+        Following counts are calculated from config.FOLLOWING_RATIOS with absolute
+        minimums and maximums applied.
         
         Args:
             user_type: Type of user (small, medium, big, top)
@@ -92,22 +92,20 @@ class UserSegmentation:
         Returns:
             Tuple of (min_following, max_following)
         """
-        if self.total_users <= 5000:
-            ranges = {
-                "small": (1, 49),
-                "medium": (1, 49),
-                "big": (0, 25),
-                "top": (0, 25)
-            }
-        else:
-            ranges = {
-                "small": (1, 999),
-                "medium": (1, 999),
-                "big": (0, 500),
-                "top": (0, 500)
-            }
+        if user_type not in config.FOLLOWING_RATIOS:
+            return (0, 0)
         
-        return ranges.get(user_type, (0, 0))
+        min_ratio, max_ratio = config.FOLLOWING_RATIOS[user_type]
+        abs_min = config.FOLLOWING_ABSOLUTE_MINIMUMS[user_type]
+        abs_max = config.FOLLOWING_ABSOLUTE_MAXIMUMS[user_type]
+        
+        min_following = max(abs_min, int(self.total_users * min_ratio))
+        max_following = max(min_following + 1, int(self.total_users * max_ratio))
+        
+        # Apply absolute maximum cap
+        max_following = min(max_following, abs_max)
+        
+        return (min_following, max_following)
     
     def get_segment_info(self) -> Dict:
         """

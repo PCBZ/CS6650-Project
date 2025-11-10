@@ -3,23 +3,25 @@
 Relationship Generator Module
 
 Generates follow relationships using power-law distribution to simulate
-realistic social network patterns.
+realistic social network patterns. All parameters are configured in config.py.
 """
 
 import random
 from typing import List, Dict, Set, Tuple
 from collections import defaultdict
+from . import config
 
 
 class RelationshipGenerator:
     """Generate follow relationships with power-law / weighted model.
 
-    Enhancements vs original version:
-      - Weighted generation (top > big > medium > small)
-      - Deterministic target follower counts per tier (exact caps):
-            small=1, medium=100, big=500, top=2000 (for <=5k users)
-      - ensure_minimum_followers now also trims excess to reach exact targets
-      - Avoids erasing follower assignments while enforcing following limits
+    Features:
+      - Weighted generation (top > big > medium > small) for rich-get-richer effect
+      - Power-law distribution for natural social network patterns
+      - Follower count ranges per tier (not exact targets) to preserve variance:
+            small: 0-5, medium: 50-150, big: 300-700, top: 1500-2500 (for ≤5k users)
+      - ensure_minimum_followers enforces min/max bounds while keeping natural distribution
+      - Following limits enforced per tier without destroying follower patterns
     """
 
     def __init__(self, segments: Dict[str, List[int]], segmentation, verbose: bool = False):
@@ -67,27 +69,22 @@ class RelationshipGenerator:
         # Flatten all users
         all_users: List[int] = [u for tier_list in self.segments.values() for u in tier_list]
 
-        # Weights by *followee* tier (top users attract more followers)
-        tier_weights = {"small": 1, "medium": 3, "big": 10, "top": 50}
-        weights = [tier_weights.get(self.user_tier[u], 1) for u in all_users]
+        # Weights by *followee* tier (top users attract more followers) - from config
+        weights = [config.TIER_WEIGHTS.get(self.user_tier[u], 1) for u in all_users]
 
-        # Per-tier following count ranges (looser than follower ranges)
+        # Per-tier following count ranges (dynamically from segmentation)
         def following_target(user_id: int) -> int:
             tier = self.user_tier[user_id]
-            if tier == "top":
-                return random.randint(20, 80)
-            if tier == "big":
-                return random.randint(10, 50)
-            # small / medium
-            return random.randint(5, 30)
+            min_following, max_following = self.segmentation.get_following_range(tier)
+            return random.randint(min_following, max_following)
 
         for follower_id in all_users:
             k = following_target(follower_id)
             # Use random.choices (with replacement) then remove duplicates/self
-            # Retry sampling if needed to fill diversity (cap attempts to avoid loops)
+            # Retry sampling if needed to fill diversity (cap attempts from config)
             attempts = 0
             selected: Set[int] = set()
-            while len(selected) < k and attempts < 5:
+            while len(selected) < k and attempts < config.MAX_FOLLOWEE_SELECTION_ATTEMPTS:
                 batch = random.choices(all_users, weights=weights, k=k)
                 for cand in batch:
                     if cand == follower_id:
@@ -148,34 +145,45 @@ class RelationshipGenerator:
         print(f"✅ Final relationship count: {len(self.relationships):,}")
     
     def ensure_minimum_followers(self):
-        """Enforce *exact* follower targets per tier.
+        """Enforce follower count ranges per tier with random individual targets.
 
-        For <=5k users we adopt fixed targets:
-            small=1, medium=100, big=500, top=2000
-        Steps per user:
-          1. If current > target: randomly trim excess (remove relationships)
-          2. If current < target: add missing by sampling from all other users
-        This produces deterministic-looking distribution useful for predictable
-        performance & downstream service tests.
+        Each user gets a random target within their tier's range, creating natural variance:
+            small: 0-5, medium: 50-150, big: 300-700, top: 1500-2500
+        
+        For each user:
+          1. Assign random target = randint(min, max) for their tier
+          2. If current > target: trim to target
+          3. If current < target: pad to target
+        
+        This creates realistic distributions with natural variance, e.g.:
+            Medium avg: 93 ± 30
+            Big avg: 480 ± 100
+            Top avg: 2000 ± 300
         """
-        print("\n🔧 Enforcing exact follower targets per tier...")
+        print("\n🔧 Enforcing follower count ranges with random targets per user...")
 
-        if self.segmentation.total_users <= 5000:
-            targets = {"small": 1, "medium": 100, "big": 500, "top": 2000}
-        else:
-            # Scaled-up scenario (simple proportional scaling)
-            targets = {"small": 1, "medium": 1000, "big": 5000, "top": 20000}
-
+        # Use segmentation's dynamic follower ranges (based on % of total users)
+        # No more hardcoded values!
+        
         all_users: List[int] = [u for tier_list in self.segments.values() for u in tier_list]
         added = 0
         trimmed = 0
+        adjusted_users = 0
 
         for tier, users in self.segments.items():
-            target = targets.get(tier, 0)
-            if target == 0:
+            # Get dynamic range from segmentation
+            target_range = self.segmentation.get_follower_range(tier)
+            if target_range == (0, 0):
                 continue
+            
+            min_followers, max_followers = target_range
+            
             for uid in users:
                 current = len(self.follower_map[uid])
+                
+                # Assign random target within tier range for this specific user
+                target = random.randint(min_followers, max_followers)
+                
                 # Trim if above target
                 if current > target:
                     excess = current - target
@@ -185,9 +193,10 @@ class RelationshipGenerator:
                         self.following_map[follower_id].discard(uid)
                         self.relationships.discard((follower_id, uid))
                         trimmed += 1
-                    current = target
-                # Add if below target
-                if current < target:
+                    adjusted_users += 1
+                
+                # Pad if below target
+                elif current < target:
                     needed = target - current
                     # Candidate pool: all users except self and existing followers
                     candidates = [c for c in all_users if c != uid and c not in self.follower_map[uid]]
@@ -202,8 +211,9 @@ class RelationshipGenerator:
                         self.follower_map[uid].add(fid)
                         self.following_map[fid].add(uid)
                         added += 1
+                    adjusted_users += 1
 
-        print(f"  Added {added:,} follower links; trimmed {trimmed:,} excess links")
+        print(f"  Adjusted {adjusted_users:,} users (added {added:,} links, trimmed {trimmed:,} links)")
         print(f"✅ Final relationship count: {len(self.relationships):,}")
     
     def get_statistics(self) -> Dict:
