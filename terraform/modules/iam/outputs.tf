@@ -12,3 +12,8 @@ output "timeline_service_task_role_arn" {
   description = "ARN of the timeline service task role"
   value       = aws_iam_role.timeline_service_task_role.arn
 }
+
+output "social_graph_service_task_role_arn" {
+  description = "ARN of the social graph service task role"
+  value       = aws_iam_role.social_graph_service_task_role.arn
+}

@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	postpb "github.com/PCBZ/CS6650-Project/services/timeline-service/proto/post"
 	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
+	postpb "github.com/cs6650/proto/post"
 )
 
 // PostServiceClient defines the interface for calling Post Service
@@ -75,65 +75,25 @@ func (c *GRPCPostServiceClient) Close() error {
 	return nil
 }
 
-// MockPostServiceClient is a fallback implementation for development
-type MockPostServiceClient struct{}
-
-// BatchGetPosts implements a mock version that returns sample posts
-func (m *MockPostServiceClient) BatchGetPosts(ctx context.Context, userIDs []int64, limit int32) (map[int64][]models.TimelinePost, error) {
-	// Simulate network delay
-	select {
-	case <-time.After(10 * time.Millisecond):
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	}
-
-	result := make(map[int64][]models.TimelinePost)
-
-	// Generate mock posts for each requested user ID
-	for _, userID := range userIDs {
-		var posts []models.TimelinePost
-
-		// Generate up to limit posts per user
-		postsCount := int32(3) // Mock: generate 3 posts per user
-		if limit > 0 && limit < postsCount {
-			postsCount = limit
-		}
-
-		for i := int32(0); i < postsCount; i++ {
-			posts = append(posts, models.TimelinePost{
-				PostID:     fmt.Sprintf("mock-post-%d-%d", userID, i),
-				UserID:     0,      // Will be set by caller (timeline owner)
-				AuthorID:   userID, // Post author
-				AuthorName: fmt.Sprintf("user_%d", userID),
-				Content:    fmt.Sprintf("Mock post %d from user %d", i, userID),
-				CreatedAt:  time.Now().Add(-time.Duration(i) * time.Hour),
-			})
-		}
-
-		result[userID] = posts
-	}
-
-	return result, nil
-}
-
 // NewPostServiceClient creates a new Post Service client
 func NewPostServiceClient(endpoint string) PostServiceClient {
-	if endpoint == "" || endpoint == "mock" {
-		// Use mock client for development
-		return &MockPostServiceClient{}
-	}
+	// Use Dial with Block to ensure connection is established and DNS is resolved
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	// Create gRPC connection
-	conn, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(
+		ctx,
+		endpoint,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(), // Block until connection is established
+	)
 	if err != nil {
 		// Fallback to mock if connection fails
 		fmt.Printf("Failed to connect to post service at %s: %v, using mock client\n", endpoint, err)
-		return &MockPostServiceClient{}
 	}
 
 	// Create gRPC client
 	client := postpb.NewPostServiceClient(conn)
-
 	return &GRPCPostServiceClient{
 		client: client,
 		conn:   conn,
