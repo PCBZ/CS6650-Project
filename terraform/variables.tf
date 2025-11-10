@@ -312,5 +312,41 @@ variable "post_service_ecs_desired_count" {
 variable "social_graph_service_ecs_count" {
   description = "Number of ECS tasks for social graph service"
   type        = number
+  default     = 2
+}
+
+variable "social_graph_service_min_capacity" {
+  description = "Minimum number of tasks for social graph service auto-scaling"
+  type        = number
   default     = 1
+}
+
+variable "social_graph_service_max_capacity" {
+  description = "Maximum number of tasks for social graph service auto-scaling"
+  type        = number
+  default     = 10
+}
+
+variable "social_graph_service_cpu_target_value" {
+  description = "Target CPU utilization percentage for social graph service scaling"
+  type        = number
+  default     = 70
+}
+
+variable "social_graph_service_memory_target_value" {
+  description = "Target memory utilization percentage for social graph service scaling"
+  type        = number
+  default     = 80
+}
+
+variable "social_graph_service_enable_request_based_scaling" {
+  description = "Enable request-based auto-scaling for social graph service"
+  type        = bool
+  default     = true
+}
+
+variable "social_graph_service_request_count_target_value" {
+  description = "Target request count per task for social graph service scaling"
+  type        = number
+  default     = 1000
 }
