@@ -77,8 +77,16 @@ func (c *GRPCPostServiceClient) Close() error {
 
 // NewPostServiceClient creates a new Post Service client
 func NewPostServiceClient(endpoint string) PostServiceClient {
-	// Create gRPC connection
-	conn, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Use Dial with Block to ensure connection is established and DNS is resolved
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(
+		ctx,
+		endpoint,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(), // Block until connection is established
+	)
 	if err != nil {
 		// Fallback to mock if connection fails
 		fmt.Printf("Failed to connect to post service at %s: %v, using mock client\n", endpoint, err)

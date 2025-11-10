@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	socialgraphpb "github.com/cs6650/proto/social_graph"
 	"google.golang.org/grpc"
@@ -37,13 +38,22 @@ func (c *GRPCSocialGraphServiceClient) GetFollowing(ctx context.Context, userID 
 
 // NewSocialGraphServiceClient creates a new Social Graph Service client
 func NewSocialGraphServiceClient(endpoint string) SocialGraphServiceClient {
-	conn, err := grpc.NewClient(
+	// Use Dial with Block to ensure connection is established and DNS is resolved
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	fmt.Printf("Connecting to Social Graph Service at %s...\n", endpoint)
+	conn, err := grpc.DialContext(
+		ctx,
 		endpoint,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(), // Block until connection is established
 	)
 	if err != nil {
+		fmt.Printf("Failed to connect to social graph service at %s: %v\n", endpoint, err)
 		panic(fmt.Sprintf("Failed to connect to social graph service at %s: %v", endpoint, err))
 	}
+	fmt.Printf("Social Graph Service client created for %s\n", endpoint)
 	client := socialgraphpb.NewSocialGraphServiceClient(conn)
 	return &GRPCSocialGraphServiceClient{
 		client: client,
