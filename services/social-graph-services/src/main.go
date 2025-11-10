@@ -89,6 +89,9 @@ func main() {
 		apiSocialGraph.GET("/following/:userId/count", httpHandler.GetFollowingCount)
 		apiSocialGraph.GET("/relationship/check", httpHandler.CheckFollowRelationship)
 		
+		// Test/diagnostic endpoints
+		apiSocialGraph.GET("/test/user-service", httpHandler.TestUserServiceConnection)
+		
 		// Admin endpoints
 		apiSocialGraph.POST("/admin/load-test-data", httpHandler.LoadTestData)
 	}

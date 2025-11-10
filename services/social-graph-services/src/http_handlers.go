@@ -460,3 +460,48 @@ func (h *HTTPHandler) LoadTestData(c *gin.Context) {
 		"note":    "Please use the Python script directly: python scripts/load_dynamodb.py --users " + strconv.Itoa(req.NumUsers),
 	})
 }
+
+// TestUserServiceConnection tests the connection to user-service gRPC
+// This is a diagnostic endpoint for testing Service Connect connectivity
+func (h *HTTPHandler) TestUserServiceConnection(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
+	defer cancel()
+
+	testUserIDs := []int64{1, 2, 3, 100, 913}
+	
+	startTime := time.Now()
+	users, notFound, err := h.userServiceClient.BatchGetUserInfo(ctx, testUserIDs)
+	duration := time.Since(startTime)
+
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":    "error",
+			"error":     err.Error(),
+			"message":   "Failed to connect to user-service gRPC",
+			"endpoint":  "user-service-grpc:50051",
+			"duration_ms": duration.Milliseconds(),
+		})
+		return
+	}
+
+	// Convert users map to a more readable format
+	usersList := make([]gin.H, 0, len(users))
+	for _, user := range users {
+		usersList = append(usersList, gin.H{
+			"user_id":  user.UserId,
+			"username": user.Username,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":      "success",
+		"message":     "Successfully connected to user-service gRPC",
+		"endpoint":    "user-service-grpc:50051",
+		"tested_ids":  testUserIDs,
+		"found_count": len(users),
+		"not_found_count": len(notFound),
+		"users":       usersList,
+		"not_found":   notFound,
+		"duration_ms": duration.Milliseconds(),
+	})
+}
