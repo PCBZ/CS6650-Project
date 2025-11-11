@@ -111,6 +111,12 @@ variable "social_graph_url" {
   default     = "social-graph-service-grpc:50052"
 }
 
+variable "hybrid_threshold" {
+  description = "Threshold for hybrid strategy"
+  type        = string
+  default     = "10000"
+}
+
 # SNS Topic ARN (optional, can be created by this module or passed in)
 variable "sns_topic_arn" {
   description = "SNS topic ARN (optional, will create if not provided)"

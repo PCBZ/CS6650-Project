@@ -74,6 +74,7 @@ done
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_DIR="${SCRIPT_DIR}/venv"
 
 # Print configuration
 echo -e "${CYAN}🚀 Social Graph Data Generator${NC}"
@@ -100,11 +101,30 @@ fi
 echo -e "${GREEN}✅ AWS credentials configured${NC}"
 echo ""
 
+# Setup virtual environment
+echo -e "${YELLOW}📦 Setting up Python virtual environment...${NC}"
+if [ ! -d "${VENV_DIR}" ]; then
+    echo -e "${YELLOW}Creating virtual environment...${NC}"
+    python3 -m venv "${VENV_DIR}" || {
+        echo -e "${RED}❌ Failed to create virtual environment${NC}"
+        exit 1
+    }
+fi
+
+# Activate virtual environment
+source "${VENV_DIR}/bin/activate" || {
+    echo -e "${RED}❌ Failed to activate virtual environment${NC}"
+    exit 1
+}
+
 # Check if requirements are installed
-echo -e "${YELLOW}📦 Checking Python dependencies...${NC}"
-if ! python3 -c "import boto3" 2>/dev/null; then
+if ! python -c "import boto3" 2>/dev/null; then
     echo -e "${YELLOW}Installing Python dependencies...${NC}"
-    pip3 install -r "${SCRIPT_DIR}/requirements.txt" || {
+    pip install --upgrade pip || {
+        echo -e "${RED}❌ Failed to upgrade pip${NC}"
+        exit 1
+    }
+    pip install -r "${SCRIPT_DIR}/requirements.txt" || {
         echo -e "${RED}❌ Failed to install dependencies${NC}"
         exit 1
     }
@@ -133,15 +153,19 @@ echo -e "${YELLOW}🔄 Generating and loading data...${NC}"
 echo "This may take several minutes depending on the number of users..."
 echo ""
 
-python3 "${SCRIPT_DIR}/load_dynamodb.py" \
+python "${SCRIPT_DIR}/load_dynamodb.py" \
     --users "${USERS}" \
     --followers-table "${FOLLOWERS_TABLE}" \
     --following-table "${FOLLOWING_TABLE}" \
     --region "${AWS_REGION}" || {
     echo ""
     echo -e "${RED}❌ Data loading failed!${NC}"
+    deactivate 2>/dev/null || true
     exit 1
 }
+
+# Deactivate virtual environment
+deactivate 2>/dev/null || true
 
 echo ""
 echo -e "${GREEN}✅ Data loading complete!${NC}"
