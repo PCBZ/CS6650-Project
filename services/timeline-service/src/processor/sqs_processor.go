@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/fanout"
 	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/grpc"
@@ -30,9 +31,12 @@ func NewSQSProcessor(sqsClient *sqs.Client, queueURL string, pushStrategy fanout
 
 // ProcessMessages polls SQS and processes incoming messages
 func (p *SQSProcessor) ProcessMessages(ctx context.Context) error {
+	log.Println("SQS Processor started, polling for messages...")
+	
 	for {
 		select {
 		case <-ctx.Done():
+			log.Println("SQS Processor shutting down")
 			return ctx.Err()
 		default:
 			// Poll for messages
@@ -42,17 +46,21 @@ func (p *SQSProcessor) ProcessMessages(ctx context.Context) error {
 				WaitTimeSeconds:     int32(20), // Long polling
 			})
 			if err != nil {
+				log.Printf("Failed to receive SQS messages: %v", err)
 				continue
 			}
 
 			// Process each message
 			for _, message := range result.Messages {
 				if err := p.processMessage(ctx, message); err != nil {
+					log.Printf("Failed to process message %s: %v", *message.MessageId, err)
 					continue
 				}
-
+				
 				// Delete message after successful processing
-				p.deleteMessage(ctx, message)
+				if err := p.deleteMessage(ctx, message); err != nil {
+					log.Printf("Failed to delete message %s: %v", *message.MessageId, err)
+				}
 			}
 		}
 	}
@@ -69,6 +77,11 @@ func (p *SQSProcessor) processMessage(ctx context.Context, message types.Message
 	// Validate message
 	if sqsMessage.EventType != "FeedWrite" {
 		return fmt.Errorf("unsupported event type: %s", sqsMessage.EventType)
+	}
+
+	// Check if user service client is available
+	if p.userServiceClient == nil {
+		return fmt.Errorf("user service client is not initialized")
 	}
 
 	// Get author name from User Service via gRPC

@@ -25,6 +25,9 @@ type GRPCPostServiceClient struct {
 
 // BatchGetPosts makes gRPC call to Post Service's BatchGetPosts method
 func (c *GRPCPostServiceClient) BatchGetPosts(ctx context.Context, userIDs []int64, limit int32) (map[int64][]models.TimelinePost, error) {
+	if c.client == nil {
+		return nil, fmt.Errorf("post service client not initialized - connection failed at startup")
+	}
 	// Create gRPC request
 	req := &postpb.BatchGetPostsRequest{
 		UserIds: userIDs,
@@ -88,8 +91,12 @@ func NewPostServiceClient(endpoint string) PostServiceClient {
 		grpc.WithBlock(), // Block until connection is established
 	)
 	if err != nil {
-		// Fallback to mock if connection fails
-		fmt.Printf("Failed to connect to post service at %s: %v, using mock client\n", endpoint, err)
+		// Return a client that will fail on first use, but allow service to start
+		fmt.Printf("Warning: Failed to connect to post service at %s: %v. Service will retry on first use.\n", endpoint, err)
+		return &GRPCPostServiceClient{
+			client: nil,
+			conn:   nil,
+		}
 	}
 
 	// Create gRPC client
