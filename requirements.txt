@@ -1,0 +1,13 @@
+# Python dependencies for CS6650 Project
+# Timeline Service End-to-End Testing
+
+# HTTP client library
+requests==2.31.0
+
+# Optional: Enhanced testing capabilities
+# pytest==7.4.3
+# pytest-asyncio==0.21.1
+
+# Optional: Load testing
+# locust==2.17.0
+
