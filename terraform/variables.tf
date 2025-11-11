@@ -54,10 +54,15 @@ variable "rds_master_username" {
 }
 
 variable "rds_master_password" {
-  description = "Master password for RDS PostgreSQL instance"
+  description = "Master password for RDS PostgreSQL instance (must be at least 8 characters)"
   type        = string
   sensitive   = true
   # No default value - must be provided via environment variable or tfvars file
+  
+  validation {
+    condition     = length(var.rds_master_password) >= 8
+    error_message = "RDS master password must be at least 8 characters long to meet AWS requirements."
+  }
 }
 
 variable "rds_instance_class" {
@@ -261,9 +266,15 @@ variable "post_service_ecs_count" {
 variable "post_service_post_strategy" {
   description = "Post strategy: push, pull, or hybrid"
   type        = string
-  default     = "pull"
+  default     = "push"
 }
 
+
+variable "post_service_hybrid_threshold" {
+  description = "Threshold for hybrid strategy"
+  type        = number
+  default     = 10000
+}
 
 variable "post_service_min_capacity" {
   description = "Minimum number of tasks for post service auto-scaling"

@@ -165,7 +165,7 @@ module "post_service" {
   # Post Service specific configuration
   social_graph_url  = "social-graph-service-grpc:50052"
   post_strategy           = var.post_service_post_strategy
-  
+  hybrid_threshold        = var.post_service_hybrid_threshold
   # Auto-scaling settings
   min_capacity                = var.post_service_min_capacity
   max_capacity                = var.post_service_max_capacity
