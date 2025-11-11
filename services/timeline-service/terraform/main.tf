@@ -169,9 +169,9 @@ resource "docker_image" "app" {
   build {
     context    = "${path.module}/../../.."  # Project root (Dockerfile expects proto/)
     dockerfile = "services/timeline-service/Dockerfile"  # Path to Dockerfile from project root
-    platform   = "linux/amd64"  # Force x86_64 architecture for ECS Fargate
-    pull_parent = true   # Always pull base images to ensure correct architecture
-    no_cache    = true   # Disable cache to avoid using wrong architecture images
+    platform    = "linux/amd64"  # Force x86_64 architecture for ECS Fargate
+    pull_parent = false          
+    no_cache    = true           
     remove      = true
   }
 

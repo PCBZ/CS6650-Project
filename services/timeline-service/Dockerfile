@@ -1,24 +1,24 @@
-FROM --platform=linux/amd64 golang:1.24-alpine AS builder
+FROM --platform=linux/amd64 golang:1.25.1-alpine AS builder
 
 WORKDIR /build
 
-# Install dependencies
+# Install build deps
 RUN apk add --no-cache git
 
-# Copy root proto directory FIRST (for shared proto files)
+# Speed up and stabilize module download
+ENV GOPROXY=https://proxy.golang.org,direct
+
+# 1) 先拷贝 proto（go.mod 使用 replace ../../proto，需先存在）
 COPY proto/ ./proto/
 
-# Copy timeline-service directory structure
-COPY services/timeline-service/ ./services/timeline-service/
-
-# Set working directory to timeline-service
+# 2) 仅拷贝依赖声明，最大化缓存 go mod 层
 WORKDIR /build/services/timeline-service
-
-# Download dependencies (now relative paths work correctly)
+COPY services/timeline-service/go.mod services/timeline-service/go.sum ./
 RUN go mod download
 
-# Build the main application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o timeline-service ./src
+# 3) 拷贝源码并构建
+COPY services/timeline-service/ ./ 
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o timeline-service ./src
 
 # Final image
 FROM --platform=linux/amd64 alpine:latest

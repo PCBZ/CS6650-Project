@@ -38,6 +38,10 @@ type userServiceClient struct {
 
 // BatchGetUserInfo calls the real User Service via gRPC
 func (c *userServiceClient) BatchGetUserInfo(ctx context.Context, userIDs []int64) (*BatchGetUserInfoResponse, error) {
+	if c.client == nil {
+		return nil, fmt.Errorf("user service client not initialized - connection failed at startup")
+	}
+
 	// Create gRPC request
 	req := &pb.BatchGetUserInfoRequest{
 		UserIds: userIDs,
@@ -74,14 +78,13 @@ func (c *userServiceClient) BatchGetUserInfo(ctx context.Context, userIDs []int6
 	}, nil
 }
 
-// NewUserServiceClient creates a new User Service client with real gRPC connection
-func NewUserServiceClient(endpoint string) (UserServiceClient, error) {
-	log.Printf("Connecting to User Service at %s...", endpoint)
-
+// NewUserServiceClient creates a new User Service client
+func NewUserServiceClient(endpoint string) UserServiceClient {
 	// Use Dial with Block to ensure connection is established and DNS is resolved
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	log.Printf("Connecting to User Service at %s...", endpoint)
 	conn, err := grpc.DialContext(
 		ctx,
 		endpoint,
@@ -89,13 +92,25 @@ func NewUserServiceClient(endpoint string) (UserServiceClient, error) {
 		grpc.WithBlock(), // Block until connection is established
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create User Service client for %s: %w", endpoint, err)
+		// Return a client that will fail on first use, but allow service to start
+		log.Printf("Warning: Failed to connect to user service at %s: %v. Service will retry on first use.", endpoint, err)
+		return &userServiceClient{
+			client: nil,
+			conn:   nil,
+		}
 	}
 
 	log.Printf("User Service client created for %s", endpoint)
-
 	return &userServiceClient{
 		client: pb.NewUserServiceClient(conn),
 		conn:   conn,
-	}, nil
+	}
+}
+
+// Close closes the gRPC connection
+func (c *userServiceClient) Close() error {
+	if c.conn != nil {
+		return c.conn.Close()
+	}
+	return nil
 }
