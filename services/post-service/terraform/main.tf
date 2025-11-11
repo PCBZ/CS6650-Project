@@ -166,6 +166,10 @@ module "ecs" {
       name  = "SOCIAL_GRAPH_URL"
       value = var.social_graph_url
     },
+    {
+      name  = "HYBRID_THRESHOLD"
+      value = var.hybrid_threshold
+    },
   ]
 
   # Auto-scaling configuration

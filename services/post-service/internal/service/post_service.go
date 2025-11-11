@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	FanoutThreshold = 10000
 	PostsLimit = 50
 )
 
@@ -60,7 +59,7 @@ func (s *PostService)PullStrategy(ctx context.Context, req *model.CreatePostRequ
 	return post, nil
 }
 
-func (s *PostService)HybridStrategy(ctx context.Context, req *model.CreatePostRequest) (*pb.Post, error) {
+func (s *PostService)HybridStrategy(ctx context.Context, req *model.CreatePostRequest, hybridThreshold int) (*pb.Post, error) {
 	post := s.createPost(req)
 
 	// Get follower count
@@ -72,12 +71,20 @@ func (s *PostService)HybridStrategy(ctx context.Context, req *model.CreatePostRe
     log.Printf("User %d has %d followers", post.UserId, followers.TotalCount)
 
     // Check threshold
-    if followers.TotalCount >= FanoutThreshold {
-        log.Printf("User %d has >= %d followers, skipping push fan-out", post.UserId, FanoutThreshold)
-        return s.PullStrategy(ctx,req)
+    if followers.TotalCount >= int32(hybridThreshold) {
+        log.Printf("User %d has >= %d followers, skipping push fan-out", post.UserId, hybridThreshold)
+        post, err = s.PullStrategy(ctx,req)
+        if err != nil {
+            return nil, fmt.Errorf("failed to create post: %w", err)
+        }
+        return post, nil
 	}
 
-	return s.PushStrategy(ctx, req)
+	post, err = s.PushStrategy(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create post: %w", err)
+	}
+	return post, nil
 }
 
 // Get single post
@@ -102,3 +109,5 @@ func (s *PostService) BatchGetPosts(ctx context.Context, req *pb.BatchGetPostsRe
 	}
 	return result, nil
 }
+
+

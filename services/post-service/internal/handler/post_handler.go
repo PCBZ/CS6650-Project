@@ -5,6 +5,7 @@ import (
 	"os"
 	"post-service/internal/model"
 	"post-service/internal/service"
+	"strconv"
 	"strings"
 
 	pb "github.com/cs6650/proto/post"
@@ -39,6 +40,11 @@ func (h *PostHandler) ExecuteStrategy(c *gin.Context) {
 	var post *pb.Post
 	var err error
 	var message string
+	hybridThreshold, err := strconv.Atoi(os.Getenv("HYBRID_THRESHOLD"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	switch strategy {
 	case "push":
@@ -48,7 +54,7 @@ func (h *PostHandler) ExecuteStrategy(c *gin.Context) {
 		post, err = h.postService.PullStrategy(c.Request.Context(), &req)
 		message = "Save to Posts(Pull) successfully"
 	case "hybrid":
-		post, err = h.postService.HybridStrategy(c.Request.Context(), &req)
+		post, err = h.postService.HybridStrategy(c.Request.Context(), &req, hybridThreshold)
 		message = "Run Hybrid Strategy successfully"
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid POST_STRATEGY. Must be 'push', 'pull', or 'hybrid'"})
@@ -85,16 +91,14 @@ func (h *PostHandler)PullStrategy(c *gin.Context, req *model.CreatePostRequest){
 }
 
 // HybridStrategy Handler
-func (h *PostHandler)HybridStrategy(c *gin.Context, req *model.CreatePostRequest){
-	post, err := h.postService.HybridStrategy(c.Request.Context(), req)
+func (h *PostHandler)HybridStrategy(c *gin.Context, req *model.CreatePostRequest, hybridThreshold int){
+	post, err := h.postService.HybridStrategy(c.Request.Context(), req, hybridThreshold)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"post": post, "message": "Run Hybrid Strategy successfully"})
 }
-
-
 // BatchGetPosts handler
 func (h *PostHandler) BatchGetPosts(c *gin.Context) {
 	var req pb.BatchGetPostsRequest
