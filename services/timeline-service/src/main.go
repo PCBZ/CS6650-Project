@@ -64,9 +64,12 @@ func main() {
 	log.Println("Connected to SQS")
 
 	// Initialize service clients
+	// Try to create user service client, but don't fail if it's not available yet
+	// Service Connect may take time to register the service
 	userServiceClient, err := grpc.NewUserServiceClient(cfg.UserServiceEndpoint)
 	if err != nil {
-		log.Fatalf("Failed to create User Service client: %v", err)
+		log.Printf("Warning: Failed to create User Service client: %v. Will retry on first use.", err)
+		userServiceClient = nil // Set to nil so we can check and retry later
 	}
 
 	postServiceClient := grpc.NewPostServiceClient(cfg.PostServiceEndpoint)

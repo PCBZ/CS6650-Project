@@ -23,6 +23,9 @@ type GRPCSocialGraphServiceClient struct {
 
 // GetFollowing calls GetFollowingList from SocialGraphService
 func (c *GRPCSocialGraphServiceClient) GetFollowing(ctx context.Context, userID int64) ([]int64, error) {
+	if c.client == nil {
+		return nil, fmt.Errorf("social graph service client not initialized - connection failed at startup")
+	}
 	req := &socialgraphpb.GetFollowingListRequest{
 		UserId: userID,
 	}
@@ -50,8 +53,13 @@ func NewSocialGraphServiceClient(endpoint string) SocialGraphServiceClient {
 		grpc.WithBlock(), // Block until connection is established
 	)
 	if err != nil {
-		fmt.Printf("Failed to connect to social graph service at %s: %v\n", endpoint, err)
-		panic(fmt.Sprintf("Failed to connect to social graph service at %s: %v", endpoint, err))
+		fmt.Printf("Warning: Failed to connect to social graph service at %s: %v. Service will retry on first use.\n", endpoint, err)
+		// Return a client that will fail on first use, but allow service to start
+		// The caller should handle this gracefully
+		return &GRPCSocialGraphServiceClient{
+			client: nil,
+			conn:   nil,
+		}
 	}
 	fmt.Printf("Social Graph Service client created for %s\n", endpoint)
 	client := socialgraphpb.NewSocialGraphServiceClient(conn)
