@@ -185,7 +185,7 @@ variable "timeline_service_ecs_count" {
 variable "timeline_service_fanout_strategy" {
   description = "Timeline fanout strategy: push, pull, or hybrid"
   type        = string
-  default     = "hybrid"
+  default     = "push"
 }
 
 variable "timeline_service_celebrity_threshold" {
