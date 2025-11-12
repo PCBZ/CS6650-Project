@@ -34,44 +34,67 @@ func NewFanoutService(socialGraphClient *client.SocialGraphClient, snsClient * s
 }
 
 func (s *FanoutService)ExecutePushFanout(ctx context.Context, post *pb.Post) error {
-	// Fetch all followers
-	allFollowers :=  []int64{}
+	// Fetch followers and publish each batch immediately
 	offset := int32(0)
+	totalFollowers := 0
+	batchCount := 0
+	
 	for {
 		batch, err := s.socialGraphClient.GetFollowers(ctx, post.UserId, BatchSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed to fetch followers batch through rpc: %w", err)
 		}
 
-		allFollowers = append(allFollowers, batch.UserIds...)
-		if ! batch.HasMore {
+		// If this batch has followers, publish immediately
+		if len(batch.UserIds) > 0 {
+			batchCount++
+			if err := s.publishBatch(ctx, post, batch.UserIds, batchCount); err != nil {
+				return err
+			}
+			totalFollowers += len(batch.UserIds)
+		}
+		
+		// Check if there are more followers to fetch
+		if !batch.HasMore {
 			break
 		}
 		offset += BatchSize
-
-		// Publish post to SNS
-		message := model.FanoutMessage{
-			EventType: "FeedWrite",
-			AuthorID: post.UserId,
-			TargetUserIDs: batch.UserIds,
-			Content: post.Content,
-			CreatedTime: time.Unix(post.Timestamp, 0).UTC().Format("2006-01-02T15:04:05.000Z"),
-		}
-
-		messageJSON, err := json.Marshal(message)
-		if err != nil {
-			return fmt.Errorf("failed to marshal fanout message: %w", err)
-		}
-
-		_, err = s.snsClient.Publish(ctx, &sns.PublishInput{
-			TopicArn: aws.String(s.snsTopicARN),
-			Message: aws.String(string(messageJSON)),
-		})
-
-		if err != nil {
-        	return fmt.Errorf("failed to publish to SNS: %w", err)
-    	}
 	}
-	log.Printf("Successfully published fan-out message to SNS for post %d", post.PostId)
+
+	if totalFollowers == 0 {
+		log.Printf("User %d has no followers, skipping fanout", post.UserId)
+		return nil
+	}
+
+	log.Printf("Successfully published %d fan-out message(s) to SNS for post %d (total %d followers)", 
+		batchCount, post.PostId, totalFollowers)
 	return nil	
+}
+
+// publishBatch publishes a single batch of followers to SNS
+func (s *FanoutService) publishBatch(ctx context.Context, post *pb.Post, followers []int64, batchNum int) error {
+	message := model.FanoutMessage{
+		EventType: "FeedWrite",
+		AuthorID: post.UserId,
+		TargetUserIDs: followers,
+		Content: post.Content,
+		CreatedTime: time.Unix(post.Timestamp, 0).UTC().Format("2006-01-02T15:04:05.000Z"),
+	}
+
+	messageJSON, err := json.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal fanout message for batch %d: %w", batchNum, err)
+	}
+
+	_, err = s.snsClient.Publish(ctx, &sns.PublishInput{
+		TopicArn: aws.String(s.snsTopicARN),
+		Message: aws.String(string(messageJSON)),
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to publish batch %d to SNS: %w", batchNum, err)
+	}
+	
+	log.Printf("Published batch %d to SNS for post %d (%d followers)", batchNum, post.PostId, len(followers))
+	return nil
 }

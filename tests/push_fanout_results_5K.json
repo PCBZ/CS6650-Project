@@ -1,0 +1,46 @@
+{
+  "scale": "5K",
+  "total_users": 5000,
+  "total_requests": 2920,
+  "write_count": 2920,
+  "read_count": 0,
+  "error_count": 26772,
+  "duration_seconds": 480.08643913269043,
+  "throughput": {
+    "total_rps": 6.082238034623897,
+    "write_rps": 6.082238034623897,
+    "read_rps": 0.0
+  },
+  "write_latency": {
+    "avg": 60.21398469193341,
+    "p50": 47.82414436340332,
+    "p95": 114.35222625732422,
+    "p99": 348.0250835418701,
+    "max": 646.1570262908936
+  },
+  "read_latency": {
+    "avg": 0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0
+  },
+  "regular_metrics": {
+    "write_count": 2504,
+    "read_count": 0,
+    "avg_write_latency": 60.54787999524857,
+    "avg_read_latency": 0
+  },
+  "influencer_metrics": {
+    "write_count": 390,
+    "read_count": 0,
+    "avg_write_latency": 58.58464913490491,
+    "avg_read_latency": 0
+  },
+  "celebrity_metrics": {
+    "write_count": 26,
+    "read_count": 0,
+    "avg_write_latency": 52.49733191270094,
+    "avg_read_latency": 0
+  }
+}

@@ -18,6 +18,8 @@ import time
 import logging
 import random
 import string
+import os
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Optional, Tuple
@@ -34,10 +36,49 @@ except ImportError:
 # Configuration
 # ============================================================================
 
+def get_alb_url_from_terraform() -> str:
+    """
+    Get ALB URL from Terraform output or environment variable
+    
+    Priority:
+    1. Environment variable ALB_URL
+    2. Terraform output (terraform output -raw alb_dns_name)
+    3. Fallback to hardcoded URL
+    """
+    # Try environment variable first
+    alb_url = os.environ.get('ALB_URL')
+    if alb_url:
+        return alb_url
+    
+    # Try Terraform output
+    try:
+        # Get the project root (parent of scripts directory)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        terraform_dir = os.path.join(project_root, 'terraform')
+        
+        if os.path.exists(terraform_dir):
+            result = subprocess.run(
+                ['terraform', 'output', '-raw', 'alb_dns_name'],
+                cwd=terraform_dir,
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                alb_dns = result.stdout.strip()
+                return f"http://{alb_dns}"
+    except Exception:
+        pass
+    
+    # Fallback to hardcoded URL
+    return "http://cs6650-project-dev-alb-2009030594.us-west-2.elb.amazonaws.com"
+
 @dataclass
 class APIConfig:
     """API endpoint configuration"""
-    base_url: str = "http://cs6650-project-dev-alb-82249079.us-west-2.elb.amazonaws.com"
+    base_url: str = get_alb_url_from_terraform()
     
     @property
     def users(self) -> str:
