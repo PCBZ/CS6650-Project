@@ -134,7 +134,7 @@ module "web_service" {
   
   # Ensure post-service is deployed before web-service starts
   # This helps with Service Connect DNS registration timing
-  depends_on = [module.post_service]
+  depends_on = [module.user_service, module.social_graph_service, module.post_service, module.timeline_service]
 }
 
 # Post Service
