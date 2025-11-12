@@ -34,8 +34,6 @@ func NewFanoutService(socialGraphClient *client.SocialGraphClient, snsClient * s
 }
 
 func (s *FanoutService)ExecutePushFanout(ctx context.Context, post *pb.Post) error {
-	// Fetch all followers
-	allFollowers :=  []int64{}
 	offset := int32(0)
 	for {
 		batch, err := s.socialGraphClient.GetFollowers(ctx, post.UserId, BatchSize, offset)
@@ -43,19 +41,13 @@ func (s *FanoutService)ExecutePushFanout(ctx context.Context, post *pb.Post) err
 			return fmt.Errorf("failed to fetch followers batch through rpc: %w", err)
 		}
 
-		allFollowers = append(allFollowers, batch.UserIds...)
-		if ! batch.HasMore {
-			break
-		}
-		offset += BatchSize
-
-		// Publish post to SNS
+		// Publish post to SNS for this batch
 		message := model.FanoutMessage{
-			EventType: "FeedWrite",
-			AuthorID: post.UserId,
+			EventType:     "FeedWrite",
+			AuthorID:      post.UserId,
 			TargetUserIDs: batch.UserIds,
-			Content: post.Content,
-			CreatedTime: time.Unix(post.Timestamp, 0).UTC().Format("2006-01-02T15:04:05.000Z"),
+			Content:       post.Content,
+			CreatedTime:   time.Unix(post.Timestamp, 0).UTC(),
 		}
 
 		messageJSON, err := json.Marshal(message)
@@ -69,9 +61,16 @@ func (s *FanoutService)ExecutePushFanout(ctx context.Context, post *pb.Post) err
 		})
 
 		if err != nil {
-        	return fmt.Errorf("failed to publish to SNS: %w", err)
-    	}
+			return fmt.Errorf("failed to publish batch %d to SNS: %w", offset + 1, err)
+		}
+
+		// Check if this was the last batch after processing it
+		if !batch.HasMore {
+			break
+		}
+
+		offset += BatchSize
 	}
 	log.Printf("Successfully published fan-out message to SNS for post %d", post.PostId)
-	return nil	
+	return nil
 }

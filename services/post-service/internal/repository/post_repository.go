@@ -29,7 +29,7 @@ func NewPostRepository(client *dynamodb.Client, tableName string) *PostRepositor
 func(r *PostRepository) CreatePost(ctx context.Context, post *pb.Post) error {
 	// Manually create DynamoDB item with correct field names (post_id, user_id, etc.)
 	item := map[string]types.AttributeValue{
-		"post_id": &types.AttributeValueMemberS{
+		"post_id": &types.AttributeValueMemberN{
 			Value: fmt.Sprintf("%d", post.PostId),
 		},
 		"user_id": &types.AttributeValueMemberN{
@@ -60,7 +60,7 @@ func(r *PostRepository)GetPost(ctx context.Context, postID int64)(*pb.Post, erro
 	result, err := r.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(r.tableName),
 		Key: map[string]types.AttributeValue{
-			"post_id": &types.AttributeValueMemberS{
+			"post_id": &types.AttributeValueMemberN{
 				Value: fmt.Sprintf("%d", postID),
 			},
 		},

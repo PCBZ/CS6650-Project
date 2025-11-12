@@ -60,10 +60,12 @@ func main() {
 	postRepository := repository.NewPostRepository(dynamoClient, tableName)
 
 	//Initialize external service client
+	log.Printf("Initializing Social Graph client with endpoint: %s", socialGraphURL)
 	socialGraphClient, err := client.NewSocialGraphClient(socialGraphURL)
 	if err != nil {
 		log.Fatalf("failed to create social graph client: %v", err)
 	}
+	defer socialGraphClient.Close()
 
 	//Initialize services
 	fanoutService := service.NewFanoutService(socialGraphClient, snsClient, snsTopicARN)

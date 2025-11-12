@@ -6,7 +6,7 @@ resource "aws_dynamodb_table" "posts" {
 
   attribute {
     name = "post_id"
-    type = "S"
+    type = "N"
   }
   attribute {
     name = "user_id"
@@ -14,7 +14,7 @@ resource "aws_dynamodb_table" "posts" {
   }
   attribute {
     name = "timestamp"
-    type = "S"
+    type = "N"
   }
 
   # GSI for querying user's posts (for pull/hybrid strategy)

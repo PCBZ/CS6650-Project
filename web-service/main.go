@@ -79,6 +79,8 @@ func main() {
 	log.Printf("Web Service (API Gateway) starting on port %s", port)
 	log.Printf("User Service URL: %s", userServiceURL)
 	log.Printf("User Service gRPC Host: %s", userServiceGRPCHost)
+	log.Printf("Post Service URL: %s", postServiceURL)
+	log.Printf("Post Service gRPC Host: %s", postServiceGRPCHost)
 	log.Printf("Timeline Service URL: %s", timelineServiceURL)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
