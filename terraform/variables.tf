@@ -148,7 +148,7 @@ variable "web_service_min_capacity" {
 variable "web_service_max_capacity" {
   description = "Maximum number of tasks for web service auto-scaling"
   type        = number
-  default     = 10
+  default     = 99
 }
 
 variable "web_service_cpu_target_value" {
