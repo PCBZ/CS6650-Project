@@ -1,46 +1,46 @@
 {
   "scale": "5K",
   "total_users": 5000,
-  "total_requests": 2920,
-  "write_count": 2920,
-  "read_count": 0,
-  "error_count": 26772,
-  "duration_seconds": 480.08643913269043,
+  "total_requests": 59899,
+  "write_count": 5978,
+  "read_count": 53921,
+  "error_count": 0,
+  "duration_seconds": 480.05219984054565,
   "throughput": {
-    "total_rps": 6.082238034623897,
-    "write_rps": 6.082238034623897,
-    "read_rps": 0.0
+    "total_rps": 124.77601398326281,
+    "write_rps": 12.452812427451963,
+    "read_rps": 112.32320155581085
   },
   "write_latency": {
-    "avg": 60.21398469193341,
-    "p50": 47.82414436340332,
-    "p95": 114.35222625732422,
-    "p99": 348.0250835418701,
-    "max": 646.1570262908936
+    "avg": 253.44615753935747,
+    "p50": 56.19001388549805,
+    "p95": 1313.910961151123,
+    "p99": 3702.7621269226074,
+    "max": 10547.02615737915
   },
   "read_latency": {
-    "avg": 0,
-    "p50": 0.0,
-    "p95": 0.0,
-    "p99": 0.0,
-    "max": 0
+    "avg": 323.54961627293,
+    "p50": 82.46588706970215,
+    "p95": 1376.9538402557373,
+    "p99": 4220.6690311431885,
+    "max": 17785.01796722412
   },
   "regular_metrics": {
-    "write_count": 2504,
-    "read_count": 0,
-    "avg_write_latency": 60.54787999524857,
-    "avg_read_latency": 0
+    "write_count": 5978,
+    "read_count": 53921,
+    "avg_write_latency": 253.44615753935747,
+    "avg_read_latency": 323.54961627293
   },
   "influencer_metrics": {
-    "write_count": 390,
+    "write_count": 0,
     "read_count": 0,
-    "avg_write_latency": 58.58464913490491,
+    "avg_write_latency": 0,
     "avg_read_latency": 0
   },
   "celebrity_metrics": {
-    "write_count": 26,
+    "write_count": 0,
     "read_count": 0,
-    "avg_write_latency": 52.49733191270094,
+    "avg_write_latency": 0,
     "avg_read_latency": 0
   }
 }

@@ -91,8 +91,8 @@ class TestConfig:
     
     # AWS Configuration
     AWS_REGION = "us-west-2"
-    FOLLOWERS_TABLE = "cs6650-project-dev-followers"
-    FOLLOWING_TABLE = "cs6650-project-dev-following"
+    FOLLOWERS_TABLE = "social-graph-followers"
+    FOLLOWING_TABLE = "social-graph-following"
     
     # User scale configurations
     SCALES = {
@@ -652,33 +652,35 @@ class CelebrityUser(TimelineUser):
 
 from locust import LoadTestShape
 
-class StagesShape(LoadTestShape):
-    """
-    Custom load shape with multiple stages
-    
-    Stage 1: Warm-up (0-60s) - Ramp up to 50 users
-    Stage 2: Normal load (60-180s) - Maintain 50 users
-    Stage 3: Peak load (180-300s) - Ramp up to 200 users
-    Stage 4: Sustained peak (300-420s) - Maintain 200 users
-    Stage 5: Cool-down (420-480s) - Ramp down to 50 users
-    """
-    
-    stages = [
-        {"duration": 60, "users": 50, "spawn_rate": 5},      # Warm-up
-        {"duration": 180, "users": 50, "spawn_rate": 5},     # Normal load
-        {"duration": 300, "users": 200, "spawn_rate": 10},   # Peak load
-        {"duration": 420, "users": 200, "spawn_rate": 10},   # Sustained peak
-        {"duration": 480, "users": 50, "spawn_rate": 5},     # Cool-down
-    ]
-    
-    def tick(self):
-        run_time = self.get_run_time()
-        
-        for stage in self.stages:
-            if run_time < stage["duration"]:
-                return (stage["users"], stage["spawn_rate"])
-        
-        return None  # Test complete
+# Commented out to use command-line parameters (--users, --spawn-rate, --run-time)
+# Uncomment this class to use the custom staged load pattern
+# class StagesShape(LoadTestShape):
+#     """
+#     Custom load shape with multiple stages
+#     
+#     Stage 1: Warm-up (0-60s) - Ramp up to 50 users
+#     Stage 2: Normal load (60-180s) - Maintain 50 users
+#     Stage 3: Peak load (180-300s) - Ramp up to 200 users
+#     Stage 4: Sustained peak (300-420s) - Maintain 200 users
+#     Stage 5: Cool-down (420-480s) - Ramp down to 50 users
+#     """
+#     
+#     stages = [
+#         {"duration": 60, "users": 50, "spawn_rate": 5},      # Warm-up
+#         {"duration": 180, "users": 50, "spawn_rate": 5},     # Normal load
+#         {"duration": 300, "users": 200, "spawn_rate": 10},   # Peak load
+#         {"duration": 420, "users": 200, "spawn_rate": 10},   # Sustained peak
+#         {"duration": 480, "users": 50, "spawn_rate": 5},     # Cool-down
+#     ]
+#     
+#     def tick(self):
+#         run_time = self.get_run_time()
+#         
+#         for stage in self.stages:
+#             if run_time < stage["duration"]:
+#                 return (stage["users"], stage["spawn_rate"])
+#         
+#         return None  # Test complete
 
 
 # ============================================================================
