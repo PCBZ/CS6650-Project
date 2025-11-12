@@ -113,8 +113,8 @@ variable "social_graph_url" {
 
 variable "hybrid_threshold" {
   description = "Threshold for hybrid strategy"
-  type        = string
-  default     = "10000"
+  type        = number
+  default     = 50000
 }
 
 # SNS Topic ARN (optional, can be created by this module or passed in)

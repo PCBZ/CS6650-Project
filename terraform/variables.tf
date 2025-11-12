@@ -185,7 +185,7 @@ variable "timeline_service_ecs_count" {
 variable "timeline_service_fanout_strategy" {
   description = "Timeline fanout strategy: push, pull, or hybrid"
   type        = string
-  default     = "push"
+  default     = "hybrid"
 }
 
 variable "timeline_service_celebrity_threshold" {
@@ -266,7 +266,7 @@ variable "post_service_ecs_count" {
 variable "post_service_post_strategy" {
   description = "Post strategy: push, pull, or hybrid"
   type        = string
-  default     = "push"
+  default     = "hybrid"
 }
 
 

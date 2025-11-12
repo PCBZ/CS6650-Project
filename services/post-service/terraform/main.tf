@@ -168,7 +168,7 @@ module "ecs" {
     },
     {
       name  = "HYBRID_THRESHOLD"
-      value = var.hybrid_threshold
+      value = tostring(var.hybrid_threshold)
     },
   ]
 
