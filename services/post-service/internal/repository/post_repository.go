@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -12,21 +13,21 @@ import (
 	pb "github.com/cs6650/proto/post"
 )
 
-type PostRepository struct{
-	client *dynamodb.Client
+type PostRepository struct {
+	client    *dynamodb.Client
 	tableName string
 }
 
 // Create a new repository
 func NewPostRepository(client *dynamodb.Client, tableName string) *PostRepository {
 	return &PostRepository{
-		client: client,
+		client:    client,
 		tableName: tableName,
 	}
 }
 
-// Create a new post and save to dynamodb 
-func(r *PostRepository) CreatePost(ctx context.Context, post *pb.Post) error {
+// Create a new post and save to dynamodb
+func (r *PostRepository) CreatePost(ctx context.Context, post *pb.Post) error {
 	// Manually create DynamoDB item with correct field names (post_id, user_id, etc.)
 	item := map[string]types.AttributeValue{
 		"post_id": &types.AttributeValueMemberN{
@@ -42,7 +43,7 @@ func(r *PostRepository) CreatePost(ctx context.Context, post *pb.Post) error {
 			Value: fmt.Sprintf("%d", post.Timestamp),
 		},
 	}
-	
+
 	_, err := r.client.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(r.tableName),
 		Item:      item,
@@ -56,7 +57,7 @@ func(r *PostRepository) CreatePost(ctx context.Context, post *pb.Post) error {
 }
 
 // Retrieves a single post by PostID
-func(r *PostRepository)GetPost(ctx context.Context, postID int64)(*pb.Post, error) {
+func (r *PostRepository) GetPost(ctx context.Context, postID int64) (*pb.Post, error) {
 	result, err := r.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(r.tableName),
 		Key: map[string]types.AttributeValue{
@@ -66,7 +67,7 @@ func(r *PostRepository)GetPost(ctx context.Context, postID int64)(*pb.Post, erro
 		},
 	})
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -80,12 +81,12 @@ func(r *PostRepository)GetPost(ctx context.Context, postID int64)(*pb.Post, erro
 }
 
 // Retrieve recent posts for multiple users
-func(r *PostRepository) GetPostByUserIDs(ctx context.Context, userIDs []int64, limit int32)(map[int64][]*pb.Post, error){
+func (r *PostRepository) GetPostByUserIDs(ctx context.Context, userIDs []int64, limit int32) (map[int64][]*pb.Post, error) {
 	result := make(map[int64][]*pb.Post)
 
-	for _, userID := range userIDs{
+	for _, userID := range userIDs {
 		posts, err := r.GetPostByUserID(ctx, userID, limit)
-		if err != nil{
+		if err != nil {
 			return nil, err
 		}
 		result[userID] = posts
@@ -94,18 +95,18 @@ func(r *PostRepository) GetPostByUserIDs(ctx context.Context, userIDs []int64, l
 }
 
 // Retrieve recent posts for single user
-func(r *PostRepository) GetPostByUserID(ctx context.Context, userID int64, limit int32)([]*pb.Post, error){
+func (r *PostRepository) GetPostByUserID(ctx context.Context, userID int64, limit int32) ([]*pb.Post, error) {
 	result, err := r.client.Query(ctx, &dynamodb.QueryInput{
-		TableName: aws.String(r.tableName),
-		IndexName: aws.String("user_id-index"), // Use GSI for querying by user_id
+		TableName:              aws.String(r.tableName),
+		IndexName:              aws.String("user_id-index"), // Use GSI for querying by user_id
 		KeyConditionExpression: aws.String("user_id = :uid"),
-		ExpressionAttributeValues: map[string]types.AttributeValue {
+		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":uid": &types.AttributeValueMemberN{
 				Value: fmt.Sprintf("%d", userID),
 			},
 		},
-		ScanIndexForward: aws.Bool(false),// Descending order
-		Limit: aws.Int32(limit),
+		ScanIndexForward: aws.Bool(false), // Descending order
+		Limit:            aws.Int32(limit),
 	})
 
 	if err != nil {
@@ -114,11 +115,36 @@ func(r *PostRepository) GetPostByUserID(ctx context.Context, userID int64, limit
 
 	var posts []*pb.Post
 	for _, item := range result.Items {
-		var post pb.Post
-		if err := attributevalue.UnmarshalMap(item, &post); err != nil {
-			return nil, err
+		post := &pb.Post{}
+
+		// Manually extract and convert fields due to DynamoDB type vs protobuf type mismatch
+		// post_id is stored as Number in DynamoDB
+		if postIDAttr, ok := item["post_id"].(*types.AttributeValueMemberN); ok {
+			if parsed, err := strconv.ParseInt(postIDAttr.Value, 10, 64); err == nil {
+				post.PostId = parsed
+			}
 		}
-		posts = append(posts, &post)
+
+		// user_id is stored as Number in DynamoDB
+		if userIDAttr, ok := item["user_id"].(*types.AttributeValueMemberN); ok {
+			if parsed, err := strconv.ParseInt(userIDAttr.Value, 10, 64); err == nil {
+				post.UserId = parsed
+			}
+		}
+
+		// content is stored as String
+		if contentAttr, ok := item["content"].(*types.AttributeValueMemberS); ok {
+			post.Content = contentAttr.Value
+		}
+
+		// timestamp is stored as Number
+		if timestampAttr, ok := item["timestamp"].(*types.AttributeValueMemberN); ok {
+			if parsed, err := strconv.ParseInt(timestampAttr.Value, 10, 64); err == nil {
+				post.Timestamp = parsed
+			}
+		}
+
+		posts = append(posts, post)
 	}
-	return posts, err
+	return posts, nil
 }

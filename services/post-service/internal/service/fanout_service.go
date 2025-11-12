@@ -74,3 +74,31 @@ func (s *FanoutService)ExecutePushFanout(ctx context.Context, post *pb.Post) err
 	log.Printf("Successfully published fan-out message to SNS for post %d", post.PostId)
 	return nil
 }
+
+// publishBatch publishes a single batch of followers to SNS
+func (s *FanoutService) publishBatch(ctx context.Context, post *pb.Post, followers []int64, batchNum int) error {
+	message := model.FanoutMessage{
+		EventType: "FeedWrite",
+		AuthorID: post.UserId,
+		TargetUserIDs: followers,
+		Content: post.Content,
+		CreatedTime: time.Unix(post.Timestamp, 0).UTC(),
+	}
+
+	messageJSON, err := json.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal fanout message for batch %d: %w", batchNum, err)
+	}
+
+	_, err = s.snsClient.Publish(ctx, &sns.PublishInput{
+		TopicArn: aws.String(s.snsTopicARN),
+		Message: aws.String(string(messageJSON)),
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to publish batch %d to SNS: %w", batchNum, err)
+	}
+	
+	log.Printf("Published batch %d to SNS for post %d (%d followers)", batchNum, post.PostId, len(followers))
+	return nil
+}

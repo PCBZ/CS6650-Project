@@ -148,7 +148,7 @@ variable "web_service_min_capacity" {
 variable "web_service_max_capacity" {
   description = "Maximum number of tasks for web service auto-scaling"
   type        = number
-  default     = 10
+  default     = 99
 }
 
 variable "web_service_cpu_target_value" {
@@ -241,20 +241,6 @@ variable "timeline_service_ecs_desired_count" {
   type        = number
   default     = 1
 }
-
-variable "timeline_service_hybrid_follower_threshold" {
-  description = "Follower count threshold for hybrid fanout strategy"
-  type        = number
-  default     = 50000
-}
-
-variable "timeline_service_cache_ttl_seconds" {
-  description = "Cache TTL in seconds for timeline data"
-  type        = number
-  default     = 300
-}
-
-
 
 # Post Service Configuration
 variable "post_service_ecs_count" {

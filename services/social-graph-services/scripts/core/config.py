@@ -11,11 +11,12 @@ follower/following distributions, and relationship generation.
 # =============================================================================
 
 # Percentage of users in each tier (must sum to ~100%)
+# Aligned with Locust test expectations: Regular (85%), Influencer (14%), Celebrity (1%)
 USER_TIER_RATIOS = {
-    "small": 0.80,      # 80% - Long tail users with few followers
-    "medium": 0.15,     # 15% - Mid-tier users with moderate following
-    "big": 0.0499,      # 4.99% - High-influence users
-    "top": 0.0001       # 0.01% - Super influencers (calculated as remainder)
+    "small": 0.85,      # 85% - Regular users (10-100 followers)
+    "medium": 0.14,     # 14% - Influencers (100-50,000 followers)
+    "big": 0.01,        # 1% - Celebrities (50,000+ followers)
+    "top": 0.0          # 0% - Not used (merged into big tier)
 }
 
 # =============================================================================
@@ -24,19 +25,23 @@ USER_TIER_RATIOS = {
 
 # Min and max followers for each tier, expressed as percentages of total user base
 # Format: (min_percentage, max_percentage)
+# Aligned with Locust expectations:
+#   - Regular: 10-100 followers
+#   - Influencer: 100-50,000 followers  
+#   - Celebrity: 50,000-500,000 followers
 FOLLOWER_RATIOS = {
-    "small": (0.0001, 0.01),    # 0.01% to 1% of total users
-    "medium": (0.01, 0.03),      # 1% to 3% of total users
-    "big": (0.06, 0.14),         # 6% to 14% of total users
-    "top": (0.30, 0.50)          # 30% to 50% of total users
+    "small": (0.0002, 0.02),    # 0.02% to 2% of total users (10-100 for 5K, 20-200 for 10K, 200-2000 for 100K)
+    "medium": (0.02, 0.50),     # 2% to 50% of total users (100-2500 for 5K, 200-5000 for 10K, 2K-50K for 100K)
+    "big": (0.50, 5.0),         # 50% to 500% of total users (2.5K-25K for 5K, 5K-50K for 10K, 50K-500K for 100K)
+    "top": (0.0, 0.0)           # Not used
 }
 
 # Absolute minimum followers (applies when percentage calculation yields 0 or too small)
 FOLLOWER_ABSOLUTE_MINIMUMS = {
-    "small": 0,
-    "medium": 1,
-    "big": 10,
-    "top": 100
+    "small": 10,        # Regular users: at least 10 followers
+    "medium": 100,      # Influencers: at least 100 followers
+    "big": 50000,       # Celebrities: at least 50,000 followers
+    "top": 0            # Not used
 }
 
 # =============================================================================
@@ -45,27 +50,31 @@ FOLLOWER_ABSOLUTE_MINIMUMS = {
 
 # Following counts are typically lower and less variable than follower counts
 # Format: (min_percentage, max_percentage)
+# Aligned with Locust expectations:
+#   - Regular: 50-200 following
+#   - Influencer: 100-500 following
+#   - Celebrity: 50-200 following
 FOLLOWING_RATIOS = {
-    "small": (0.002, 0.01),     # 0.2% to 1% of total users
-    "medium": (0.002, 0.01),    # 0.2% to 1% of total users
-    "big": (0.001, 0.005),      # 0.1% to 0.5% of total users
-    "top": (0.001, 0.005)       # 0.1% to 0.5% of total users
+    "small": (0.01, 0.04),      # 1% to 4% of total users (50-200 for 5K, 100-400 for 10K, 1K-4K for 100K)
+    "medium": (0.02, 0.10),     # 2% to 10% of total users (100-500 for 5K, 200-1000 for 10K, 2K-10K for 100K)
+    "big": (0.001, 0.004),      # 0.1% to 0.4% of total users (50-200 for 5K, 100-400 for 10K, 1K-4K for 100K)
+    "top": (0.0, 0.0)           # Not used
 }
 
 # Absolute minimum following counts
 FOLLOWING_ABSOLUTE_MINIMUMS = {
-    "small": 1,
-    "medium": 1,
-    "big": 0,
-    "top": 0
+    "small": 50,        # Regular users: at least 50 following
+    "medium": 100,      # Influencers: at least 100 following
+    "big": 50,          # Celebrities: at least 50 following
+    "top": 0            # Not used
 }
 
 # Absolute maximum following counts (upper bounds regardless of user count)
 FOLLOWING_ABSOLUTE_MAXIMUMS = {
-    "small": 1000,
-    "medium": 1000,
-    "big": 500,
-    "top": 500
+    "small": 200,       # Regular users: at most 200 following
+    "medium": 500,      # Influencers: at most 500 following
+    "big": 200,         # Celebrities: at most 200 following
+    "top": 0            # Not used
 }
 
 # =============================================================================
@@ -75,10 +84,10 @@ FOLLOWING_ABSOLUTE_MAXIMUMS = {
 # Weights for weighted random selection when generating followers
 # Higher weight = more likely to be chosen as a followee (rich-get-richer effect)
 TIER_WEIGHTS = {
-    "small": 1,
-    "medium": 3,
-    "big": 10,
-    "top": 50
+    "small": 1,         # Regular users: low weight
+    "medium": 5,        # Influencers: medium weight
+    "big": 50,          # Celebrities: very high weight (rich-get-richer)
+    "top": 0            # Not used
 }
 
 # =============================================================================

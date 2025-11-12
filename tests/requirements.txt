@@ -1,0 +1,17 @@
+# Locust Performance Testing Requirements
+
+# Core testing framework
+locust==2.20.0
+
+# HTTP client
+requests==2.31.0
+
+# AWS SDK (for monitoring AWS resources during tests)
+boto3==1.34.34
+
+# JSON handling
+jsonschema==4.20.0
+
+# Logging
+colorlog==6.8.0
+
