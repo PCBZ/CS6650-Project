@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 // A social media post
 type Post struct {
 	PostID  	int64 	`json:"post_id" dynamodbav:"post_id"`
@@ -26,11 +28,11 @@ type BatchGetPostsResponse struct{
 
 // SNS message payload for fan-out
 type FanoutMessage struct {
-	EventType     string  `json:"event_type"`
-    AuthorID      int64   `json:"author_id"`
-    TargetUserIDs []int64 `json:"target_user_ids"`
-    Content       string  `json:"content"`
-    CreatedTime    string   `json:"created_time"`
+	EventType     string    `json:"event_type"`
+	AuthorID      int64     `json:"author_id"`
+	TargetUserIDs []int64   `json:"target_user_ids"`
+	Content       string    `json:"content"`
+	CreatedTime   time.Time `json:"created_time"`
 }
 
 
