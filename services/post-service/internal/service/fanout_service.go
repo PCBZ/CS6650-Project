@@ -35,9 +35,6 @@ func NewFanoutService(socialGraphClient *client.SocialGraphClient, snsClient * s
 
 func (s *FanoutService)ExecutePushFanout(ctx context.Context, post *pb.Post) error {
 	offset := int32(0)
-	totalFollowers := 0
-	batchCount := 0
-	
 	for {
 		batch, err := s.socialGraphClient.GetFollowers(ctx, post.UserId, BatchSize, offset)
 		if err != nil {
@@ -85,7 +82,7 @@ func (s *FanoutService) publishBatch(ctx context.Context, post *pb.Post, followe
 		AuthorID: post.UserId,
 		TargetUserIDs: followers,
 		Content: post.Content,
-		CreatedTime: time.Unix(post.Timestamp, 0).UTC().Format("2006-01-02T15:04:05.000Z"),
+		CreatedTime: time.Unix(post.Timestamp, 0).UTC(),
 	}
 
 	messageJSON, err := json.Marshal(message)
