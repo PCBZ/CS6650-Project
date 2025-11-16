@@ -64,9 +64,9 @@ func (s *PushStrategy) writeBatch(req *models.FanoutRequest, followerIDs []int64
 
 		item := map[string]types.AttributeValue{
 			"post_id":    &types.AttributeValueMemberS{Value: timelinePostID},
-			"user_id":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followerID)},   // 时间线拥有者(接收者)
-			"author_id":  &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", req.AuthorID)}, // 帖子作者
-			"username":   &types.AttributeValueMemberS{Value: req.AuthorName},                  // 作者用户名
+			"user_id":    &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", followerID)},
+			"author_id":  &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", req.AuthorID)},
+			"username":   &types.AttributeValueMemberS{Value: req.AuthorName},
 			"content":    &types.AttributeValueMemberS{Value: req.Content},
 			"created_at": &types.AttributeValueMemberS{Value: timeString},
 		}

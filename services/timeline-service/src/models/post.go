@@ -12,9 +12,9 @@ type Post struct {
 
 type TimelinePost struct {
 	PostID     string    `json:"post_id" dynamodbav:"post_id"`
-	UserID     int64     `json:"user_id" dynamodbav:"user_id"`      // 时间线拥有者ID (接收者)
-	AuthorID   int64     `json:"author_id" dynamodbav:"author_id"`  // 帖子作者ID (发布者)
-	AuthorName string    `json:"author_name" dynamodbav:"username"` // 作者用户名
+	UserID     int64     `json:"user_id" dynamodbav:"user_id"`
+	AuthorID   int64     `json:"author_id" dynamodbav:"author_id"`
+	AuthorName string    `json:"author_name" dynamodbav:"username"`
 	Content    string    `json:"content" dynamodbav:"content"`
 	CreatedAt  time.Time `json:"created_at" dynamodbav:"created_at"`
 }
