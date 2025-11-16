@@ -6,7 +6,6 @@ import (
 
 	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/config"
 	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/fanout"
-	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,11 +26,7 @@ func (h *TimelineHandler) GetTimeline(c *gin.Context) {
 	userIDStr := c.Param("user_id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{
-			Success:   false,
-			Error:     "Invalid user ID",
-			ErrorCode: models.ErrCodeInvalidRequest,
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
@@ -41,21 +36,13 @@ func (h *TimelineHandler) GetTimeline(c *gin.Context) {
 
 	strategy, ok := h.strategies[algorithm]
 	if !ok {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
-			Success:   false,
-			Error:     "Configured strategy not available: " + algorithm,
-			ErrorCode: models.ErrCodeInternalError,
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Configured strategy not available: " + algorithm})
 		return
 	}
 
 	timeline, err := strategy.GetTimeline(userID, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
-			Success:   false,
-			Error:     "Failed to get timeline: " + err.Error(),
-			ErrorCode: models.ErrCodeInternalError,
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
