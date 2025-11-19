@@ -71,23 +71,57 @@ class BackgroundUser(HttpUser):
 	@task(8)
 	def read_timeline(self):
 		try:
-			# GET /api/timeline/:user_id is used elsewhere; include query fallback
+			# GET /api/timeline/:user_id
+			# Increased timeout to 30s for pull mode (needs to query multiple services)
 			path = f"/api/timeline/{self.user_id}"
-			with self.client.get(path, name="GET /api/timeline", timeout=5, catch_response=True) as r:
-				# do not process response; let Locust record default metrics
-				if r.status_code >= 400:
-					r.failure(f"status {r.status_code}")
-		except Exception:
-			# swallow errors to keep background traffic running
-			logger.debug("Exception during read_timeline", exc_info=True)
+			start_time = time.time()
+			with self.client.get(path, name="GET /api/timeline", timeout=30, catch_response=True) as r:
+				elapsed = (time.time() - start_time) * 1000  # Convert to ms
+				
+				# Log slow requests for debugging
+				if elapsed > 1000:
+					logger.warning(f"Slow timeline request: user_id={self.user_id}, time={elapsed:.2f}ms, status={r.status_code}")
+				
+				if r.status_code == 200:
+					r.success()
+				elif r.status_code >= 400:
+					error_msg = f"status {r.status_code}"
+					try:
+						error_data = r.json()
+						if "error" in error_data:
+							error_msg = f"status {r.status_code}: {error_data['error']}"
+					except:
+						pass
+					r.failure(error_msg)
+					logger.error(f"Timeline request failed: user_id={self.user_id}, {error_msg}")
+		except Exception as e:
+			# Log exceptions for debugging
+			logger.error(f"Exception during read_timeline for user {self.user_id}: {e}", exc_info=True)
 
 	@task(2)
 	def create_post(self):
 		try:
 			payload = {"user_id": self.user_id, "content": f"bg post {int(time.time())} from {self.user_id}"}
-			with self.client.post("/api/posts", json=payload, name="POST /api/posts", timeout=5, catch_response=True) as r:
-				if r.status_code >= 400:
-					r.failure(f"status {r.status_code}")
-		except Exception:
-			logger.debug("Exception during create_post", exc_info=True)
+			start_time = time.time()
+			with self.client.post("/api/posts", json=payload, name="POST /api/posts", timeout=10, catch_response=True) as r:
+				elapsed = (time.time() - start_time) * 1000  # Convert to ms
+				
+				# Log slow requests for debugging
+				if elapsed > 500:
+					logger.warning(f"Slow post creation: user_id={self.user_id}, time={elapsed:.2f}ms, status={r.status_code}")
+				
+				if r.status_code == 200:
+					r.success()
+				elif r.status_code >= 400:
+					error_msg = f"status {r.status_code}"
+					try:
+						error_data = r.json()
+						if "error" in error_data:
+							error_msg = f"status {r.status_code}: {error_data['error']}"
+					except:
+						pass
+					r.failure(error_msg)
+					logger.error(f"Post creation failed: user_id={self.user_id}, {error_msg}")
+		except Exception as e:
+			logger.error(f"Exception during create_post for user {self.user_id}: {e}", exc_info=True)
 

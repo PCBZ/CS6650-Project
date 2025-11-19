@@ -65,10 +65,10 @@ get_alb_from_terraform() {
 
 # Parse command line arguments
 TARGET_USER="${TARGET_USER:-eq10}"
-USERS=1
-SPAWN_RATE=1
-RUN_TIME="1m"
-REPORT_NAME="Report_10_Followings"
+USERS=100
+SPAWN_RATE=50
+RUN_TIME="20m"
+REPORT_NAME="Report_100_Users_10_Followings_Pull_Mode"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
