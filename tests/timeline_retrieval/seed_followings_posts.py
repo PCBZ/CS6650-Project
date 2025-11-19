@@ -117,7 +117,22 @@ def scan_table(table) -> List[dict]:
     return items
 
 
-def select_target_users(items: List[dict]) -> Tuple[int, int, int]:
+def select_target_users() -> Tuple[int, int, int]:
+    """Scan the following table and select three target users.
+
+    This function now performs its own DynamoDB scan (no arguments required)
+    and returns (max_user, user_eq_10, user_medium, items).
+    """
+    # Ensure ALB / base url is present (keeps behavior consistent with main)
+    base_url = get_alb_url_from_terraform()
+    if not base_url:
+        raise RuntimeError("ALB URL could not be found from Terraform output or ALB_URL env var")
+
+    dynamodb = boto3.resource("dynamodb", region_name="us-west-2")
+    table = dynamodb.Table("social-graph-following")
+
+    items = scan_table(table)
+
     user_following_counts = []  # (user_id, following_count)
     for it in items:
         uid_raw = it.get("user_id")
@@ -164,6 +179,7 @@ def select_target_users(items: List[dict]) -> Tuple[int, int, int]:
         mid_idx = len(user_following_counts) // 2
         user_medium = user_following_counts[mid_idx][0]
         user_medium_count = user_following_counts[mid_idx][1]
+
     print(f"Selected users: max_user={max_user} ({max_count} followings), user_eq_10={user_eq_10} ({user_eq_10_count} followings), user_medium={user_medium} ({user_medium_count} followings)")
     return max_user, user_eq_10, user_medium
 
@@ -245,10 +261,8 @@ def prepare_three_targets(region: str = "us-west-2", following_table_name: str =
     table = dynamodb.Table(following_table_name)
 
     logger.info("Scanning following table (this may take a while)...")
-    items = scan_table(table)
-    logger.info(f"Scanned {len(items)} items from {following_table_name}")
-
-    max_user, user_eq_10, user_medium = select_target_users(items)
+    # select_target_users will perform its own scan and return items
+    max_user, user_eq_10, user_medium, items = select_target_users(region, following_table_name)
     logger.info(f"Selected users: max={max_user}, eq10={user_eq_10}, medium={user_medium}")
 
     # Trim eq10 to 10 and medium to 100
@@ -326,19 +340,17 @@ def main():
     table = dynamodb.Table(following_table_name)
 
     logger.info("Scanning following table (this may take a while)...")
-    items = scan_table(table)
-    logger.info(f"Scanned {len(items)} items from {following_table_name}")
+    # select_target_users will perform its own scan and return items
+    max_user, user_eq_10, user_medium, items = select_target_users(region, following_table_name)
+    logger.info(f"Selected users: max={max_user}, eq10={user_eq_10}, medium={user_medium}")
 
-    # Draw and save following distribution plot
+    # Draw and save following distribution plot (items returned from select_target_users)
     try:
         plot_path = plot_following_distribution(items)
         if plot_path:
             logger.info(f"Distribution plot created: {plot_path}")
     except Exception as e:
         logger.debug(f"Plotting failed: {e}")
-
-    max_user, user_eq_10, user_medium = select_target_users(items)
-    logger.info(f"Selected users: max={max_user}, eq10={user_eq_10}, medium={user_medium}")
 
     # Safety check
     # Ensure user_eq_10 has at most 10 followings in the DB; if not, trim it.
