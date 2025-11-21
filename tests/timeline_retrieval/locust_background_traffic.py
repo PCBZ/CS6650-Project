@@ -52,17 +52,7 @@ class BackgroundUser(HttpUser):
 
 	def on_start(self):
 		# Try to get candidate user ids from DynamoDB, else use numeric range.
-		region = os.environ.get("AWS_REGION", "us-west-2")
-		followers_table = os.environ.get("FOLLOWERS_TABLE", "social-graph-followers")
-		users = get_users_from_dynamodb(region=region, followers_table=followers_table, sample_limit=2000)
-		
-		if users:
-			self.user_pool = users
-		else:
-			# Fallback range; configurable via env TOTAL_USERS
-			total = int(os.environ.get("TOTAL_USERS", "10000"))
-			# sample a subset for better randomness without huge range operations
-			self.user_pool = list(range(1, min(total, 100000) + 1))
+		self.user_pool = list(range(1, 5000 + 1))
 
 		# pick current user id for this simulated user
 		self.user_id = random.choice(self.user_pool)

@@ -2,19 +2,7 @@
 set -euo pipefail
 
 # Runner for locust_timeline_retrieve.py
-# Usage: 
-#   tests/timeline_retrieval/run_locust_timeline_retrieve.sh [--users N] [--spawn-rate N] [--run-time 5m] [--target eq10|medium|max] [--report NAME]
-#
-# Arguments:
-#   --users N: Number of concurrent users (default: 1)
-#   --spawn-rate N: Users to spawn per second (default: 1)
-#   --run-time TIME: Test duration, e.g., "5m", "1h" (default: 1m)
-#   --target TYPE: Target user type - eq10, medium, or max (default: eq10)
-#   --report NAME: Report file name prefix (default: timeline_retrieve_<target>_<timestamp>)
-#
-# Environment variables:
-#   TARGET_USER: Target user type (eq10, medium, max) - default: eq10
-#   ALB_URL or HOST_URL: Override ALB URL
+# Uses preset default values - modify the variables below to change test parameters
 #
 # Output:
 #   Generates HTML report: <report_name>.html
@@ -63,47 +51,56 @@ get_alb_from_terraform() {
   fi
 }
 
-# Parse command line arguments
-TARGET_USER="${TARGET_USER:-eq10}"
-USERS=100
-SPAWN_RATE=50
-RUN_TIME="20m"
-REPORT_NAME="Report_100_Users_10_Followings_Pull_Mode"
+fetch_target_users() {
+  echo "🎯 Selecting target users via seed_followings_posts.py..."
+  local selection
+  if ! selection=$(cd "$REPO_ROOT" && PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}" python3 - <<'PY'
+import sys
+import contextlib
+import io
+from tests.timeline_retrieval import seed_followings_posts as sfs
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --target)
-      TARGET_USER="$2"
-      shift 2
-      ;;
-    --users)
-      USERS="$2"
-      shift 2
-      ;;
-    --spawn-rate)
-      SPAWN_RATE="$2"
-      shift 2
-      ;;
-    --run-time)
-      RUN_TIME="$2"
-      shift 2
-      ;;
-    --report)
-      REPORT_NAME="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown option: $1"
-      exit 1
-      ;;
-  esac
-done
+# Redirect select_target_users() print to stderr so it shows in terminal
+original_stdout = sys.stdout
+sys.stdout = sys.stderr
+try:
+    max_user, eq10_user, medium_user, _ = sfs.select_target_users()
+finally:
+    sys.stdout = original_stdout
+# Print IDs to stdout for capture
+print(f"{max_user} {eq10_user} {medium_user}")
+PY
+); then
+    echo "❌ Failed to select target users via Python script"
+    exit 1
+  fi
 
-# Generate default report name if not specified
-if [ -z "$REPORT_NAME" ]; then
-  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-  REPORT_NAME="timeline_retrieve_${TARGET_USER}_${TIMESTAMP}"
-fi
+  selection=$(echo "$selection" | tr -d '\r')
+  if [ -z "$selection" ]; then
+    echo "❌ Empty selection output from Python script"
+    exit 1
+  fi
+
+  IFS=' ' read -r MAX_USER_ID EQ10_USER_ID MEDIUM_USER_ID <<< "$selection"
+
+  if [ -z "$MAX_USER_ID" ] || [ -z "$EQ10_USER_ID" ] || [ -z "$MEDIUM_USER_ID" ]; then
+    echo "❌ Failed to parse target user IDs from selection output: $selection"
+    exit 1
+  fi
+
+  export TARGET_USER_MAX="$MAX_USER_ID"
+  export TARGET_USER_EQ10="$EQ10_USER_ID"
+  export TARGET_USER_MEDIUM="$MEDIUM_USER_ID"
+
+  echo "Selected target users -> max: $MAX_USER_ID, eq10: $EQ10_USER_ID, medium: $MEDIUM_USER_ID"
+}
+
+# Preset default values - modify these to change test parameters
+TARGET_USER="medium"
+USERS=1
+SPAWN_RATE=1
+RUN_TIME="8m"
+REPORT_NAME="Report_1_User_100_Followings_Push_Mode"
 
 REPORT_HTML="${REPORT_NAME}.html"
 
@@ -113,8 +110,29 @@ echo "Target user type: $TARGET_USER (eq10, medium, or max)"
 echo "Users: $USERS, Spawn rate: $SPAWN_RATE, Run time: $RUN_TIME"
 echo "Report file: $REPORT_HTML"
 
-# Export TARGET_USER for the Python script
-export TARGET_USER
+# Fetch target users before running Locust
+fetch_target_users
+
+# Determine which user ID to use based on TARGET_USER
+case "$TARGET_USER" in
+  max)
+    SELECTED_USER_ID="$TARGET_USER_MAX"
+    ;;
+  medium)
+    SELECTED_USER_ID="$TARGET_USER_MEDIUM"
+    ;;
+  *)
+    TARGET_USER="eq10"
+    SELECTED_USER_ID="$TARGET_USER_EQ10"
+    ;;
+esac
+
+echo "Using $TARGET_USER user ID: $SELECTED_USER_ID"
+
+if [ -z "$SELECTED_USER_ID" ]; then
+  echo "❌ Failed to resolve user ID for target '$TARGET_USER'"
+  exit 1
+fi
 
 # Set PYTHONPATH to include project root for imports
 export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
@@ -129,5 +147,6 @@ exec locust -f locust_timeline_retrieve.py \
   --spawn-rate "$SPAWN_RATE" \
   --run-time "$RUN_TIME" \
   --host "$ALB_URL_RESOLVED" \
-  --html "$REPORT_HTML"
+  --html "$REPORT_HTML" \
+  --target-user-id "$SELECTED_USER_ID"
 

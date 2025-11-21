@@ -117,7 +117,7 @@ def scan_table(table) -> List[dict]:
     return items
 
 
-def select_target_users() -> Tuple[int, int, int]:
+def select_target_users() -> Tuple[int, int, int, List[int]]:
     """Scan the following table and select three target users.
 
     This function now performs its own DynamoDB scan (no arguments required)
@@ -180,8 +180,22 @@ def select_target_users() -> Tuple[int, int, int]:
         user_medium = user_following_counts[mid_idx][0]
         user_medium_count = user_following_counts[mid_idx][1]
 
+    # Trim eq10 user if following count > 10
+    if user_eq_10_count > 10:
+        changed, new_count = trim_following_to_limit(table, user_eq_10, 10)
+        if changed:
+            logger.info(f"Trimmed eq10 user {user_eq_10} from {user_eq_10_count} to {new_count} followings")
+            user_eq_10_count = new_count
+
+    # Trim medium user if following count > 100
+    if user_medium_count > 100:
+        changed, new_count = trim_following_to_limit(table, user_medium, 100)
+        if changed:
+            logger.info(f"Trimmed medium user {user_medium} from {user_medium_count} to {new_count} followings")
+            user_medium_count = new_count
+
     print(f"Selected users: max_user={max_user} ({max_count} followings), user_eq_10={user_eq_10} ({user_eq_10_count} followings), user_medium={user_medium} ({user_medium_count} followings)")
-    return max_user, user_eq_10, user_medium
+    return max_user, user_eq_10, user_medium, items
 
 
 def fetch_following_ids(table, user_id: int) -> List[int]:
@@ -341,7 +355,7 @@ def main():
 
     logger.info("Scanning following table (this may take a while)...")
     # select_target_users will perform its own scan and return items
-    max_user, user_eq_10, user_medium, items = select_target_users(region, following_table_name)
+    max_user, user_eq_10, user_medium, items = select_target_users()
     logger.info(f"Selected users: max={max_user}, eq10={user_eq_10}, medium={user_medium}")
 
     # Draw and save following distribution plot (items returned from select_target_users)

@@ -1,33 +1,31 @@
 #!/usr/bin/env python3
-"""
-Locust test that seeds posts for a single selected user (using
-functions from `seed_followings_posts.py`) and then only runs timeline
-retrieval for that user.
+"""Locust task set that repeatedly fetches /api/timeline for a single user.
 
-Run with:
-  locust -f tests/timeline_retrieval/locust_one_user.py
+This version expects the target user ID (and optional label) to be supplied
+via command-line arguments passed to Locust after `--`, e.g.
 
-By default this will pick the user nearest to 10 followings (the "eq10"
-target). Override the target via the environment variable
-`TARGET_USER` with values `eq10`, `medium`, or `max`.
+    locust ... -- --target-user-id 12345 --target-user eq10
 """
 
-import os
 import logging
-from locust import HttpUser, task, between
-
-# Import helper functions from the seeding script
-# Use relative import when running from the same directory
-try:
-    from . import seed_followings_posts as sfs
-except ImportError:
-    # Fallback for when running as a script
-    import sys
-    import os
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
-    from tests.timeline_retrieval import seed_followings_posts as sfs
+from locust import HttpUser, task, between, events
+import sys
 
 LOG = logging.getLogger("locust_one_user")
+
+
+def _register_parser_args(parser):
+    parser.add_argument(
+        "--target-user-id",
+        type=int,
+        required=True,
+        help="User ID whose timeline will be fetched by each Locust user",
+    )
+
+
+if not getattr(sys.modules[__name__], "_timeline_parser_registered", False):
+    events.init_command_line_parser.add_listener(_register_parser_args)
+    sys.modules[__name__]._timeline_parser_registered = True
 
 
 class TimelineUser(HttpUser):
@@ -41,35 +39,28 @@ class TimelineUser(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        max_user, user_eq_10, user_medium = sfs.select_target_users()
-        
-        # Select target user based on TARGET_USER environment variable
-        target = os.environ.get("TARGET_USER", "eq10").lower()
-        if target == "max":
-            self.target_uid = max_user
-            LOG.info(f"Selected target user: {max_user} (max followings)")
-        elif target == "medium":
-            self.target_uid = user_medium
-            LOG.info(f"Selected target user: {user_medium} (medium followings)")
-        else:  # default to eq10
-            self.target_uid = user_eq_10
-            LOG.info(f"Selected target user: {user_eq_10} (eq10 followings)")
+        opts = self.environment.parsed_options
+        self.target_uid = opts.target_user_id
+        LOG.info("Timeline user targeting user_id=%s", self.target_uid)
 
     @task
     def get_timeline(self):
         # Use path parameter - route is /api/timeline/:user_id
         url = f"/api/timeline/{self.target_uid}"
-        with self.client.get(url, name="/api/timeline", timeout=10, catch_response=True) as r:
+        with self.client.get(url, name="/api/timeline", timeout=30, catch_response=True) as r:
             # Check for 200; mark failures for Locust reporting
             if r.status_code != 200:
-                error_msg = f"Status {r.status_code}"
+                error_body = r.text
+                error_msg = error_body.strip() or f"HTTP {r.status_code}"
                 try:
                     error_data = r.json()
-                    if "error" in error_data:
-                        error_msg = f"Status {r.status_code}: {error_data['error']}"
-                except:
+                    if isinstance(error_data, dict) and "error" in error_data:
+                        error_msg = error_data["error"]
+                except Exception:
+                    # response is not JSON; keep raw body
                     pass
-                r.failure(error_msg)
-                LOG.error(f"Timeline request failed for user {self.target_uid}: {error_msg}")
+                final_msg = f"Timeline error (status {r.status_code}): {error_msg}"
+                r.failure(final_msg)
+                LOG.error(f"Timeline request failed for user {self.target_uid}: {final_msg}")
             else:
                 r.success()

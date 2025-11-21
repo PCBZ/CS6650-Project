@@ -120,8 +120,8 @@ table.stats tr.total td {
 
         <div class="info">
             
-            <p>During: <span class="l10n datetime">2025-11-19 06:18:23</span> - <span class="l10n datetime">2025-11-19 06:19:21</span></p>
-            <p>Target Host: <span>http://cs6650-project-dev-alb-1624724957.us-west-2.elb.amazonaws.com</span></p>
+            <p>During: <span class="l10n datetime">2025-11-20 21:10:26</span> - <span class="l10n datetime">2025-11-20 21:18:23</span></p>
+            <p>Target Host: <span>http://cs6650-project-dev-alb-213594845.us-west-2.elb.amazonaws.com</span></p>
             <p>Script: <span>locust_timeline_retrieve.py</span></p>
         </div>
 
@@ -147,12 +147,12 @@ table.stats tr.total td {
                         <tr>
                             <td>GET</td>
                             <td>/api/timeline</td>
-                            <td>20</td>
+                            <td>124</td>
                             <td>0</td>
-                            <td>628</td>
-                            <td>496</td>
-                            <td>1080</td>
-                            <td>7388</td>
+                            <td>1843</td>
+                            <td>1399</td>
+                            <td>16285</td>
+                            <td>7941</td>
                             <td>0.3</td>
                             <td>0.0</td>
                         </tr>
@@ -160,12 +160,12 @@ table.stats tr.total td {
                         <tr class="total">
                             <td></td>
                             <td>Aggregated</td>
-                            <td>20</td>
+                            <td>124</td>
                             <td>0</td>
-                            <td>628</td>
-                            <td>496</td>
-                            <td>1080</td>
-                            <td>7388</td>
+                            <td>1843</td>
+                            <td>1399</td>
+                            <td>16285</td>
+                            <td>7941</td>
                             <td>0.3</td>
                             <td>0.0</td>
                         </tr>
@@ -196,27 +196,27 @@ table.stats tr.total td {
                         <tr>
                             <td>GET</td>
                             <td>/api/timeline</td>
-                            <td>600</td>
-                            <td>660</td>
-                            <td>680</td>
-                            <td>720</td>
-                            <td>760</td>
-                            <td>1100</td>
-                            <td>1100</td>
-                            <td>1100</td>
+                            <td>1600</td>
+                            <td>1700</td>
+                            <td>1700</td>
+                            <td>1900</td>
+                            <td>2200</td>
+                            <td>2500</td>
+                            <td>3300</td>
+                            <td>16000</td>
                         </tr>
                     
                         <tr class="total">
                             <td></td>
                             <td>Aggregated</td>
-                            <td>600</td>
-                            <td>660</td>
-                            <td>680</td>
-                            <td>720</td>
-                            <td>760</td>
-                            <td>1100</td>
-                            <td>1100</td>
-                            <td>1100</td>
+                            <td>1600</td>
+                            <td>1700</td>
+                            <td>1700</td>
+                            <td>1900</td>
+                            <td>2200</td>
+                            <td>2500</td>
+                            <td>3300</td>
+                            <td>16000</td>
                         </tr>
                     
                 </tbody>
@@ -517,12 +517,12 @@ function fillTasksFromRequest() {
     <script>
         
 var stats_history = {
-    "time": ["06:18:28", "06:18:33", "06:18:38", "06:18:43", "06:18:48", "06:18:53", "06:18:58", "06:19:03", "06:19:08", "06:19:13", "06:19:18"].map(server_time => new Date(new Date().setUTCHours(...(server_time.split(":")))).toLocaleTimeString()),
-    "user_count": [{"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}],
-    "current_rps": [{"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0.1}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.4}],
-    "current_fail_per_sec": [{"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}],
-    "response_time_percentile_1": [{"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 680.0}, {"users": 1, "value": 550.0}, {"users": 1, "value": 600.0}, {"users": 1, "value": 570.0}, {"users": 1, "value": 570.0}, {"users": 1, "value": 730.0}, {"users": 1, "value": 760.0}, {"users": 1, "value": 700.0}, {"users": 1, "value": 640.0}],
-    "response_time_percentile_2": [{"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 680.0}, {"users": 1, "value": 660.0}, {"users": 1, "value": 660.0}, {"users": 1, "value": 600.0}, {"users": 1, "value": 680.0}, {"users": 1, "value": 760.0}, {"users": 1, "value": 1100.0}, {"users": 1, "value": 1100.0}, {"users": 1, "value": 700.0}],
+    "time": ["21:10:32", "21:10:37", "21:10:42", "21:10:47", "21:10:52", "21:10:57", "21:11:02", "21:11:07", "21:11:12", "21:11:17", "21:11:22", "21:11:27", "21:11:32", "21:11:37", "21:11:42", "21:11:47", "21:11:52", "21:11:57", "21:12:02", "21:12:07", "21:12:12", "21:12:17", "21:12:22", "21:12:27", "21:12:32", "21:12:37", "21:12:42", "21:12:47", "21:12:52", "21:12:57", "21:13:02", "21:13:07", "21:13:12", "21:13:17", "21:13:22", "21:13:27", "21:13:32", "21:13:37", "21:13:42", "21:13:47", "21:13:52", "21:13:57", "21:14:02", "21:14:07", "21:14:12", "21:14:17", "21:14:22", "21:14:27", "21:14:32", "21:14:37", "21:14:42", "21:14:47", "21:14:52", "21:14:57", "21:15:02", "21:15:07", "21:15:12", "21:15:17", "21:15:22", "21:15:27", "21:15:32", "21:15:37", "21:15:42", "21:15:47", "21:15:52", "21:15:57", "21:16:02", "21:16:07", "21:16:12", "21:16:17", "21:16:22", "21:16:27", "21:16:32", "21:16:37", "21:16:42", "21:16:47", "21:16:52", "21:16:57", "21:17:02", "21:17:07", "21:17:12", "21:17:17", "21:17:22", "21:17:27", "21:17:32", "21:17:37", "21:17:42", "21:17:47", "21:17:52", "21:17:57", "21:18:02", "21:18:07", "21:18:12", "21:18:17", "21:18:22"].map(server_time => new Date(new Date().setUTCHours(...(server_time.split(":")))).toLocaleTimeString()),
+    "user_count": [{"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}],
+    "current_rps": [{"users": 1, "value": 0.3333333333333333}, {"users": 1, "value": 0.2857142857142857}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.2}, {"users": 1, "value": 0.2}],
+    "current_fail_per_sec": [{"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}],
+    "response_time_percentile_1": [{"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 16000.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 2500.0}, {"users": 1, "value": 2500.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 2900.0}, {"users": 1, "value": 2900.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2000.0}],
+    "response_time_percentile_2": [{"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 2600.0}, {"users": 1, "value": 2600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 2800.0}, {"users": 1, "value": 2800.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 1800.0}, {"users": 1, "value": 1600.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 1500.0}, {"users": 1, "value": 1700.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 16000.0}, {"users": 1, "value": 16000.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 2500.0}, {"users": 1, "value": 2500.0}, {"users": 1, "value": 2500.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2100.0}, {"users": 1, "value": 2100.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2000.0}, {"users": 1, "value": 2200.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 1900.0}, {"users": 1, "value": 2900.0}, {"users": 1, "value": 2900.0}, {"users": 1, "value": 3300.0}, {"users": 1, "value": 3300.0}, {"users": 1, "value": 2300.0}, {"users": 1, "value": 2300.0}],
     "markers": [],
 };
         var percentile1 = 0.5
