@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -80,17 +81,64 @@ func (r *PostRepository) GetPost(ctx context.Context, postID int64) (*pb.Post, e
 	return &post, err
 }
 
-// Retrieve recent posts for multiple users
+// Retrieve recent posts for multiple users (parallel execution with worker pool for better performance)
 func (r *PostRepository) GetPostByUserIDs(ctx context.Context, userIDs []int64, limit int32) (map[int64][]*pb.Post, error) {
 	result := make(map[int64][]*pb.Post)
+	resultMutex := &sync.Mutex{}
 
+	// Limit concurrent goroutines to avoid resource exhaustion
+	// Max 5000 concurrent workers - DynamoDB PAY_PER_REQUEST supports up to 40,000 RCU/sec
+	// Go goroutines are lightweight (~4KB each), 5000 workers ≈ 20MB memory
+	// AWS SDK HTTP client manages connection pool (default ~100 connections, can be increased)
+	// For very large user sets (5000+), this ensures efficient parallel processing
+	maxWorkers := 5000
+	if len(userIDs) < maxWorkers {
+		maxWorkers = len(userIDs)
+	}
+
+	// Create worker pool using buffered channel
+	userIDChan := make(chan int64, len(userIDs))
 	for _, userID := range userIDs {
-		posts, err := r.GetPostByUserID(ctx, userID, limit)
+		userIDChan <- userID
+	}
+	close(userIDChan)
+
+	// Use WaitGroup to wait for all workers to complete
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(userIDs))
+
+	// Launch worker pool
+	for i := 0; i < maxWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			for userID := range userIDChan {
+				posts, err := r.GetPostByUserID(ctx, userID, limit)
+				if err != nil {
+					errChan <- fmt.Errorf("failed to get posts for user %d: %w", userID, err)
+					continue
+				}
+
+				// Thread-safe write to result map
+				resultMutex.Lock()
+				result[userID] = posts
+				resultMutex.Unlock()
+			}
+		}()
+	}
+
+	// Wait for all workers to complete
+	wg.Wait()
+	close(errChan)
+
+	// Check for errors
+	for err := range errChan {
 		if err != nil {
 			return nil, err
 		}
-		result[userID] = posts
 	}
+
 	return result, nil
 }
 

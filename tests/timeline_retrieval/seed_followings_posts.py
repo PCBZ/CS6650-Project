@@ -107,13 +107,33 @@ logger = logging.getLogger("seed_followings_posts")
 # (LIMIT_FOLLOWINGS, WORKERS and FORCE were removed per request)
 
 
-def scan_table(table) -> List[dict]:
+def scan_table(table, limit: Optional[int] = None) -> List[dict]:
+    """Scan DynamoDB table with optional limit and progress logging."""
     items = []
-    resp = table.scan()
+    page_count = 0
+    print("📊 Scanning DynamoDB table...", file=sys.stderr, flush=True)
+    
+    # Use page size of 1000 for efficient scanning
+    page_size = 1000
+    resp = table.scan(Limit=min(page_size, limit) if limit else page_size)
     items.extend(resp.get("Items", []))
+    page_count += 1
+    print(f"  Page {page_count}: {len(items)} items so far...", file=sys.stderr, flush=True)
+    
     while "LastEvaluatedKey" in resp:
-        resp = table.scan(ExclusiveStartKey=resp["LastEvaluatedKey"])
+        if limit and len(items) >= limit:
+            items = items[:limit]  # Trim to exact limit
+            break
+        remaining = limit - len(items) if limit else page_size
+        resp = table.scan(
+            ExclusiveStartKey=resp["LastEvaluatedKey"],
+            Limit=min(page_size, remaining) if limit else page_size
+        )
         items.extend(resp.get("Items", []))
+        page_count += 1
+        print(f"  Page {page_count}: {len(items)} items so far...", file=sys.stderr, flush=True)
+    
+    print(f"✅ Scan complete: {len(items)} items total", file=sys.stderr, flush=True)
     return items
 
 
@@ -131,7 +151,8 @@ def select_target_users() -> Tuple[int, int, int, List[int]]:
     dynamodb = boto3.resource("dynamodb", region_name="us-west-2")
     table = dynamodb.Table("social-graph-following")
 
-    items = scan_table(table)
+    # Limit scan to 10000 items for faster execution (enough to find target users)
+    items = scan_table(table, limit=10000)
 
     user_following_counts = []  # (user_id, following_count)
     for it in items:
