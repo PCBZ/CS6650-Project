@@ -96,12 +96,11 @@ PY
 }
 
 # Preset default values - modify these to change test parameters
-TARGET_USER="medium"
+TARGET_USER="eq10"
 USERS=1
 SPAWN_RATE=1
 RUN_TIME="8m"
-REPORT_NAME="Report_1_User_100_Followings_Push_Mode"
-
+REPORT_NAME="Report_1_User_10_Followings_Push_Mode"
 REPORT_HTML="${REPORT_NAME}.html"
 
 ALB_URL_RESOLVED=$(get_alb_from_terraform)
