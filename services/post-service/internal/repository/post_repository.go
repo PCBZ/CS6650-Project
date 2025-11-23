@@ -87,14 +87,7 @@ func (r *PostRepository) GetPostByUserIDs(ctx context.Context, userIDs []int64, 
 	resultMutex := &sync.Mutex{}
 
 	// Limit concurrent goroutines to avoid resource exhaustion
-	// Max 5000 concurrent workers - DynamoDB PAY_PER_REQUEST supports up to 40,000 RCU/sec
-	// Go goroutines are lightweight (~4KB each), 5000 workers ≈ 20MB memory
-	// AWS SDK HTTP client manages connection pool (default ~100 connections, can be increased)
-	// For very large user sets (5000+), this ensures efficient parallel processing
-	maxWorkers := 5000
-	if len(userIDs) < maxWorkers {
-		maxWorkers = len(userIDs)
-	}
+	maxWorkers := min(50, len(userIDs)) // Adjust maxWorkers as needed
 
 	// Create worker pool using buffered channel
 	userIDChan := make(chan int64, len(userIDs))

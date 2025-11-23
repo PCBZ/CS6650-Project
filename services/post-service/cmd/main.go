@@ -11,6 +11,7 @@ import (
 	"post-service/internal/repository"
 	"post-service/internal/service"
 	"sync"
+	"time"
 
 	pb "github.com/cs6650/proto/post"
 
@@ -39,13 +40,23 @@ func corsMiddleware() gin.HandlerFunc {
 	}
 }
 
-
 func main() {
 	// Load configuration
-    cfg, err := config.LoadDefaultConfig(context.TODO())
-	 if err != nil {
-        log.Fatal("Failed to load AWS config: %w", err)
-    }
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithHTTPClient(&http.Client{
+			Transport: &http.Transport{
+				MaxIdleConns:        200, // Total connection pool size
+				MaxIdleConnsPerHost: 50,  // Number of connections per host (important!)
+				IdleConnTimeout:     60 * time.Second,
+				DisableKeepAlives:   false, // Keep connections alive
+				TLSHandshakeTimeout: 10 * time.Second,
+			},
+			Timeout: 5 * time.Second, // Request timeout
+		}),
+	)
+	if err != nil {
+		log.Fatal("Failed to load AWS config: %w", err)
+	}
 
 	// Initialize AWS client
 	dynamoClient := dynamodb.NewFromConfig(cfg)
@@ -104,7 +115,7 @@ func main() {
 
 		grpcServer := grpc.NewServer()
 		pb.RegisterPostServiceServer(grpcServer, grpcHandler)
-		
+
 		// Enable gRPC reflection for tools like grpcurl
 		reflection.Register(grpcServer)
 
@@ -125,7 +136,7 @@ func main() {
 
 	// Wait for both servers
 	wg.Wait()
-	
+
 }
 
 func getEnv(key, defaultValue string) string {
