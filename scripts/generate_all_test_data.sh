@@ -17,7 +17,7 @@ USER_SERVICE_SCRIPT="$PROJECT_ROOT/services/user-service/scripts/generate_test_d
 SOCIAL_GRAPH_SCRIPT="$PROJECT_ROOT/services/social-graph-services/scripts/generate_and_load.sh"
 
 # Default values
-NUM_USERS=5000
+NUM_USERS=25000
 BASE_URL=""  # Will be read from Terraform output
 CONCURRENCY=50
 AWS_REGION="us-west-2"
