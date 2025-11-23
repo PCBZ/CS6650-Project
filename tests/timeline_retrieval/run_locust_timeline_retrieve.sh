@@ -99,8 +99,8 @@ PY
 TARGET_USER="medium"
 USERS=1
 SPAWN_RATE=1
-RUN_TIME="8m"
-REPORT_NAME="Report_1_User_100_Followings_Pull_Mode"
+RUN_TIME="5m"
+REPORT_NAME="Report_25K_1_User_100_Followings_Hybrid_Mode"
 REPORT_HTML="${REPORT_NAME}.html"
 
 ALB_URL_RESOLVED=$(get_alb_from_terraform)
