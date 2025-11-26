@@ -3,6 +3,8 @@ package fanout
 import (
 	"container/heap"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/grpc"
 	"github.com/PCBZ/CS6650-Project/services/timeline-service/src/models"
@@ -39,21 +41,26 @@ func (s *HybridStrategy) GetTimeline(userID int64, limit int) (*models.TimelineR
 		timeline *models.TimelineResponse
 		err      error
 		source   string
+		duration time.Duration
 	}
 
 	pushChan := make(chan result, 1)
 	pullChan := make(chan result, 1)
 
-	// Execute push strategy concurrently
+	// Execute push strategy concurrently (fetch from database)
 	go func() {
+		startTime := time.Now()
 		timeline, err := s.pushStrategy.GetTimeline(userID, limit)
-		pushChan <- result{timeline: timeline, err: err, source: "push"}
+		duration := time.Since(startTime)
+		pushChan <- result{timeline: timeline, err: err, source: "push", duration: duration}
 	}()
 
-	// Execute pull strategy concurrently
+	// Execute pull strategy concurrently (fetch from gRPC)
 	go func() {
+		startTime := time.Now()
 		timeline, err := s.pullStrategy.GetTimeline(userID, limit)
-		pullChan <- result{timeline: timeline, err: err, source: "pull"}
+		duration := time.Since(startTime)
+		pullChan <- result{timeline: timeline, err: err, source: "pull", duration: duration}
 	}()
 
 	// Wait for both results
@@ -64,6 +71,24 @@ func (s *HybridStrategy) GetTimeline(userID int64, limit int) (*models.TimelineR
 		case pullResult = <-pullChan:
 		}
 	}
+
+	// Log timing information
+	log.Printf("[HYBRID_TIMING] user_id=%d, database_fetch_duration=%v, grpc_fetch_duration=%v, database_posts=%d, grpc_posts=%d",
+		userID,
+		pushResult.duration,
+		pullResult.duration,
+		func() int {
+			if pushResult.timeline != nil {
+				return len(pushResult.timeline.Timeline)
+			}
+			return 0
+		}(),
+		func() int {
+			if pullResult.timeline != nil {
+				return len(pullResult.timeline.Timeline)
+			}
+			return 0
+		}())
 
 	// Merge results - combine posts from both strategies
 	return s.mergeTimelines(pushResult.timeline, pullResult.timeline, pushResult.err, pullResult.err, limit)

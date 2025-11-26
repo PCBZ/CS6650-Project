@@ -123,7 +123,7 @@ func main() {
 	}
 }
 
-// initializeServiceDatabase creates the service database and user if they don't exist
+// initializeServiceDatabase creates the service database if it doesn't exist
 func initializeServiceDatabase(host, port, masterUser, masterPassword, sslMode, dbName string) error {
 	// Validate database name to prevent SQL injection (alphanumeric and underscores only)
 	dbNamePattern := regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
@@ -166,46 +166,8 @@ func initializeServiceDatabase(host, port, masterUser, masterPassword, sslMode, 
 		log.Printf("Database %s already exists", dbName)
 	}
 
-	// Create service user if it doesn't exist (optional - for future use)
-	serviceUser := fmt.Sprintf("%s_user", dbName)
-	// Validate service user name
-	if !dbNamePattern.MatchString(serviceUser) {
-		return fmt.Errorf("invalid service user name: must contain only alphanumeric characters and underscores")
-	}
-
-	var userExists bool
-	checkUserQuery := "SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname = $1)"
-	err = masterDB.QueryRow(checkUserQuery, serviceUser).Scan(&userExists)
-	if err != nil {
-		return fmt.Errorf("failed to check if user exists: %w", err)
-	}
-
-	if !userExists {
-		// Use a more secure approach: create user with a placeholder password, then alter it
-		// This prevents password exposure in query logs
-		createUserQuery := fmt.Sprintf("CREATE USER %s", pq.QuoteIdentifier(serviceUser))
-		_, err = masterDB.Exec(createUserQuery)
-		if err != nil {
-			return fmt.Errorf("failed to create user %s: %w", serviceUser, err)
-		}
-
-		// Set password in a separate statement to minimize exposure
-		setPasswordQuery := fmt.Sprintf("ALTER USER %s WITH PASSWORD $1", pq.QuoteIdentifier(serviceUser))
-		_, err = masterDB.Exec(setPasswordQuery, masterPassword)
-		if err != nil {
-			return fmt.Errorf("failed to set password for user %s: %w", serviceUser, err)
-		}
-
-		// Grant privileges to the service user
-		grantQuery := fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(serviceUser))
-		_, err = masterDB.Exec(grantQuery)
-		if err != nil {
-			return fmt.Errorf("failed to grant privileges to user %s: %w", serviceUser, err)
-		}
-		log.Printf("Created user: %s and granted privileges", serviceUser)
-	} else {
-		log.Printf("User %s already exists", serviceUser)
-	}
+	// Note: We skip user creation and use the postgres user directly
+	// This simplifies startup and avoids permission issues
 
 	return nil
 }

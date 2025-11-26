@@ -100,7 +100,7 @@ TARGET_USER="max"
 USERS=1
 SPAWN_RATE=1
 RUN_TIME="5m"
-REPORT_NAME="Report_K_1_User_500_Followings_Hybrid_Mode"
+REPORT_NAME="Report_25K_1_User_1600_Followings_Hybrid_Mode"
 REPORT_HTML="${REPORT_NAME}.html"
 
 ALB_URL_RESOLVED=$(get_alb_from_terraform)

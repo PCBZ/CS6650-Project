@@ -32,14 +32,77 @@ type UserServiceClient interface {
 
 // userServiceClient implements UserServiceClient with actual gRPC calls
 type userServiceClient struct {
-	client pb.UserServiceClient
-	conn   *grpc.ClientConn
+	client   pb.UserServiceClient
+	conn     *grpc.ClientConn
+	endpoint string
+}
+
+const (
+	userServiceReconnectMaxAttempts = 20               // Increased from 5 to 20 to handle slow startup
+	userServiceReconnectBaseDelay   = 1 * time.Second  // Increased from 500ms to 1s
+	userServiceReconnectMaxDelay    = 10 * time.Second // Maximum delay between retries
+)
+
+// ensureConnection ensures the gRPC connection is established, retrying if needed
+func (c *userServiceClient) ensureConnection(ctx context.Context) error {
+	if c.client != nil && c.conn != nil {
+		// Connection already established
+		return nil
+	}
+
+	// Try to reconnect with retries and exponential backoff
+	var lastErr error
+	for attempt := 1; attempt <= userServiceReconnectMaxAttempts; attempt++ {
+		log.Printf("Attempting to reconnect to User Service at %s (attempt %d/%d)...", c.endpoint, attempt, userServiceReconnectMaxAttempts)
+
+		connCtx, cancel := context.WithTimeout(ctx, 15*time.Second) // Increased timeout from 10s to 15s
+		conn, err := grpc.DialContext(
+			connCtx,
+			c.endpoint,
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock(),
+		)
+		cancel()
+
+		if err == nil {
+			// Close previous connection if exists
+			if c.conn != nil {
+				_ = c.conn.Close()
+			}
+
+			c.conn = conn
+			c.client = pb.NewUserServiceClient(conn)
+			log.Printf("Successfully reconnected to User Service at %s", c.endpoint)
+			return nil
+		}
+
+		lastErr = err
+		log.Printf("Failed to reconnect to User Service (attempt %d/%d): %v", attempt, userServiceReconnectMaxAttempts, err)
+
+		// Calculate exponential backoff delay with cap
+		delay := userServiceReconnectBaseDelay * time.Duration(1<<uint(attempt-1)) // Exponential: 1s, 2s, 4s, 8s...
+		if delay > userServiceReconnectMaxDelay {
+			delay = userServiceReconnectMaxDelay
+		}
+		log.Printf("Waiting %v before next retry...", delay)
+
+		// Respect context cancellation
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context cancelled while reconnecting to user service: %w", ctx.Err())
+		case <-time.After(delay):
+			// Continue to next attempt
+		}
+	}
+
+	return fmt.Errorf("failed to reconnect to user service after %d attempts: %w", userServiceReconnectMaxAttempts, lastErr)
 }
 
 // BatchGetUserInfo calls the real User Service via gRPC
 func (c *userServiceClient) BatchGetUserInfo(ctx context.Context, userIDs []int64) (*BatchGetUserInfoResponse, error) {
-	if c.client == nil {
-		return nil, fmt.Errorf("user service client not initialized - connection failed at startup")
+	// Ensure connection is established, retry if needed
+	if err := c.ensureConnection(ctx); err != nil {
+		return nil, fmt.Errorf("user service client not initialized - connection failed: %w", err)
 	}
 
 	// Create gRPC request
@@ -92,18 +155,20 @@ func NewUserServiceClient(endpoint string) UserServiceClient {
 		grpc.WithBlock(), // Block until connection is established
 	)
 	if err != nil {
-		// Return a client that will fail on first use, but allow service to start
+		// Return a client that will retry on first use, but allow service to start
 		log.Printf("Warning: Failed to connect to user service at %s: %v. Service will retry on first use.", endpoint, err)
 		return &userServiceClient{
-			client: nil,
-			conn:   nil,
+			client:   nil,
+			conn:     nil,
+			endpoint: endpoint,
 		}
 	}
 
 	log.Printf("User Service client created for %s", endpoint)
 	return &userServiceClient{
-		client: pb.NewUserServiceClient(conn),
-		conn:   conn,
+		client:   pb.NewUserServiceClient(conn),
+		conn:     conn,
+		endpoint: endpoint,
 	}
 }
 
