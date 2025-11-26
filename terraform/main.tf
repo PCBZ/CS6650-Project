@@ -218,6 +218,10 @@ module "timeline_service" {
   memory_target_value         = var.timeline_service_memory_target_value
   enable_request_based_scaling = var.timeline_service_enable_request_based_scaling
   request_count_target_value  = var.timeline_service_request_count_target_value
+  
+  # Ensure user-service is deployed and ready before timeline-service starts
+  # This helps with gRPC connection timing
+  depends_on = [module.user_service]
 }
 
 # Social Graph Service

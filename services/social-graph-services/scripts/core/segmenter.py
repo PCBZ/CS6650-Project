@@ -101,10 +101,19 @@ class UserSegmentation:
         
         min_following = max(abs_min, int(self.total_users * min_ratio))
         max_following = max(min_following + 1, int(self.total_users * max_ratio))
-        
+
         # Apply absolute maximum cap
         max_following = min(max_following, abs_max)
-        
+
+        # Ensure we never return an inverted range (min > max) which would
+        # cause random.randint to raise ValueError. If absolute maximums are
+        # smaller than the computed minimum (configuration edge-case),
+        # clamp the minimum down to the cap so callers receive a valid
+        # inclusive range. This preserves a deterministic upper bound while
+        # avoiding runtime exceptions.
+        if max_following < min_following:
+            min_following = max_following
+
         return (min_following, max_following)
     
     def get_segment_info(self) -> Dict:

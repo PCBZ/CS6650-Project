@@ -11,9 +11,11 @@ import (
 	"post-service/internal/repository"
 	"post-service/internal/service"
 	"sync"
+	"time"
 
 	pb "github.com/cs6650/proto/post"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
@@ -39,13 +41,32 @@ func corsMiddleware() gin.HandlerFunc {
 	}
 }
 
-
 func main() {
-	// Load configuration
-    cfg, err := config.LoadDefaultConfig(context.TODO())
-	 if err != nil {
-        log.Fatal("Failed to load AWS config: %w", err)
-    }
+	// Load configuration with optimized HTTP client and retry settings
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithHTTPClient(&http.Client{
+			Transport: &http.Transport{
+				MaxIdleConns:          1000,             // Total connection pool ✅
+				MaxIdleConnsPerHost:   200,              // Per host connection number ✅
+				MaxConnsPerHost:       300,              // Maximum connections per host ✅
+				IdleConnTimeout:       30 * time.Second, // Reduced to 30s, avoid connection buildup
+				DisableKeepAlives:     false,            // Keep connection reuse ✅
+				TLSHandshakeTimeout:   5 * time.Second,  // Reduced to 5s, faster failure
+				ExpectContinueTimeout: 1 * time.Second,  // Added this, reduce HTTP/1.1 delay
+				ResponseHeaderTimeout: 10 * time.Second, // Added response header timeout
+				DisableCompression:    false,            // Keep compression, reduce network transfer
+				ForceAttemptHTTP2:     true,             // Force HTTP/2, more efficient
+				WriteBufferSize:       32 * 1024,        // Increase write buffer
+				ReadBufferSize:        32 * 1024,        // Increase read buffer
+			},
+			Timeout: 3 * time.Second, // Reduced to 3s, sufficient for 500 user queries
+		}),
+		config.WithRetryMaxAttempts(2),              // Add retry configuration
+		config.WithRetryMode(aws.RetryModeAdaptive), // Adaptive retry
+	)
+	if err != nil {
+		log.Fatal("Failed to load AWS config: %w", err)
+	}
 
 	// Initialize AWS client
 	dynamoClient := dynamodb.NewFromConfig(cfg)
@@ -104,7 +125,7 @@ func main() {
 
 		grpcServer := grpc.NewServer()
 		pb.RegisterPostServiceServer(grpcServer, grpcHandler)
-		
+
 		// Enable gRPC reflection for tools like grpcurl
 		reflection.Register(grpcServer)
 
@@ -125,7 +146,7 @@ func main() {
 
 	// Wait for both servers
 	wg.Wait()
-	
+
 }
 
 func getEnv(key, defaultValue string) string {

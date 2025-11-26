@@ -110,6 +110,11 @@ resource "aws_ecs_service" "app" {
   # CRITICAL: Ensure clean shutdown during destroy
   enable_execute_command = false
   wait_for_steady_state  = false
+  
+  # Give user service time to initialize database connection and schema
+  # User service needs to: connect to RDS, check/create database, initialize schema
+  # This typically takes 10-30 seconds, so we set grace period to 60 seconds
+  health_check_grace_period_seconds = 60
 
   network_configuration {
     subnets          = var.subnet_ids

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Test Report for locust_push_fanout_test.py</title>
+    <title>Test Report for locust_timeline_retrieve.py</title>
     <link rel="shortcut icon" href="../static/img/favicon.ico" type="image/x-icon"/>
     <style>
         body {
@@ -120,9 +120,9 @@ table.stats tr.total td {
 
         <div class="info">
             
-            <p>During: <span class="l10n datetime">2025-11-12 06:43:38</span> - <span class="l10n datetime">2025-11-12 06:51:38</span></p>
-            <p>Target Host: <span>http://cs6650-project-dev-alb-2009030594.us-west-2.elb.amazonaws.com</span></p>
-            <p>Script: <span>locust_push_fanout_test.py</span></p>
+            <p>During: <span class="l10n datetime">2025-11-23 23:10:25</span> - <span class="l10n datetime">2025-11-23 23:15:24</span></p>
+            <p>Target Host: <span>http://cs6650-project-dev-alb-111554498.us-west-2.elb.amazonaws.com</span></p>
+            <p>Script: <span>locust_timeline_retrieve.py</span></p>
         </div>
 
         <div class="requests">
@@ -146,41 +146,28 @@ table.stats tr.total td {
                     
                         <tr>
                             <td>GET</td>
-                            <td>GET /api/timeline</td>
-                            <td>8230</td>
-                            <td>7689</td>
-                            <td>13761</td>
-                            <td>31</td>
-                            <td>15417</td>
-                            <td>31</td>
-                            <td>17.1</td>
-                            <td>16.0</td>
-                        </tr>
-                    
-                        <tr>
-                            <td>POST</td>
-                            <td>POST /api/posts</td>
-                            <td>1025</td>
-                            <td>2</td>
-                            <td>2392</td>
-                            <td>114</td>
-                            <td>10051</td>
-                            <td>191</td>
-                            <td>2.1</td>
+                            <td>/api/timeline</td>
+                            <td>142</td>
+                            <td>0</td>
+                            <td>57</td>
+                            <td>38</td>
+                            <td>495</td>
+                            <td>7868</td>
+                            <td>0.5</td>
                             <td>0.0</td>
                         </tr>
                     
                         <tr class="total">
                             <td></td>
                             <td>Aggregated</td>
-                            <td>9255</td>
-                            <td>7691</td>
-                            <td>12502</td>
-                            <td>31</td>
-                            <td>15417</td>
-                            <td>49</td>
-                            <td>19.3</td>
-                            <td>16.0</td>
+                            <td>142</td>
+                            <td>0</td>
+                            <td>57</td>
+                            <td>38</td>
+                            <td>495</td>
+                            <td>7868</td>
+                            <td>0.5</td>
+                            <td>0.0</td>
                         </tr>
                     
                 </tbody>
@@ -208,85 +195,34 @@ table.stats tr.total td {
                     
                         <tr>
                             <td>GET</td>
-                            <td>GET /api/timeline</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                        </tr>
-                    
-                        <tr>
-                            <td>POST</td>
-                            <td>POST /api/posts</td>
-                            <td>2200</td>
-                            <td>2500</td>
-                            <td>2900</td>
-                            <td>3300</td>
-                            <td>4100</td>
-                            <td>4800</td>
-                            <td>6400</td>
-                            <td>10000</td>
+                            <td>/api/timeline</td>
+                            <td>50</td>
+                            <td>51</td>
+                            <td>56</td>
+                            <td>62</td>
+                            <td>71</td>
+                            <td>91</td>
+                            <td>140</td>
+                            <td>500</td>
                         </tr>
                     
                         <tr class="total">
                             <td></td>
                             <td>Aggregated</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
-                            <td>15000</td>
+                            <td>50</td>
+                            <td>51</td>
+                            <td>56</td>
+                            <td>62</td>
+                            <td>71</td>
+                            <td>91</td>
+                            <td>140</td>
+                            <td>500</td>
                         </tr>
                     
                 </tbody>
             </table>
         </div>
 
-        
-            <div class="failures">
-                <h2>Failures Statistics</h2>
-                <table class="stats">
-                    <thead>
-                        <tr>
-                            <th class="sortable">Method</th>
-                            <th class="sortable">Name</th>
-                            <th class="sortable">Error</th>
-                            <th class="sortable">Occurrences</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        
-                            <tr>
-                                <td>GET</td>
-                                <td>GET /api/timeline</td>
-                                <td>Got status code 504</td>
-                                <td>7474</td>
-                            </tr>
-                        
-                            <tr>
-                                <td>POST</td>
-                                <td>POST /api/posts</td>
-                                <td>Got status code 503</td>
-                                <td>2</td>
-                            </tr>
-                        
-                            <tr>
-                                <td>GET</td>
-                                <td>GET /api/timeline</td>
-                                <td>Got status code 500</td>
-                                <td>215</td>
-                            </tr>
-                        
-                    </tbody>
-                </table>
-            </div>
         
 
         
@@ -299,7 +235,7 @@ table.stats tr.total td {
 
         <div id="tasks">
             <h2>Final ratio</h2>
-            <div class="tasks" data-tasks="{&quot;per_class&quot;: {&quot;TimelineUser&quot;: {&quot;ratio&quot;: 0.01, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.9}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.1}}}, &quot;RegularUser&quot;: {&quot;ratio&quot;: 0.84, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.9}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.1}}}, &quot;InfluencerUser&quot;: {&quot;ratio&quot;: 0.14, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.9}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.1}}}, &quot;CelebrityUser&quot;: {&quot;ratio&quot;: 0.01, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.9}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.1}}}}, &quot;total&quot;: {&quot;TimelineUser&quot;: {&quot;ratio&quot;: 0.01, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.009}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.001}}}, &quot;RegularUser&quot;: {&quot;ratio&quot;: 0.84, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.756}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.08399999999999999}}}, &quot;InfluencerUser&quot;: {&quot;ratio&quot;: 0.14, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.12600000000000003}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.014000000000000002}}}, &quot;CelebrityUser&quot;: {&quot;ratio&quot;: 0.01, &quot;tasks&quot;: {&quot;read_timeline&quot;: {&quot;ratio&quot;: 0.009}, &quot;create_post&quot;: {&quot;ratio&quot;: 0.001}}}}}"></div>
+            <div class="tasks" data-tasks="{&quot;per_class&quot;: {&quot;TimelineUser&quot;: {&quot;ratio&quot;: 1.0, &quot;tasks&quot;: {&quot;get_timeline&quot;: {&quot;ratio&quot;: 1.0}}}}, &quot;total&quot;: {&quot;TimelineUser&quot;: {&quot;ratio&quot;: 1.0, &quot;tasks&quot;: {&quot;get_timeline&quot;: {&quot;ratio&quot;: 1.0}}}}}"></div>
         </div>
 
     </div>
@@ -581,12 +517,12 @@ function fillTasksFromRequest() {
     <script>
         
 var stats_history = {
-    "time": ["06:43:43", "06:43:48", "06:43:53", "06:43:58", "06:44:03", "06:44:08", "06:44:13", "06:44:18", "06:44:23", "06:44:28", "06:44:33", "06:44:38", "06:44:43", "06:44:48", "06:44:53", "06:44:58", "06:45:03", "06:45:08", "06:45:13", "06:45:18", "06:45:23", "06:45:28", "06:45:33", "06:45:38", "06:45:43", "06:45:48", "06:45:53", "06:45:58", "06:46:03", "06:46:08", "06:46:13", "06:46:18", "06:46:23", "06:46:28", "06:46:33", "06:46:38", "06:46:43", "06:46:48", "06:46:53", "06:46:58", "06:47:03", "06:47:08", "06:47:13", "06:47:18", "06:47:23", "06:47:28", "06:47:33", "06:47:38", "06:47:43", "06:47:48", "06:47:53", "06:47:58", "06:48:03", "06:48:08", "06:48:13", "06:48:18", "06:48:23", "06:48:28", "06:48:33", "06:48:38", "06:48:43", "06:48:48", "06:48:53", "06:48:58", "06:49:03", "06:49:08", "06:49:13", "06:49:18", "06:49:23", "06:49:28", "06:49:33", "06:49:38", "06:49:43", "06:49:48", "06:49:53", "06:49:58", "06:50:03", "06:50:08", "06:50:13", "06:50:18", "06:50:23", "06:50:28", "06:50:33", "06:50:38", "06:50:43", "06:50:48", "06:50:53", "06:50:58", "06:51:03", "06:51:08", "06:51:13", "06:51:18", "06:51:23", "06:51:28", "06:51:33"].map(server_time => new Date(new Date().setUTCHours(...(server_time.split(":")))).toLocaleTimeString()),
-    "user_count": [{"value": 0}, {"value": 0}, {"value": 40}, {"value": 90}, {"value": 140}, {"value": 190}, {"value": 240}, {"value": 290}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}, {"value": 300}],
-    "current_rps": [{"users": 0, "value": 0}, {"users": 0, "value": 0}, {"users": 40, "value": 0}, {"users": 90, "value": 1.0}, {"users": 140, "value": 2.1}, {"users": 190, "value": 3.0}, {"users": 240, "value": 6.7}, {"users": 290, "value": 26.8}, {"users": 300, "value": 33.6}, {"users": 300, "value": 16.9}, {"users": 300, "value": 15.0}, {"users": 300, "value": 27.2}, {"users": 300, "value": 23.1}, {"users": 300, "value": 11.7}, {"users": 300, "value": 21.1}, {"users": 300, "value": 26.4}, {"users": 300, "value": 16.4}, {"users": 300, "value": 15.7}, {"users": 300, "value": 24.9}, {"users": 300, "value": 22.4}, {"users": 300, "value": 14.3}, {"users": 300, "value": 21.9}, {"users": 300, "value": 27.0}, {"users": 300, "value": 17.3}, {"users": 300, "value": 17.1}, {"users": 300, "value": 22.3}, {"users": 300, "value": 20.7}, {"users": 300, "value": 18.6}, {"users": 300, "value": 20.8}, {"users": 300, "value": 21.6}, {"users": 300, "value": 18.1}, {"users": 300, "value": 19.4}, {"users": 300, "value": 22.4}, {"users": 300, "value": 20.6}, {"users": 300, "value": 18.4}, {"users": 300, "value": 20.7}, {"users": 300, "value": 21.7}, {"users": 300, "value": 19.0}, {"users": 300, "value": 20.1}, {"users": 300, "value": 22.2}, {"users": 300, "value": 20.1}, {"users": 300, "value": 18.8}, {"users": 300, "value": 22.1}, {"users": 300, "value": 21.7}, {"users": 300, "value": 18.4}, {"users": 300, "value": 19.9}, {"users": 300, "value": 20.8}, {"users": 300, "value": 19.4}, {"users": 300, "value": 18.7}, {"users": 300, "value": 21.4}, {"users": 300, "value": 22.3}, {"users": 300, "value": 19.0}, {"users": 300, "value": 19.0}, {"users": 300, "value": 20.8}, {"users": 300, "value": 20.4}, {"users": 300, "value": 19.5}, {"users": 300, "value": 20.3}, {"users": 300, "value": 22.2}, {"users": 300, "value": 19.9}, {"users": 300, "value": 18.1}, {"users": 300, "value": 20.8}, {"users": 300, "value": 21.3}, {"users": 300, "value": 20.3}, {"users": 300, "value": 20.3}, {"users": 300, "value": 20.3}, {"users": 300, "value": 19.0}, {"users": 300, "value": 19.4}, {"users": 300, "value": 21.0}, {"users": 300, "value": 20.0}, {"users": 300, "value": 19.5}, {"users": 300, "value": 20.2}, {"users": 300, "value": 20.0}, {"users": 300, "value": 19.1}, {"users": 300, "value": 20.7}, {"users": 300, "value": 21.2}, {"users": 300, "value": 19.0}, {"users": 300, "value": 19.5}, {"users": 300, "value": 20.8}, {"users": 300, "value": 21.0}, {"users": 300, "value": 19.5}, {"users": 300, "value": 20.3}, {"users": 300, "value": 20.8}, {"users": 300, "value": 19.7}, {"users": 300, "value": 21.3}, {"users": 300, "value": 22.7}, {"users": 300, "value": 21.9}, {"users": 300, "value": 19.2}, {"users": 300, "value": 19.6}, {"users": 300, "value": 21.5}, {"users": 300, "value": 19.9}, {"users": 300, "value": 19.2}, {"users": 300, "value": 19.8}, {"users": 300, "value": 21.0}, {"users": 300, "value": 19.2}, {"users": 300, "value": 20.7}],
-    "current_fail_per_sec": [{"users": 0, "value": 0}, {"users": 0, "value": 0}, {"users": 40, "value": 0}, {"users": 90, "value": 0}, {"users": 140, "value": 0}, {"users": 190, "value": 0.2}, {"users": 240, "value": 4.2}, {"users": 290, "value": 24.1}, {"users": 300, "value": 29.1}, {"users": 300, "value": 12.4}, {"users": 300, "value": 12.3}, {"users": 300, "value": 23.6}, {"users": 300, "value": 18.7}, {"users": 300, "value": 8.5}, {"users": 300, "value": 18.8}, {"users": 300, "value": 23.2}, {"users": 300, "value": 13.0}, {"users": 300, "value": 13.7}, {"users": 300, "value": 22.0}, {"users": 300, "value": 17.8}, {"users": 300, "value": 10.2}, {"users": 300, "value": 18.7}, {"users": 300, "value": 22.5}, {"users": 300, "value": 13.1}, {"users": 300, "value": 14.6}, {"users": 300, "value": 19.8}, {"users": 300, "value": 17.1}, {"users": 300, "value": 14.5}, {"users": 300, "value": 17.7}, {"users": 300, "value": 18.8}, {"users": 300, "value": 14.9}, {"users": 300, "value": 16.0}, {"users": 300, "value": 18.7}, {"users": 300, "value": 17.2}, {"users": 300, "value": 15.3}, {"users": 300, "value": 17.3}, {"users": 300, "value": 18.2}, {"users": 300, "value": 15.2}, {"users": 300, "value": 16.8}, {"users": 300, "value": 18.9}, {"users": 300, "value": 16.2}, {"users": 300, "value": 15.6}, {"users": 300, "value": 18.2}, {"users": 300, "value": 17.6}, {"users": 300, "value": 14.9}, {"users": 300, "value": 16.6}, {"users": 300, "value": 18.2}, {"users": 300, "value": 16.7}, {"users": 300, "value": 15.9}, {"users": 300, "value": 18.4}, {"users": 300, "value": 18.5}, {"users": 300, "value": 15.7}, {"users": 300, "value": 15.9}, {"users": 300, "value": 17.2}, {"users": 300, "value": 16.8}, {"users": 300, "value": 16.5}, {"users": 300, "value": 17.3}, {"users": 300, "value": 18.2}, {"users": 300, "value": 16.6}, {"users": 300, "value": 15.5}, {"users": 300, "value": 17.1}, {"users": 300, "value": 17.7}, {"users": 300, "value": 16.4}, {"users": 300, "value": 16.3}, {"users": 300, "value": 17.7}, {"users": 300, "value": 16.5}, {"users": 300, "value": 16.8}, {"users": 300, "value": 17.7}, {"users": 300, "value": 16.3}, {"users": 300, "value": 16.6}, {"users": 300, "value": 17.4}, {"users": 300, "value": 17.1}, {"users": 300, "value": 16.3}, {"users": 300, "value": 17.5}, {"users": 300, "value": 18.1}, {"users": 300, "value": 15.8}, {"users": 300, "value": 16.1}, {"users": 300, "value": 17.8}, {"users": 300, "value": 17.7}, {"users": 300, "value": 15.7}, {"users": 300, "value": 16.6}, {"users": 300, "value": 17.3}, {"users": 300, "value": 15.4}, {"users": 300, "value": 16.8}, {"users": 300, "value": 18.0}, {"users": 300, "value": 17.3}, {"users": 300, "value": 16.1}, {"users": 300, "value": 16.4}, {"users": 300, "value": 17.8}, {"users": 300, "value": 16.3}, {"users": 300, "value": 15.9}, {"users": 300, "value": 17.3}, {"users": 300, "value": 18.1}, {"users": 300, "value": 15.8}, {"users": 300, "value": 17.4}],
-    "response_time_percentile_1": [{"users": 0, "value": 0}, {"users": 0, "value": 0}, {"users": 40, "value": 3000.0}, {"users": 90, "value": 3500.0}, {"users": 140, "value": 4200.0}, {"users": 190, "value": 11000.0}, {"users": 240, "value": 15000.0}, {"users": 290, "value": 2300.0}, {"users": 300, "value": 140.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}],
-    "response_time_percentile_2": [{"users": 0, "value": 0}, {"users": 0, "value": 0}, {"users": 40, "value": 3200.0}, {"users": 90, "value": 7800.0}, {"users": 140, "value": 9200.0}, {"users": 190, "value": 15000.0}, {"users": 240, "value": 15000.0}, {"users": 290, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}, {"users": 300, "value": 15000.0}],
+    "time": ["23:10:30", "23:10:35", "23:10:40", "23:10:45", "23:10:50", "23:10:55", "23:11:00", "23:11:05", "23:11:10", "23:11:15", "23:11:20", "23:11:25", "23:11:30", "23:11:35", "23:11:40", "23:11:45", "23:11:50", "23:11:55", "23:12:00", "23:12:05", "23:12:10", "23:12:15", "23:12:20", "23:12:25", "23:12:30", "23:12:35", "23:12:40", "23:12:45", "23:12:50", "23:12:55", "23:13:00", "23:13:05", "23:13:10", "23:13:15", "23:13:20", "23:13:25", "23:13:30", "23:13:35", "23:13:40", "23:13:45", "23:13:50", "23:13:55", "23:14:00", "23:14:05", "23:14:10", "23:14:15", "23:14:20", "23:14:25", "23:14:30", "23:14:35", "23:14:40", "23:14:45", "23:14:50", "23:14:55", "23:15:00", "23:15:05", "23:15:10", "23:15:15", "23:15:20"].map(server_time => new Date(new Date().setUTCHours(...(server_time.split(":")))).toLocaleTimeString()),
+    "user_count": [{"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}, {"value": 1}],
+    "current_rps": [{"users": 1, "value": 1.0}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.6}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.3}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.6}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.6}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.6}, {"users": 1, "value": 0.6}, {"users": 1, "value": 0.4}, {"users": 1, "value": 0.5}, {"users": 1, "value": 0.5}],
+    "current_fail_per_sec": [{"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}, {"users": 1, "value": 0}],
+    "response_time_percentile_1": [{"users": 1, "value": 500.0}, {"users": 1, "value": 58}, {"users": 1, "value": 48}, {"users": 1, "value": 48}, {"users": 1, "value": 51}, {"users": 1, "value": 47}, {"users": 1, "value": 51}, {"users": 1, "value": 62}, {"users": 1, "value": 56}, {"users": 1, "value": 56}, {"users": 1, "value": 63}, {"users": 1, "value": 45}, {"users": 1, "value": 45}, {"users": 1, "value": 52}, {"users": 1, "value": 60}, {"users": 1, "value": 46}, {"users": 1, "value": 46}, {"users": 1, "value": 50}, {"users": 1, "value": 50}, {"users": 1, "value": 49}, {"users": 1, "value": 51}, {"users": 1, "value": 50}, {"users": 1, "value": 50}, {"users": 1, "value": 56}, {"users": 1, "value": 48}, {"users": 1, "value": 48}, {"users": 1, "value": 51}, {"users": 1, "value": 49}, {"users": 1, "value": 49}, {"users": 1, "value": 50}, {"users": 1, "value": 52}, {"users": 1, "value": 52}, {"users": 1, "value": 48}, {"users": 1, "value": 48}, {"users": 1, "value": 56}, {"users": 1, "value": 43}, {"users": 1, "value": 44}, {"users": 1, "value": 43}, {"users": 1, "value": 43}, {"users": 1, "value": 45}, {"users": 1, "value": 50}, {"users": 1, "value": 51}, {"users": 1, "value": 48}, {"users": 1, "value": 47}, {"users": 1, "value": 45}, {"users": 1, "value": 45}, {"users": 1, "value": 44}, {"users": 1, "value": 49}, {"users": 1, "value": 53}, {"users": 1, "value": 53}, {"users": 1, "value": 53}, {"users": 1, "value": 98}, {"users": 1, "value": 50}, {"users": 1, "value": 50}, {"users": 1, "value": 50}, {"users": 1, "value": 57}, {"users": 1, "value": 57}, {"users": 1, "value": 56}, {"users": 1, "value": 62}],
+    "response_time_percentile_2": [{"users": 1, "value": 500.0}, {"users": 1, "value": 500.0}, {"users": 1, "value": 54}, {"users": 1, "value": 51}, {"users": 1, "value": 89}, {"users": 1, "value": 89}, {"users": 1, "value": 62}, {"users": 1, "value": 85}, {"users": 1, "value": 85}, {"users": 1, "value": 64}, {"users": 1, "value": 64}, {"users": 1, "value": 140.0}, {"users": 1, "value": 140.0}, {"users": 1, "value": 64}, {"users": 1, "value": 64}, {"users": 1, "value": 62}, {"users": 1, "value": 62}, {"users": 1, "value": 68}, {"users": 1, "value": 68}, {"users": 1, "value": 84}, {"users": 1, "value": 84}, {"users": 1, "value": 59}, {"users": 1, "value": 56}, {"users": 1, "value": 62}, {"users": 1, "value": 62}, {"users": 1, "value": 58}, {"users": 1, "value": 75}, {"users": 1, "value": 75}, {"users": 1, "value": 55}, {"users": 1, "value": 67}, {"users": 1, "value": 67}, {"users": 1, "value": 91}, {"users": 1, "value": 91}, {"users": 1, "value": 71}, {"users": 1, "value": 71}, {"users": 1, "value": 56}, {"users": 1, "value": 48}, {"users": 1, "value": 48}, {"users": 1, "value": 45}, {"users": 1, "value": 64}, {"users": 1, "value": 64}, {"users": 1, "value": 53}, {"users": 1, "value": 53}, {"users": 1, "value": 91}, {"users": 1, "value": 91}, {"users": 1, "value": 52}, {"users": 1, "value": 52}, {"users": 1, "value": 69}, {"users": 1, "value": 81}, {"users": 1, "value": 81}, {"users": 1, "value": 81}, {"users": 1, "value": 120.0}, {"users": 1, "value": 120.0}, {"users": 1, "value": 53}, {"users": 1, "value": 53}, {"users": 1, "value": 100.0}, {"users": 1, "value": 100.0}, {"users": 1, "value": 68}, {"users": 1, "value": 97}],
     "markers": [],
 };
         var percentile1 = 0.5

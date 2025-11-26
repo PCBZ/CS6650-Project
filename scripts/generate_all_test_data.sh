@@ -17,7 +17,7 @@ USER_SERVICE_SCRIPT="$PROJECT_ROOT/services/user-service/scripts/generate_test_d
 SOCIAL_GRAPH_SCRIPT="$PROJECT_ROOT/services/social-graph-services/scripts/generate_and_load.sh"
 
 # Default values
-NUM_USERS=5000
+NUM_USERS=25000
 BASE_URL=""  # Will be read from Terraform output
 CONCURRENCY=50
 AWS_REGION="us-west-2"
@@ -174,20 +174,36 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# Check dependencies for User Service script
-echo ""
-echo -e "${BLUE}Checking Python dependencies...${NC}"
-python3 -c "import aiohttp" 2>/dev/null
-if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}⚠️  aiohttp not installed, installing...${NC}"
-    pip3 install aiohttp
-fi
 
-python3 -c "import boto3" 2>/dev/null
-if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}⚠️  boto3 not installed, installing...${NC}"
-    pip3 install boto3
-fi
+# Helper: create and activate venv inside a service scripts directory
+create_and_activate_service_venv() {
+    local service_scripts_dir="$1"
+    local venv_dir="$service_scripts_dir/.venv"
+    local req_file="$service_scripts_dir/requirements.txt"
+
+    echo "\nSetting up virtualenv in $service_scripts_dir"
+    if [ ! -d "$venv_dir" ]; then
+        python3 -m venv "$venv_dir"
+    fi
+
+    # shellcheck source=/dev/null
+    . "$venv_dir/bin/activate"
+    python -m pip install --upgrade pip setuptools wheel
+
+    if [ -f "$req_file" ]; then
+        echo "Installing packages from $req_file"
+        python -m pip install -r "$req_file"
+    else
+        echo "No requirements.txt in $service_scripts_dir, installing minimal packages"
+        python -m pip install aiohttp boto3 requests
+    fi
+}
+
+deactivate_venv() {
+    if [ -n "${VIRTUAL_ENV-}" ]; then
+        deactivate || true
+    fi
+}
 
 START_TIME=$(date +%s)
 
@@ -197,12 +213,15 @@ echo -e "${BLUE}Step 1: Creating Users via User Service API${NC}"
 echo -e "${BLUE}================================================================${NC}"
 echo ""
 
-# Run User Service script
-cd "$PROJECT_ROOT/services/user-service/scripts"
+# Run User Service script (ensure per-service venv and deps)
+USER_SCRIPTS_DIR="$PROJECT_ROOT/services/user-service/scripts"
+create_and_activate_service_venv "$USER_SCRIPTS_DIR"
+cd "$USER_SCRIPTS_DIR"
 python3 generate_test_data.py \
     "$NUM_USERS" \
     --url "$BASE_URL" \
     --concurrency "$CONCURRENCY"
+deactivate_venv
 
 USER_EXIT_CODE=$?
 
@@ -227,13 +246,16 @@ echo -e "${BLUE}Step 2: Creating Relationships via Social Graph DynamoDB${NC}"
 echo -e "${BLUE}================================================================${NC}"
 echo ""
 
-# Run Social Graph script
-cd "$PROJECT_ROOT/services/social-graph-services/scripts"
+# Run Social Graph script (ensure per-service venv and deps)
+SOCIAL_SCRIPTS_DIR="$PROJECT_ROOT/services/social-graph-services/scripts"
+create_and_activate_service_venv "$SOCIAL_SCRIPTS_DIR"
+cd "$SOCIAL_SCRIPTS_DIR"
 bash generate_and_load.sh \
     --users "$NUM_USERS" \
     --region "$AWS_REGION" \
     --followers-table "$FOLLOWERS_TABLE" \
     --following-table "$FOLLOWING_TABLE"
+deactivate_venv
 
 SOCIAL_EXIT_CODE=$?
 
