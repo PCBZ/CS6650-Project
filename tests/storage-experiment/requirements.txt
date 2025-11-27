@@ -1,0 +1,15 @@
+# Storage Experiment Requirements
+# Minimal dependencies for database storage analysis
+
+# Load testing - Required for generating posts
+locust==2.15.1
+
+# AWS SDK - Required for DynamoDB access
+boto3==1.34.34
+
+# Data visualization - For generating charts
+matplotlib==3.8.2
+numpy==1.26.2
+
+# Optional: Data analysis (only if using pandas features)
+# pandas==2.1.4
