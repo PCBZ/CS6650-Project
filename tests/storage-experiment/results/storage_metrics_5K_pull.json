@@ -1,0 +1,74 @@
+{
+  "timestamp": "2025-11-27T08:46:09.653384",
+  "region": "us-west-2",
+  "tables": {
+    "posts-table": {
+      "table_name": "posts-table",
+      "item_count": 46317,
+      "item_count_cached": 0,
+      "table_size_bytes": 6516153,
+      "table_size_kb": 6363.43,
+      "table_size_mb": 6.21,
+      "table_size_gb": 0.0061,
+      "table_status": "ACTIVE",
+      "creation_date": "2025-11-27 08:20:59.660000-08:00",
+      "avg_item_size_bytes": 140.69,
+      "size_estimated": true,
+      "global_secondary_indexes": [
+        {
+          "index_name": "user_id-index",
+          "item_count": 0,
+          "index_size_bytes": 0,
+          "index_size_mb": 0.0
+        }
+      ],
+      "total_size_with_indexes_bytes": 6516153,
+      "total_size_with_indexes_mb": 6.21,
+      "total_size_with_indexes_gb": 0.0061,
+      "service_type": "post-service",
+      "costs": {
+        "storage_gb": 0.0061,
+        "monthly_storage_cost_usd": 0.0015,
+        "annual_storage_cost_usd": 0.02
+      }
+    },
+    "posts-timeline-service": {
+      "table_name": "posts-timeline-service",
+      "item_count": 0,
+      "item_count_cached": 0,
+      "table_size_bytes": 0,
+      "table_size_kb": 0.0,
+      "table_size_mb": 0.0,
+      "table_size_gb": 0.0,
+      "table_status": "ACTIVE",
+      "creation_date": "2025-11-27 08:28:09.873000-08:00",
+      "avg_item_size_bytes": 0,
+      "size_estimated": false,
+      "global_secondary_indexes": [
+        {
+          "index_name": "UserPostsIndex",
+          "item_count": 0,
+          "index_size_bytes": 0,
+          "index_size_mb": 0.0
+        }
+      ],
+      "total_size_with_indexes_bytes": 0,
+      "total_size_with_indexes_mb": 0.0,
+      "total_size_with_indexes_gb": 0.0,
+      "service_type": "timeline-service",
+      "costs": {
+        "storage_gb": 0.0,
+        "monthly_storage_cost_usd": 0.0,
+        "annual_storage_cost_usd": 0.0
+      }
+    }
+  },
+  "comparison": {
+    "post_storage_mb": 6.21,
+    "timeline_storage_mb": 0.0,
+    "storage_difference_mb": -6.21,
+    "post_item_count": 46317,
+    "timeline_item_count": 0,
+    "cost_difference_monthly_usd": -0.0015
+  }
+}
