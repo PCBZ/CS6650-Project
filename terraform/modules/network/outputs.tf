@@ -30,12 +30,12 @@ output "internet_gateway_id" {
 
 output "service_connect_namespace_arn" {
   description = "ARN of the ECS Service Connect namespace"
-  value       = aws_service_discovery_http_namespace.main.arn
+  value       = aws_service_discovery_private_dns_namespace.main.arn
 }
 
 output "service_connect_namespace_name" {
   description = "Name of the ECS Service Connect namespace"
-  value       = aws_service_discovery_http_namespace.main.name
+  value       = aws_service_discovery_private_dns_namespace.main.name
 }
 
 # COMMENTED OUT: Service discovery namespace disabled due to AWS learner lab permissions

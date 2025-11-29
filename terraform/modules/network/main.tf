@@ -142,11 +142,11 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# ECS Service Connect Namespace (alternative to AWS Cloud Map)
-# This provides service discovery within ECS without requiring Cloud Map permissions
-resource "aws_service_discovery_http_namespace" "main" {
-  name        = "${var.project_name}-${var.environment}"
-  description = "HTTP namespace for ECS Service Connect"
+# ECS Service Connect Namespace (private DNS so ECS tasks can resolve names)
+resource "aws_service_discovery_private_dns_namespace" "main" {
+  name        = "${var.project_name}-${var.environment}.local"
+  description = "Private DNS namespace for ECS Service Connect"
+  vpc         = aws_vpc.main.id
 
   tags = {
     Name        = "${var.project_name}-${var.environment} Service Connect"
