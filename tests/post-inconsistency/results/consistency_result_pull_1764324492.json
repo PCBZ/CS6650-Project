@@ -1,0 +1,31 @@
+{
+  "strategy": "pull",
+  "author_id": 1,
+  "follower_id": 2,
+  "total_posts": 1998,
+  "retrieved_posts": 50,
+  "missing_posts": 18,
+  "consistency_ratio": 62,
+  "inconsistency_ratio": 38,
+  "missing_contents": [
+    "Test post #3955",
+    "Test post #3956",
+    "Test post #3958",
+    "Test post #3961",
+    "Test post #3963",
+    "Test post #3964",
+    "Test post #3967",
+    "Test post #3968",
+    "Test post #3974",
+    "Test post #3977",
+    "Test post #3981",
+    "Test post #3982",
+    "Test post #3986",
+    "Test post #3989",
+    "Test post #3993",
+    "Test post #3997",
+    "Test post #3998",
+    "Test post #3999"
+  ],
+  "comparison_window": 50
+}
