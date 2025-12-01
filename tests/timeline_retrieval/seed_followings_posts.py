@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Seed posts script
+Seed posts script - Modified to trim medium user to 500 followings
 
 This script performs the pre-test operation:
 1. Scans the `following` DynamoDB table
@@ -208,9 +208,9 @@ def select_target_users() -> Tuple[int, int, int, List[int]]:
             logger.info(f"Trimmed eq10 user {user_eq_10} from {user_eq_10_count} to {new_count} followings")
             user_eq_10_count = new_count
 
-    # Trim medium user if following count > 100
-    if user_medium_count > 100:
-        changed, new_count = trim_following_to_limit(table, user_medium, 100)
+    # MODIFIED: Trim medium user to 500 if following count > 500
+    if user_medium_count > 500:
+        changed, new_count = trim_following_to_limit(table, user_medium, 500)
         if changed:
             logger.info(f"Trimmed medium user {user_medium} from {user_medium_count} to {new_count} followings")
             user_medium_count = new_count
@@ -300,13 +300,13 @@ def prepare_three_targets(region: str = "us-west-2", following_table_name: str =
     max_user, user_eq_10, user_medium, items = select_target_users(region, following_table_name)
     logger.info(f"Selected users: max={max_user}, eq10={user_eq_10}, medium={user_medium}")
 
-    # Trim eq10 to 10 and medium to 100
+    # Trim eq10 to 10 and medium to 500 (MODIFIED)
     changed, new_len = trim_following_to_limit(table, user_eq_10, limit=10)
     if changed:
         logger.info(f"Trimmed user_eq_10 ({user_eq_10}) followings down to {new_len}")
         time.sleep(0.5)
 
-    changed_mid, new_len_mid = trim_following_to_limit(table, user_medium, limit=100)
+    changed_mid, new_len_mid = trim_following_to_limit(table, user_medium, limit=500)  # MODIFIED: 500 instead of 100
     if changed_mid:
         logger.info(f"Trimmed user_medium ({user_medium}) followings down to {new_len_mid}")
         time.sleep(0.5)
@@ -338,21 +338,75 @@ def seed_for_target(table, base_url: str, target_uid: int, workers: int) -> Tupl
     total_followings = len(following_ids)
 
     logger.info(f"Target {target_uid}: processing {len(following_ids)} followings (total in table: {total_followings})")
+    logger.info(f"  This will create approximately {len(following_ids) * 10} posts using {workers} workers...")
 
+    # Test connection first
+    try:
+        logger.info(f"  Testing connection to {base_url}...")
+        test_response = requests.get(f"{base_url.rstrip('/')}/health", timeout=5)
+        logger.info(f"  Connection test successful (status: {test_response.status_code})")
+    except Exception as e:
+        logger.warning(f"  Connection test failed: {e}. Continuing anyway...")
+
+    # Configure session with connection pooling and retries
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+    
     session = requests.Session()
+    # Increase connection pool size
+    adapter = HTTPAdapter(
+        pool_connections=workers * 2,
+        pool_maxsize=workers * 2,
+        max_retries=Retry(total=3, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504])
+    )
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    
     total_success = 0
+    processed_count = 0
+    start_time = time.time()
+    
+    logger.info(f"  Starting to submit tasks to thread pool...")
 
     # Use threadpool to parallelize per-following posting jobs
+    # Submit tasks in batches to avoid memory issues and show progress
+    batch_size = 100
+    futures = {}
+    
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        futures = {ex.submit(post_for_user, session, base_url, fid, 10): fid for fid in following_ids}
+        # Submit tasks in batches
+        for i in range(0, len(following_ids), batch_size):
+            batch = following_ids[i:i+batch_size]
+            batch_num = i//batch_size + 1
+            total_batches = (len(following_ids)-1)//batch_size + 1
+            logger.info(f"  Submitting batch {batch_num}/{total_batches} ({len(batch)} followings)...")
+            for fid in batch:
+                futures[ex.submit(post_for_user, session, base_url, fid, 10)] = fid
+            logger.info(f"  Batch {batch_num} submitted. Total futures: {len(futures)}")
+        
+        logger.info(f"  All {len(following_ids)} tasks submitted. Starting to process results...")
+        
+        # Process completed futures
         for fut in as_completed(futures):
             fid = futures[fut]
             try:
                 ok = fut.result()
                 total_success += ok
+                processed_count += 1
+                
+                # Log progress every 50 followings or every 10% (whichever is more frequent)
+                if processed_count % max(50, total_followings // 10) == 0 or processed_count == total_followings:
+                    elapsed = time.time() - start_time
+                    rate = processed_count / elapsed if elapsed > 0 else 0
+                    remaining = (total_followings - processed_count) / rate if rate > 0 else 0
+                    logger.info(f"  Progress: {processed_count}/{total_followings} followings processed ({processed_count*10} posts created). "
+                              f"Rate: {rate:.1f} followings/s. Estimated remaining: {remaining:.0f}s")
             except Exception as e:
-                logger.debug(f"Error seeding for following {fid}: {e}")
+                logger.warning(f"Error seeding for following {fid}: {e}")
+                processed_count += 1
 
+    elapsed = time.time() - start_time
+    logger.info(f"Target {target_uid}: completed in {elapsed:.1f}s. Created {total_success} posts from {processed_count} followings")
     return target_uid, len(following_ids), total_success
 
 
@@ -398,9 +452,9 @@ def main():
     except Exception as e:
         logger.warning(f"Failed to trim followings for {user_eq_10}: {e}")
 
-    # Ensure user_medium has at most 100 followings; trim if necessary
+    # MODIFIED: Ensure user_medium has at most 500 followings; trim if necessary
     try:
-        changed_mid, new_len_mid = trim_following_to_limit(table, user_medium, limit=100)
+        changed_mid, new_len_mid = trim_following_to_limit(table, user_medium, limit=500)  # Changed from 100 to 500
         if changed_mid:
             logger.info(f"Trimmed user_medium ({user_medium}) followings down to {new_len_mid}")
             time.sleep(0.5)
@@ -416,7 +470,7 @@ def main():
     logger.info(f"Estimated total posts to create (all followings x10): {estimated_posts}")
     # Default behavior: do not proceed automatically for very large jobs
     if estimated_posts > 100000:
-        logger.warning("This job would create more than 10k posts. Edit the script to change the limit or scope if you really want to proceed.")
+        logger.warning("This job would create more than 100k posts. Edit the script to change the limit or scope if you really want to proceed.")
         return 3
 
     # Seed for each target
